@@ -3,6 +3,10 @@
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.2.1">
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="Nx8Yie" name="SceneComponent.cpp" compile="1" resource="0"
+            file="Source/SceneComponent.cpp"/>
+      <FILE id="eF3Bqz" name="SceneComponent.h" compile="0" resource="0"
+            file="Source/SceneComponent.h"/>
       <FILE id="rKinko" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="npCL5o" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>

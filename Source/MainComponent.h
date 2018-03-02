@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "SceneComponent.h"
 
 //==============================================================================
 /*
@@ -34,6 +35,7 @@ public:
 private:
     //==============================================================================
     // Your private member variables go here...
+    SceneComponent scene;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainComponent)
 };
