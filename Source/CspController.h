@@ -24,8 +24,9 @@
 class CspController
 {
 public:
-	void Init(AudioDeviceManager* audioDeviceManager);
+	void Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp);
 	void SwitchLocalControl(bool enabled);
+	bool UploadSong(const File& file);
 	void Play();
 	void Pause();
 	void Guide(bool enable);
@@ -33,6 +34,7 @@ public:
 
 private:
 	AudioDeviceManager* m_audioDeviceManager;
+	String m_remoteIp;
 
 	void SendCspMessage(const String& command);
 };

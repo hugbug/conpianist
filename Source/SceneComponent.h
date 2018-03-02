@@ -36,6 +36,7 @@
                                                                     //[/Comments]
 */
 class SceneComponent  : public Component,
+                        public TextEditor::Listener,
                         public Button::Listener,
                         public Slider::Listener
 {
@@ -46,6 +47,9 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void chooseSong();
+    void loadSong(const File& file);
+	virtual void textEditorReturnKeyPressed(TextEditor & editor) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -73,11 +77,16 @@ private:
     ScopedPointer<Slider> positionSlider;
     ScopedPointer<Label> positionLabel;
     ScopedPointer<Label> lengthLabel;
+    ScopedPointer<Label> songLabel;
+    ScopedPointer<TextButton> chooseSongButton;
     ScopedPointer<TextButton> pauseButton;
     ScopedPointer<TextButton> guideOffButton;
     ScopedPointer<TextButton> lightsOnButton;
     ScopedPointer<TextButton> lightsOffButton;
     ScopedPointer<GroupComponent> playbackGroup;
+    ScopedPointer<Label> remoteIpLabel;
+    ScopedPointer<TextEditor> remoteIpEdit;
+    ScopedPointer<GroupComponent> songGroup;
 
 
     //==============================================================================
