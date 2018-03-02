@@ -21,6 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "CspController.h"
 //[/Headers]
 
 #include "../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
@@ -35,7 +36,8 @@
                                                                     //[/Comments]
 */
 class SceneComponent  : public Component,
-                        public Button::Listener
+                        public Button::Listener,
+                        public Slider::Listener
 {
 public:
     //==============================================================================
@@ -49,12 +51,14 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
+    void sliderValueChanged (Slider* sliderThatWasMoved) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
+    CspController cspController;
     //[/UserVariables]
 
     //==============================================================================
@@ -62,6 +66,18 @@ private:
     ScopedPointer<GroupComponent> localControlGroup;
     ScopedPointer<TextButton> localControlOnButton;
     ScopedPointer<TextButton> localControlOffButton;
+    ScopedPointer<TextButton> playButton;
+    ScopedPointer<TextButton> rewindButton;
+    ScopedPointer<TextButton> forwardButton;
+    ScopedPointer<TextButton> guideOnButton;
+    ScopedPointer<Slider> positionSlider;
+    ScopedPointer<Label> positionLabel;
+    ScopedPointer<Label> lengthLabel;
+    ScopedPointer<TextButton> pauseButton;
+    ScopedPointer<TextButton> guideOffButton;
+    ScopedPointer<TextButton> lightsOnButton;
+    ScopedPointer<TextButton> lightsOffButton;
+    ScopedPointer<GroupComponent> playbackGroup;
 
 
     //==============================================================================
