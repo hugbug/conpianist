@@ -30,3 +30,46 @@
 *.exe
 *.out
 *.app
+
+# GNU Autotools
+.deps/
+config.h
+config.h.in~
+config.log
+config.status
+Makefile
+stamp-h1
+autom4te.cache/
+.dirstamp
+*.o-*
+
+# Visual Studio User-specific files
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+.vs/
+ipch/
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.ilk
+*.pch
+*.pdb
+*.pgc
+*.pgd
+*.rsp
+*.sbr
+*.vspscc
+*.vssscc
+*.pidb
+*.svclog
+*.scc
+*.sln
+.vscode/
+
+# macOS
+.DS_Store
+xcuserdata/
