@@ -23,6 +23,7 @@ void CspController::Init(AudioDeviceManager* audioDeviceManager, const String& r
 {
 	m_audioDeviceManager = audioDeviceManager;
 	m_remoteIp = remoteIp;
+    audioDeviceManager->addMidiInputCallback("", this);
 }
 
 void CspController::SwitchLocalControl(bool enabled)
@@ -120,4 +121,29 @@ void CspController::Guide(bool enable)
 void CspController::StreamLights(bool enable)
 {
 	SendCspMessage(String("04 02 00 01 00 01 00 00 01 ") + (enable ? "01" : "00"));
+}
+
+void CspController::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
+{
+	if (message.isSysEx())
+	{
+		MemoryBlock sysex(message.getSysExData(), message.getSysExDataSize());
+		MemoryBlock sig;
+
+		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 0a 01 00 01 00 00 04");
+		if (sysex.getSize() == sig.getSize() + 4 &&
+			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		{
+			m_songPosition = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
+			if (m_listener) m_listener->SongPositionChanged();
+		}
+
+		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 1b 01 00 01 00 00 04");
+		if (sysex.getSize() == sig.getSize() + 4 &&
+			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		{
+			m_songLength = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
+			if (m_listener) m_listener->SongLengthChanged();
+		}
+	}
 }

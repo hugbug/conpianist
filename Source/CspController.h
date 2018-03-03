@@ -21,9 +21,18 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class CspController
+class CspControllerListener
 {
 public:
+	virtual ~CspControllerListener() {}
+	virtual void SongLengthChanged() {}
+	virtual void SongPositionChanged() {}
+};
+
+class CspController : public MidiInputCallback
+{
+public:
+	void SetListener(CspControllerListener* listener) { m_listener = listener; }
 	void Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp);
 	void SwitchLocalControl(bool enabled);
 	bool UploadSong(const File& file);
@@ -31,10 +40,17 @@ public:
 	void Pause();
 	void Guide(bool enable);
 	void StreamLights(bool enable);
+	int GetSongLength() { return m_songLength; }
+	int GetSongPosition() { return m_songPosition; }
+
+	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
 
 private:
+	CspControllerListener* m_listener = nullptr;
 	AudioDeviceManager* m_audioDeviceManager;
 	String m_remoteIp;
+	int m_songLength = 0;
+	int m_songPosition = 0;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, const char* category = nullptr);

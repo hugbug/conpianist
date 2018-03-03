@@ -37,7 +37,7 @@
 */
 class SceneComponent  : public Component,
                         public TextEditor::Listener,
-                        public MidiInputCallback,
+                        public CspControllerListener,
                         public Button::Listener,
                         public Slider::Listener
 {
@@ -51,7 +51,9 @@ public:
     void chooseSong();
     void loadSong(const File& file);
 	void textEditorReturnKeyPressed(TextEditor & editor) override;
-	void handleIncomingMidiMessage(MidiInput *source, const MidiMessage &message) override;
+	void SongLengthChanged() override { updateSongState(); };
+	void SongPositionChanged() override { updateSongState(); };
+	void updateSongState();
     //[/UserMethods]
 
     void paint (Graphics& g) override;

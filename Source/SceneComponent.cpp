@@ -157,8 +157,8 @@ SceneComponent::SceneComponent ()
 
     //[Constructor] You can add your own custom stuff here..
     cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
+    cspController.SetListener(this);
     remoteIpEdit->addListener(this);
-    audioDeviceManager.addMidiInputCallback("", this);
     //[/Constructor]
 }
 
@@ -370,37 +370,15 @@ void SceneComponent::loadSong(const File& file)
 	lengthLabel->setText("999", NotificationType::dontSendNotification);
 }
 
-void SceneComponent::handleIncomingMidiMessage(MidiInput *source, const MidiMessage &message)
+void SceneComponent::updateSongState()
 {
-	if (message.isSysEx())
-	{
-		MemoryBlock sysex(message.getSysExData(), message.getSysExDataSize());
-		MemoryBlock sig;
-
-		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 0a 01 00 01 00 00 04");
-		if (sysex.getSize() == sig.getSize() + 4 &&
-			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+	MessageManager::callAsync([=] ()
 		{
-			int measure = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
-			MessageManager::callAsync([=] ()
-				{
-					positionLabel->setText(String(measure), NotificationType::dontSendNotification);
-					positionSlider->setValue(measure);
-				});
-		}
-
-		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 1b 01 00 01 00 00 04");
-		if (sysex.getSize() == sig.getSize() + 4 &&
-			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
-		{
-			int length = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
-			MessageManager::callAsync([=] ()
-				{
-					lengthLabel->setText(String(length), NotificationType::dontSendNotification);
-    				positionSlider->setRange(1, length, 0);
-				});
-		}
-	}
+			lengthLabel->setText(String(cspController.GetSongLength()), NotificationType::dontSendNotification);
+			positionSlider->setRange(1, cspController.GetSongLength(), 0);
+			positionLabel->setText(String(cspController.GetSongPosition()), NotificationType::dontSendNotification);
+			positionSlider->setValue(cspController.GetSongPosition());
+		});
 }
 
 //[/MiscUserCode]
@@ -416,7 +394,7 @@ void SceneComponent::handleIncomingMidiMessage(MidiInput *source, const MidiMess
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public TextEditor::Listener, public MidiInputCallback"
+                 parentClasses="public Component, public TextEditor::Listener, public CspControllerListener"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
                  initialHeight="600">
