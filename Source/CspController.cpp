@@ -60,7 +60,13 @@ bool CspController::UploadSong(const File& file)
 
 	file.loadFileAsData(message);
 
-	String base = message.toBase64Encoding();
+	// Stop playback
+	SendCspMessage("04 00 05 01 00 01 00 00 01 02");
+	usleep(1000*10);   // this is not nice, we should wait for a confirmation message instead
+    // Activate song length events
+	SendCspMessage("04 00 1b 01", "02 00");
+    // Activate song position events
+	SendCspMessage("04 00 0a 01", "02 00");
 
 	StreamingSocket socket;
 	bool ok = socket.connect(m_remoteIp, 10504) &&
@@ -69,18 +75,31 @@ bool CspController::UploadSong(const File& file)
 	return ok;
 }
 
-void CspController::SendCspMessage(const String& command)
+void CspController::SendSysExMessage(const String& command)
 {
 	if (!m_audioDeviceManager->getDefaultMidiOutput())
 	{
 		return;
 	}
 
-	String CSP_PREFIX = "43 73 01 52 25 26 01 01 ";
 	MemoryBlock rawData;
-	rawData.loadFromHexString(CSP_PREFIX + command);
+	rawData.loadFromHexString(command);
 	MidiMessage message = MidiMessage::createSysExMessage(rawData.getData(), (int)rawData.getSize());
 	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(message);
+}
+
+void CspController::SendCspMessage(const String& command, const char* category)
+{
+	String CSP_PREFIX = "43 73 01 52 25 26 ";
+	String DEFAULT_CATEGORY = "01 01 ";
+	if (category)
+	{
+		SendSysExMessage(CSP_PREFIX + category + command);
+	}
+	else
+	{
+		SendSysExMessage(CSP_PREFIX + DEFAULT_CATEGORY + command);
+	}
 }
 
 void CspController::Play()
@@ -102,4 +121,3 @@ void CspController::StreamLights(bool enable)
 {
 	SendCspMessage(String("04 02 00 01 00 01 00 00 01 ") + (enable ? "01" : "00"));
 }
-

@@ -15,7 +15,7 @@ MainComponent::MainComponent()
 
     // Make sure you set the size of the component after
     // you add any child components.
-    setSize (600, 600);
+    setSize (600, 400);
 
     // specify the number of input and output channels that we want to open
     setAudioChannels (2, 2);

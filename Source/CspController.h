@@ -36,5 +36,6 @@ private:
 	AudioDeviceManager* m_audioDeviceManager;
 	String m_remoteIp;
 
-	void SendCspMessage(const String& command);
+	void SendSysExMessage(const String& command);
+	void SendCspMessage(const String& command, const char* category = nullptr);
 };

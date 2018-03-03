@@ -32,10 +32,14 @@ SceneComponent::SceneComponent ()
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
+    addAndMakeVisible (playbackGroup = new GroupComponent ("Playback",
+                                                           TRANS("Playback")));
+    playbackGroup->setTextLabelPosition (Justification::centred);
+
     addAndMakeVisible (audioSelector = new AudioDeviceSelectorComponent (audioDeviceManager, 0, 0, 0, 0, true, true, false, false));
-    addAndMakeVisible (localControlGroup = new GroupComponent ("Local Control",
-                                                               TRANS("Local Control")));
-    localControlGroup->setTextLabelPosition (Justification::centred);
+    addAndMakeVisible (systemGroup = new GroupComponent ("System Control",
+                                                         TRANS("System Control")));
+    systemGroup->setTextLabelPosition (Justification::centred);
 
     addAndMakeVisible (localControlOnButton = new TextButton ("Local-Control On Button"));
     localControlOnButton->setButtonText (TRANS("Tone On"));
@@ -63,13 +67,13 @@ SceneComponent::SceneComponent ()
 
     addAndMakeVisible (positionSlider = new Slider ("Song Position slider"));
     positionSlider->setTooltip (TRANS("Song Position"));
-    positionSlider->setRange (0, 10, 0);
+    positionSlider->setRange (1, 999, 0);
     positionSlider->setSliderStyle (Slider::LinearHorizontal);
     positionSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
     positionSlider->addListener (this);
 
     addAndMakeVisible (positionLabel = new Label ("Song Position Label",
-                                                  TRANS("999")));
+                                                  TRANS("1")));
     positionLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     positionLabel->setJustificationType (Justification::centred);
     positionLabel->setEditable (false, false, false);
@@ -114,12 +118,8 @@ SceneComponent::SceneComponent ()
     lightsOffButton->setButtonText (TRANS("Lights Off"));
     lightsOffButton->addListener (this);
 
-    addAndMakeVisible (playbackGroup = new GroupComponent ("Playback",
-                                                           TRANS("Playback")));
-    playbackGroup->setTextLabelPosition (Justification::centred);
-
     addAndMakeVisible (remoteIpLabel = new Label ("RemoteIP Label",
-                                                  TRANS("CSP IP Address:")));
+                                                  TRANS("Piano IP Address:")));
     remoteIpLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     remoteIpLabel->setJustificationType (Justification::centredRight);
     remoteIpLabel->setEditable (false, false, false);
@@ -143,8 +143,8 @@ SceneComponent::SceneComponent ()
 
 
     //[UserPreSize]
-    localControlGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
-    localControlGroup->setText("");
+    systemGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
+    systemGroup->setText("");
     playbackGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
     playbackGroup->setText("");
     songGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -158,6 +158,7 @@ SceneComponent::SceneComponent ()
     //[Constructor] You can add your own custom stuff here..
     cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
     remoteIpEdit->addListener(this);
+    audioDeviceManager.addMidiInputCallback("", this);
     //[/Constructor]
 }
 
@@ -166,8 +167,9 @@ SceneComponent::~SceneComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
+    playbackGroup = nullptr;
     audioSelector = nullptr;
-    localControlGroup = nullptr;
+    systemGroup = nullptr;
     localControlOnButton = nullptr;
     localControlOffButton = nullptr;
     playButton = nullptr;
@@ -183,7 +185,6 @@ SceneComponent::~SceneComponent()
     guideOffButton = nullptr;
     lightsOnButton = nullptr;
     lightsOffButton = nullptr;
-    playbackGroup = nullptr;
     remoteIpLabel = nullptr;
     remoteIpEdit = nullptr;
     songGroup = nullptr;
@@ -210,8 +211,9 @@ void SceneComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
+    playbackGroup->setBounds (16, (((-20) + 108 - -48) + 64 - 9) + 72 - 9, getWidth() - 32, 144);
     audioSelector->setBounds (16, -20, getWidth() - 30, 108);
-    localControlGroup->setBounds (16, (-20) + 108 - -48, getWidth() - 32, 64);
+    systemGroup->setBounds (16, (-20) + 108 - -48, getWidth() - 32, 64);
     localControlOnButton->setBounds (16 + 50 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
     localControlOffButton->setBounds (16 + 131 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
     playButton->setBounds (16 + 131 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
@@ -226,11 +228,10 @@ void SceneComponent::resized()
     guideOffButton->setBounds (16 + (getWidth() - 32) - 56 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
     lightsOnButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 104, 70, 24);
     lightsOffButton->setBounds (16 + (getWidth() - 32) - 56 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 104, 70, 24);
-    playbackGroup->setBounds (16, (((-20) + 108 - -48) + 64 - 9) + 72 - 9, getWidth() - 32, 144);
     remoteIpEdit->setBounds (proportionOfWidth (0.3498f), (-20) + 124, 136, 24);
     songGroup->setBounds (16, ((-20) + 108 - -48) + 64 - 9, getWidth() - 32, 72);
     //[UserResized] Add your own custom resize handling here..
-    remoteIpEdit->setBounds (5 + proportionOfWidth (0.3500f), (-20) + 124, 136, 24);
+    remoteIpEdit->setBounds (6 + proportionOfWidth (0.3500f), (-20) + 124, 136, 24);
     //[/UserResized]
 }
 
@@ -338,7 +339,7 @@ void SceneComponent::textEditorReturnKeyPressed(TextEditor & editor)
 void SceneComponent::chooseSong()
 {
 	File initialLocation = File::getSpecialLocation(File::userHomeDirectory);
-	initialLocation = initialLocation.getFullPathName() + "/piano/Songs Stream Light";
+	initialLocation = initialLocation.getFullPathName() + "/Midi";
 	FileChooser chooser ("Please select the song you want to load...", initialLocation, "*.mid");
     if (chooser.browseForFileToOpen())
     {
@@ -365,10 +366,41 @@ void SceneComponent::loadSong(const File& file)
 	}
 
 	songLabel->setText(file.getFileNameWithoutExtension(), NotificationType::dontSendNotification);
-	midiFile.convertTimestampTicksToSeconds();
-	int length = floor(midiFile.getLastTimestamp());
-	lengthLabel->setText(String(length), NotificationType::dontSendNotification);
-	positionLabel->setText("0", NotificationType::dontSendNotification);
+	positionLabel->setText("1", NotificationType::dontSendNotification);
+	lengthLabel->setText("999", NotificationType::dontSendNotification);
+}
+
+void SceneComponent::handleIncomingMidiMessage(MidiInput *source, const MidiMessage &message)
+{
+	if (message.isSysEx())
+	{
+		MemoryBlock sysex(message.getSysExData(), message.getSysExDataSize());
+		MemoryBlock sig;
+
+		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 0a 01 00 01 00 00 04");
+		if (sysex.getSize() == sig.getSize() + 4 &&
+			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		{
+			int measure = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
+			MessageManager::callAsync([=] ()
+				{
+					positionLabel->setText(String(measure), NotificationType::dontSendNotification);
+					positionSlider->setValue(measure);
+				});
+		}
+
+		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 1b 01 00 01 00 00 04");
+		if (sysex.getSize() == sig.getSize() + 4 &&
+			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		{
+			int length = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
+			MessageManager::callAsync([=] ()
+				{
+					lengthLabel->setText(String(length), NotificationType::dontSendNotification);
+    				positionSlider->setRange(1, length, 0);
+				});
+		}
+	}
 }
 
 //[/MiscUserCode]
@@ -384,18 +416,21 @@ void SceneComponent::loadSong(const File& file)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public TextEditor::Listener"
+                 parentClasses="public Component, public TextEditor::Listener, public MidiInputCallback"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
                  initialHeight="600">
   <BACKGROUND backgroundColour="ff323e44"/>
+  <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
+                  virtualName="" explicitFocusOrder="0" pos="16 9R 32M 144" posRelativeY="4e6df4a0ae6e851b"
+                  title="Playback" textpos="36"/>
   <JUCERCOMP name="Audio Selector" id="ddeb8c497281f468" memberName="audioSelector"
              virtualName="AudioDeviceSelectorComponent" explicitFocusOrder="0"
              pos="16 -20 30M 108" sourceFile="../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
              constructorParams="audioDeviceManager, 0, 0, 0, 0, true, true, false, false"/>
-  <GROUPCOMPONENT name="Local Control" id="69305d91c2150486" memberName="localControlGroup"
+  <GROUPCOMPONENT name="System Control" id="69305d91c2150486" memberName="systemGroup"
                   virtualName="" explicitFocusOrder="0" pos="16 -48R 32M 64" posRelativeY="ddeb8c497281f468"
-                  title="Local Control" textpos="36"/>
+                  title="System Control" textpos="36"/>
   <TEXTBUTTON name="Local-Control On Button" id="99f311ed53591c70" memberName="localControlOnButton"
               virtualName="" explicitFocusOrder="0" pos="50c 24 70 24" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Tone On" connectedEdges="0"
@@ -422,14 +457,14 @@ BEGIN_JUCER_METADATA
               needsCallback="1" radioGroupId="0"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="64 24 155M 24" posRelativeX="c7b94b60aa96c6e2"
-          posRelativeY="c7b94b60aa96c6e2" tooltip="Song Position" min="0.00000000000000000000"
-          max="10.00000000000000000000" int="0.00000000000000000000" style="LinearHorizontal"
+          posRelativeY="c7b94b60aa96c6e2" tooltip="Song Position" min="1.00000000000000000000"
+          max="999.00000000000000000000" int="0.00000000000000000000" style="LinearHorizontal"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1.00000000000000000000" needsCallback="1"/>
   <LABEL name="Song Position Label" id="17ac2967e993dc43" memberName="positionLabel"
          virtualName="" explicitFocusOrder="0" pos="-80 24 36 24" posRelativeX="be38d66c26f6bda6"
          posRelativeY="c7b94b60aa96c6e2" edTextCol="ff000000" edBkgCol="0"
-         labelText="999" editableSingleClick="0" editableDoubleClick="0"
+         labelText="1" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="36"/>
   <LABEL name="Song Length Label" id="537604aa6486f948" memberName="lengthLabel"
@@ -465,12 +500,9 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="56Rc 104 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Lights Off" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
-  <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="16 9R 32M 144" posRelativeY="4e6df4a0ae6e851b"
-                  title="Playback" textpos="36"/>
   <LABEL name="RemoteIP Label" id="a2bb47b511220552" memberName="remoteIpLabel"
          virtualName="" explicitFocusOrder="0" pos="176 104 112 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="CSP IP Address:" editableSingleClick="0"
+         edBkgCol="0" labelText="Piano IP Address:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="34"/>

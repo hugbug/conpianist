@@ -37,6 +37,7 @@
 */
 class SceneComponent  : public Component,
                         public TextEditor::Listener,
+                        public MidiInputCallback,
                         public Button::Listener,
                         public Slider::Listener
 {
@@ -49,7 +50,8 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void chooseSong();
     void loadSong(const File& file);
-	virtual void textEditorReturnKeyPressed(TextEditor & editor) override;
+	void textEditorReturnKeyPressed(TextEditor & editor) override;
+	void handleIncomingMidiMessage(MidiInput *source, const MidiMessage &message) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -66,8 +68,9 @@ private:
     //[/UserVariables]
 
     //==============================================================================
+    ScopedPointer<GroupComponent> playbackGroup;
     ScopedPointer<AudioDeviceSelectorComponent> audioSelector;
-    ScopedPointer<GroupComponent> localControlGroup;
+    ScopedPointer<GroupComponent> systemGroup;
     ScopedPointer<TextButton> localControlOnButton;
     ScopedPointer<TextButton> localControlOffButton;
     ScopedPointer<TextButton> playButton;
@@ -83,7 +86,6 @@ private:
     ScopedPointer<TextButton> guideOffButton;
     ScopedPointer<TextButton> lightsOnButton;
     ScopedPointer<TextButton> lightsOffButton;
-    ScopedPointer<GroupComponent> playbackGroup;
     ScopedPointer<Label> remoteIpLabel;
     ScopedPointer<TextEditor> remoteIpEdit;
     ScopedPointer<GroupComponent> songGroup;
