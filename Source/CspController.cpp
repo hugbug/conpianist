@@ -19,6 +19,23 @@
 
 #include "CspController.h"
 
+static const char* CSP_PREFIX = "43 73 01 52 25 26 ";
+static const char* CSP_COMMAND = "43 73 01 52 25 26 01 01 ";
+static const char* CSP_GUIDE_ON = "04 03 00 01 00 01 00 00 01 01";
+static const char* CSP_GUIDE_OFF = "04 03 00 01 00 01 00 00 01 00";
+static const char* CSP_GUIDE_STATE = "00 01 04 03 00 01 00 01 00 00 00 00 01";
+static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
+static const char* CSP_LENGTH_STATE = "00 00 04 00 1b 01 00 01 00 00 04";
+static const char* CSP_STREAM_LIGHTS_ON = "04 02 00 01 00 01 00 00 01 01";
+static const char* CSP_STREAM_LIGHTS_OFF = "04 02 00 01 00 01 00 00 01 00";
+static const char* CSP_STREAM_LIGHTS_STATE = "00 01 04 02 00 01 00 01 00 00 00 00 01";
+static const char* CSP_PLAY = "04 00 05 01 00 01 00 00 01 01";
+static const char* CSP_PAUSE = "04 00 05 01 00 01 00 00 01 02";
+static const char* CSP_DUMP_MODEL = "01 00 0f 01 18 01 00 01 00";
+static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
+static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
+static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
+
 void CspController::Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp)
 {
 	m_audioDeviceManager = audioDeviceManager;
@@ -26,15 +43,39 @@ void CspController::Init(AudioDeviceManager* audioDeviceManager, const String& r
     audioDeviceManager->addMidiInputCallback("", this);
 }
 
-void CspController::SwitchLocalControl(bool enabled)
+void CspController::Connect()
+{
+	SendCspMessage(CSP_DUMP_MODEL, false);
+	SendCspMessage(CSP_DUMP_VERSION, false);
+
+	// Activate song length events
+	SendCspMessage("02 00 04 00 1b 01", false);
+	// Activate song position events
+	SendCspMessage("02 00 04 00 0a 01", false);
+
+	Pause();
+
+	m_guide = false;
+	m_streamLights = true;
+	m_localControl = true;
+
+	Guide(false);
+	StreamLights(true);
+	LocalControl(true);
+	if (m_listener) m_listener->PlaybackStateChanged();
+}
+
+void CspController::LocalControl(bool enabled)
 {
 	if (!m_audioDeviceManager->getDefaultMidiOutput())
 	{
 		return;
 	}
 
+	m_localControl = enabled;
 	MidiMessage localControlMessage = MidiMessage::controllerEvent(1, 122, enabled ? 127 : 0);
 	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(localControlMessage);
+	if (m_listener) m_listener->SettingsChanged();
 }
 
 bool CspController::UploadSong(const File& file)
@@ -61,13 +102,8 @@ bool CspController::UploadSong(const File& file)
 
 	file.loadFileAsData(message);
 
-	// Stop playback
-	SendCspMessage("04 00 05 01 00 01 00 00 01 02");
+	Pause();
 	usleep(1000*10);   // this is not nice, we should wait for a confirmation message instead
-    // Activate song length events
-	SendCspMessage("04 00 1b 01", "02 00");
-    // Activate song position events
-	SendCspMessage("04 00 0a 01", "02 00");
 
 	StreamingSocket socket;
 	bool ok = socket.connect(m_remoteIp, 10504) &&
@@ -89,61 +125,86 @@ void CspController::SendSysExMessage(const String& command)
 	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(message);
 }
 
-void CspController::SendCspMessage(const String& command, const char* category)
+void CspController::SendCspMessage(const String& command, bool addDefaultCommandPrefix)
 {
-	String CSP_PREFIX = "43 73 01 52 25 26 ";
-	String DEFAULT_CATEGORY = "01 01 ";
-	if (category)
+	if (addDefaultCommandPrefix)
 	{
-		SendSysExMessage(CSP_PREFIX + category + command);
+		SendSysExMessage(CSP_COMMAND + command);
 	}
 	else
 	{
-		SendSysExMessage(CSP_PREFIX + DEFAULT_CATEGORY + command);
+		SendSysExMessage(String(CSP_PREFIX) + command);
 	}
 }
 
 void CspController::Play()
 {
-	SendCspMessage("04 00 05 01 00 01 00 00 01 01");
+	SendCspMessage(CSP_PLAY);
 }
 
 void CspController::Pause()
 {
-	SendCspMessage("04 00 05 01 00 01 00 00 01 02");
+	SendCspMessage(CSP_PAUSE);
 }
 
 void CspController::Guide(bool enable)
 {
-	SendCspMessage(String("04 03 00 01 00 01 00 00 01 ") + (enable ? "01" : "00"));
+	SendCspMessage(enable ? CSP_GUIDE_ON : CSP_GUIDE_OFF);
 }
 
 void CspController::StreamLights(bool enable)
 {
-	SendCspMessage(String("04 02 00 01 00 01 00 00 01 ") + (enable ? "01" : "00"));
+	SendCspMessage(enable ? CSP_STREAM_LIGHTS_ON : CSP_STREAM_LIGHTS_OFF);
+}
+
+bool CspController::IsCspMessage(const MidiMessage& message, const char* messageHex)
+{
+	MemoryBlock sig;
+	sig.loadFromHexString(String(CSP_PREFIX) + messageHex);
+	bool ret = message.getSysExDataSize() >= sig.getSize() &&
+		memcmp(message.getSysExData(), sig.getData(), sig.getSize()) == 0;
+	return ret;
 }
 
 void CspController::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
 {
 	if (message.isSysEx())
 	{
-		MemoryBlock sysex(message.getSysExData(), message.getSysExDataSize());
-		MemoryBlock sig;
-
-		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 0a 01 00 01 00 00 04");
-		if (sysex.getSize() == sig.getSize() + 4 &&
-			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		if (IsCspMessage(message, CSP_POSITION_STATE))
 		{
-			m_songPosition = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
-			if (m_listener) m_listener->SongPositionChanged();
+			m_songPosition = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
+			if (m_listener) m_listener->PlaybackStateChanged();
 		}
-
-		sig.loadFromHexString("43 73 01 52 25 26 00 00 04 00 1b 01 00 01 00 00 04");
-		if (sysex.getSize() == sig.getSize() + 4 &&
-			memcmp(sysex.getData(), sig.getData(), sig.getSize()) == 0)
+		else if (IsCspMessage(message, CSP_LENGTH_STATE))
 		{
-			m_songLength = (sysex[sig.getSize()] << 7) + sysex[sig.getSize() + 1];
-			if (m_listener) m_listener->SongLengthChanged();
+			m_songLength = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
+			if (m_listener) m_listener->PlaybackStateChanged();
+		}
+		else if (IsCspMessage(message, CSP_GUIDE_STATE))
+		{
+			m_guide = message.getSysExData()[19];
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
+		{
+			m_streamLights = message.getSysExData()[19];
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_MODEL_STATE))
+		{
+			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
+			String str((char*)(message.getSysExData() + 18), len-1);
+			//TODO: make thread safe
+			m_model = str;
+		}
+		else if (IsCspMessage(message, CSP_VERSION_STATE))
+		{
+			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
+			String str((char*)(message.getSysExData() + 18), len-1);
+			//TODO: make thread safe
+			m_version = str;
+			m_connected = true;
+			if (m_listener) m_listener->SettingsChanged();
 		}
 	}
 }

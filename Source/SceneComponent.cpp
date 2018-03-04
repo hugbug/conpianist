@@ -41,13 +41,9 @@ SceneComponent::SceneComponent ()
                                                          TRANS("System Control")));
     systemGroup->setTextLabelPosition (Justification::centred);
 
-    addAndMakeVisible (localControlOnButton = new TextButton ("Local-Control On Button"));
-    localControlOnButton->setButtonText (TRANS("Tone On"));
-    localControlOnButton->addListener (this);
-
-    addAndMakeVisible (localControlOffButton = new TextButton ("Local-Control Off Button"));
-    localControlOffButton->setButtonText (TRANS("Tone Off"));
-    localControlOffButton->addListener (this);
+    addAndMakeVisible (localControlButton = new TextButton ("Local-Control Button"));
+    localControlButton->setButtonText (TRANS("Tone"));
+    localControlButton->addListener (this);
 
     addAndMakeVisible (playButton = new TextButton ("Play Button"));
     playButton->setButtonText (TRANS("Play"));
@@ -61,9 +57,9 @@ SceneComponent::SceneComponent ()
     forwardButton->setButtonText (TRANS("Forward"));
     forwardButton->addListener (this);
 
-    addAndMakeVisible (guideOnButton = new TextButton ("Guide On Button"));
-    guideOnButton->setButtonText (TRANS("Guide On"));
-    guideOnButton->addListener (this);
+    addAndMakeVisible (guideButton = new TextButton ("Guide Button"));
+    guideButton->setButtonText (TRANS("Guide"));
+    guideButton->addListener (this);
 
     addAndMakeVisible (positionSlider = new Slider ("Song Position slider"));
     positionSlider->setTooltip (TRANS("Song Position"));
@@ -106,17 +102,9 @@ SceneComponent::SceneComponent ()
     pauseButton->setButtonText (TRANS("Pause"));
     pauseButton->addListener (this);
 
-    addAndMakeVisible (guideOffButton = new TextButton ("Guide Off Button"));
-    guideOffButton->setButtonText (TRANS("Guide Off"));
-    guideOffButton->addListener (this);
-
-    addAndMakeVisible (lightsOnButton = new TextButton ("Lights On Button"));
-    lightsOnButton->setButtonText (TRANS("Lights On"));
-    lightsOnButton->addListener (this);
-
-    addAndMakeVisible (lightsOffButton = new TextButton ("Lights Off Button"));
-    lightsOffButton->setButtonText (TRANS("Lights Off"));
-    lightsOffButton->addListener (this);
+    addAndMakeVisible (lightsButton = new TextButton ("Lights Button"));
+    lightsButton->setButtonText (TRANS("Lights"));
+    lightsButton->addListener (this);
 
     addAndMakeVisible (remoteIpLabel = new Label ("RemoteIP Label",
                                                   TRANS("Piano IP Address:")));
@@ -141,6 +129,10 @@ SceneComponent::SceneComponent ()
                                                        TRANS("Song")));
     songGroup->setTextLabelPosition (Justification::centred);
 
+    addAndMakeVisible (connectButton = new TextButton ("Connect Button"));
+    connectButton->setButtonText (TRANS("Connect"));
+    connectButton->addListener (this);
+
 
     //[UserPreSize]
     systemGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -159,6 +151,7 @@ SceneComponent::SceneComponent ()
     cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
     cspController.SetListener(this);
     remoteIpEdit->addListener(this);
+    updateEnabledControls();
     //[/Constructor]
 }
 
@@ -170,24 +163,22 @@ SceneComponent::~SceneComponent()
     playbackGroup = nullptr;
     audioSelector = nullptr;
     systemGroup = nullptr;
-    localControlOnButton = nullptr;
-    localControlOffButton = nullptr;
+    localControlButton = nullptr;
     playButton = nullptr;
     rewindButton = nullptr;
     forwardButton = nullptr;
-    guideOnButton = nullptr;
+    guideButton = nullptr;
     positionSlider = nullptr;
     positionLabel = nullptr;
     lengthLabel = nullptr;
     songLabel = nullptr;
     chooseSongButton = nullptr;
     pauseButton = nullptr;
-    guideOffButton = nullptr;
-    lightsOnButton = nullptr;
-    lightsOffButton = nullptr;
+    lightsButton = nullptr;
     remoteIpLabel = nullptr;
     remoteIpEdit = nullptr;
     songGroup = nullptr;
+    connectButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -211,25 +202,23 @@ void SceneComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    playbackGroup->setBounds (16, (((-20) + 108 - -48) + 64 - 9) + 72 - 9, getWidth() - 32, 144);
+    playbackGroup->setBounds (16, (((-20) + 108 - -48) + 64 - 9) + 72 - 9, getWidth() - 32, 106);
     audioSelector->setBounds (16, -20, getWidth() - 30, 108);
     systemGroup->setBounds (16, (-20) + 108 - -48, getWidth() - 32, 64);
-    localControlOnButton->setBounds (16 + 50 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
-    localControlOffButton->setBounds (16 + 131 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
+    localControlButton->setBounds (16 + (getWidth() - 32) - 49 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
     playButton->setBounds (16 + 131 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
     rewindButton->setBounds (16 + 51 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
     forwardButton->setBounds (16 + 291 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    guideOnButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
+    guideButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
     positionSlider->setBounds (16 + 64, ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 24, getWidth() - 155, 24);
     lengthLabel->setBounds (16 + (getWidth() - 32) - 51, ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 24, 36, 24);
     songLabel->setBounds (16 + 10, (((-20) + 108 - -48) + 64 - 9) + 17, (getWidth() - 32) - 101, 72 - 27);
     chooseSongButton->setBounds (16 + (getWidth() - 32) - 83, (((-20) + 108 - -48) + 64 - 9) + 28, 70, 24);
     pauseButton->setBounds (16 + 211 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    guideOffButton->setBounds (16 + (getWidth() - 32) - 56 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    lightsOnButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 104, 70, 24);
-    lightsOffButton->setBounds (16 + (getWidth() - 32) - 56 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 104, 70, 24);
+    lightsButton->setBounds (16 + (getWidth() - 32) - 57 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
     remoteIpEdit->setBounds (proportionOfWidth (0.3498f), (-20) + 124, 136, 24);
     songGroup->setBounds (16, ((-20) + 108 - -48) + 64 - 9, getWidth() - 32, 72);
+    connectButton->setBounds (16 + 124 - (216 / 2), ((-20) + 108 - -48) + 24, 216, 24);
     //[UserResized] Add your own custom resize handling here..
     remoteIpEdit->setBounds (6 + proportionOfWidth (0.3500f), (-20) + 124, 136, 24);
     //[/UserResized]
@@ -240,17 +229,11 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == localControlOnButton)
+    if (buttonThatWasClicked == localControlButton)
     {
-        //[UserButtonCode_localControlOnButton] -- add your button handler code here..
-        cspController.SwitchLocalControl(true);
-        //[/UserButtonCode_localControlOnButton]
-    }
-    else if (buttonThatWasClicked == localControlOffButton)
-    {
-        //[UserButtonCode_localControlOffButton] -- add your button handler code here..
-        cspController.SwitchLocalControl(false);
-        //[/UserButtonCode_localControlOffButton]
+        //[UserButtonCode_localControlButton] -- add your button handler code here..
+        cspController.LocalControl(!cspController.GetLocalControl());
+        //[/UserButtonCode_localControlButton]
     }
     else if (buttonThatWasClicked == playButton)
     {
@@ -268,11 +251,11 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_forwardButton] -- add your button handler code here..
         //[/UserButtonCode_forwardButton]
     }
-    else if (buttonThatWasClicked == guideOnButton)
+    else if (buttonThatWasClicked == guideButton)
     {
-        //[UserButtonCode_guideOnButton] -- add your button handler code here..
-        cspController.Guide(true);
-        //[/UserButtonCode_guideOnButton]
+        //[UserButtonCode_guideButton] -- add your button handler code here..
+        cspController.Guide(!cspController.GetGuide());
+        //[/UserButtonCode_guideButton]
     }
     else if (buttonThatWasClicked == chooseSongButton)
     {
@@ -286,23 +269,17 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         cspController.Pause();
         //[/UserButtonCode_pauseButton]
     }
-    else if (buttonThatWasClicked == guideOffButton)
+    else if (buttonThatWasClicked == lightsButton)
     {
-        //[UserButtonCode_guideOffButton] -- add your button handler code here..
-        cspController.Guide(false);
-        //[/UserButtonCode_guideOffButton]
+        //[UserButtonCode_lightsButton] -- add your button handler code here..
+        cspController.StreamLights(!cspController.GetStreamLights());
+        //[/UserButtonCode_lightsButton]
     }
-    else if (buttonThatWasClicked == lightsOnButton)
+    else if (buttonThatWasClicked == connectButton)
     {
-        //[UserButtonCode_lightsOnButton] -- add your button handler code here..
-        cspController.StreamLights(true);
-        //[/UserButtonCode_lightsOnButton]
-    }
-    else if (buttonThatWasClicked == lightsOffButton)
-    {
-        //[UserButtonCode_lightsOffButton] -- add your button handler code here..
-        cspController.StreamLights(false);
-        //[/UserButtonCode_lightsOffButton]
+        //[UserButtonCode_connectButton] -- add your button handler code here..
+        cspController.Connect();
+        //[/UserButtonCode_connectButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -374,11 +351,36 @@ void SceneComponent::updateSongState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			lengthLabel->setText(String(cspController.GetSongLength()), NotificationType::dontSendNotification);
-			positionSlider->setRange(1, cspController.GetSongLength(), 0);
+			int songLength = cspController.GetSongLength() > 0 ? cspController.GetSongLength() : 999;
+			lengthLabel->setText(String(songLength), NotificationType::dontSendNotification);
+			positionSlider->setRange(1, songLength, 0);
 			positionLabel->setText(String(cspController.GetSongPosition()), NotificationType::dontSendNotification);
 			positionSlider->setValue(cspController.GetSongPosition());
 		});
+}
+
+void SceneComponent::updateSettingsState()
+{
+	MessageManager::callAsync([=] ()
+		{
+			localControlButton->setToggleState(cspController.GetLocalControl() && cspController.GetConnected(), NotificationType::dontSendNotification);
+			lightsButton->setToggleState(cspController.GetStreamLights() && cspController.GetConnected(), NotificationType::dontSendNotification);
+			guideButton->setToggleState(cspController.GetGuide() && cspController.GetConnected(), NotificationType::dontSendNotification);
+			connectButton->setToggleState(cspController.GetConnected(), NotificationType::dontSendNotification);
+			connectButton->setButtonText(!cspController.GetConnected() ? "Connect" :
+				String("Connected to ") + cspController.GetModel() + " (" + cspController.GetVersion() + ")");
+			updateEnabledControls();
+		});
+}
+
+void SceneComponent::updateEnabledControls()
+{
+	for (Component* co : getChildren())
+	{
+		bool alwaysEnabled = co == connectButton || co == audioSelector ||
+			co == remoteIpEdit || co == remoteIpLabel;
+		co->setEnabled(cspController.GetConnected() || alwaysEnabled);
+	}
 }
 
 //[/MiscUserCode]
@@ -400,7 +402,7 @@ BEGIN_JUCER_METADATA
                  initialHeight="600">
   <BACKGROUND backgroundColour="ff323e44"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="16 9R 32M 144" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="16 9R 32M 106" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
   <JUCERCOMP name="Audio Selector" id="ddeb8c497281f468" memberName="audioSelector"
              virtualName="AudioDeviceSelectorComponent" explicitFocusOrder="0"
@@ -409,13 +411,9 @@ BEGIN_JUCER_METADATA
   <GROUPCOMPONENT name="System Control" id="69305d91c2150486" memberName="systemGroup"
                   virtualName="" explicitFocusOrder="0" pos="16 -48R 32M 64" posRelativeY="ddeb8c497281f468"
                   title="System Control" textpos="36"/>
-  <TEXTBUTTON name="Local-Control On Button" id="99f311ed53591c70" memberName="localControlOnButton"
-              virtualName="" explicitFocusOrder="0" pos="50c 24 70 24" posRelativeX="69305d91c2150486"
-              posRelativeY="69305d91c2150486" buttonText="Tone On" connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Local-Control Off Button" id="55c13d8af41edb4e" memberName="localControlOffButton"
-              virtualName="" explicitFocusOrder="0" pos="131c 24 70 24" posRelativeX="69305d91c2150486"
-              posRelativeY="69305d91c2150486" buttonText="Tone Off" connectedEdges="0"
+  <TEXTBUTTON name="Local-Control Button" id="99f311ed53591c70" memberName="localControlButton"
+              virtualName="" explicitFocusOrder="0" pos="49Rc 24 70 24" posRelativeX="69305d91c2150486"
+              posRelativeY="69305d91c2150486" buttonText="Tone" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Play Button" id="be38d66c26f6bda6" memberName="playButton"
               virtualName="" explicitFocusOrder="0" pos="131c 64 70 24" posRelativeX="c7b94b60aa96c6e2"
@@ -429,9 +427,9 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="291c 64 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Forward" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Guide On Button" id="c850d2e92ae26093" memberName="guideOnButton"
+  <TEXTBUTTON name="Guide Button" id="c850d2e92ae26093" memberName="guideButton"
               virtualName="" explicitFocusOrder="0" pos="136Rc 64 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Guide On" connectedEdges="0"
+              posRelativeY="c7b94b60aa96c6e2" buttonText="Guide" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="64 24 155M 24" posRelativeX="c7b94b60aa96c6e2"
@@ -466,17 +464,9 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="211c 64 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Pause" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Guide Off Button" id="9fb8edac050b156b" memberName="guideOffButton"
-              virtualName="" explicitFocusOrder="0" pos="56Rc 64 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Guide Off" connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Lights On Button" id="5e04ec6b8d091999" memberName="lightsOnButton"
-              virtualName="" explicitFocusOrder="0" pos="136Rc 104 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Lights On" connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Lights Off Button" id="a2890553270a5b82" memberName="lightsOffButton"
-              virtualName="" explicitFocusOrder="0" pos="56Rc 104 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Lights Off" connectedEdges="0"
+  <TEXTBUTTON name="Lights Button" id="5e04ec6b8d091999" memberName="lightsButton"
+              virtualName="" explicitFocusOrder="0" pos="57Rc 64 70 24" posRelativeX="c7b94b60aa96c6e2"
+              posRelativeY="c7b94b60aa96c6e2" buttonText="Lights" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <LABEL name="RemoteIP Label" id="a2bb47b511220552" memberName="remoteIpLabel"
          virtualName="" explicitFocusOrder="0" pos="176 104 112 24" edTextCol="ff000000"
@@ -491,6 +481,10 @@ BEGIN_JUCER_METADATA
   <GROUPCOMPONENT name="Song" id="4e6df4a0ae6e851b" memberName="songGroup" virtualName=""
                   explicitFocusOrder="0" pos="16 9R 32M 72" posRelativeY="69305d91c2150486"
                   title="Song" textpos="36"/>
+  <TEXTBUTTON name="Connect Button" id="a82c92b5d1470311" memberName="connectButton"
+              virtualName="" explicitFocusOrder="0" pos="124c 24 216 24" posRelativeX="69305d91c2150486"
+              posRelativeY="69305d91c2150486" buttonText="Connect" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

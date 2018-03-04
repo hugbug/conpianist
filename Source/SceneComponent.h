@@ -51,9 +51,11 @@ public:
     void chooseSong();
     void loadSong(const File& file);
 	void textEditorReturnKeyPressed(TextEditor & editor) override;
-	void SongLengthChanged() override { updateSongState(); };
-	void SongPositionChanged() override { updateSongState(); };
+	void PlaybackStateChanged() override { updateSongState(); };
+	void SettingsChanged() override { updateSettingsState(); };
 	void updateSongState();
+	void updateSettingsState();
+	void updateEnabledControls();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -73,24 +75,22 @@ private:
     ScopedPointer<GroupComponent> playbackGroup;
     ScopedPointer<AudioDeviceSelectorComponent> audioSelector;
     ScopedPointer<GroupComponent> systemGroup;
-    ScopedPointer<TextButton> localControlOnButton;
-    ScopedPointer<TextButton> localControlOffButton;
+    ScopedPointer<TextButton> localControlButton;
     ScopedPointer<TextButton> playButton;
     ScopedPointer<TextButton> rewindButton;
     ScopedPointer<TextButton> forwardButton;
-    ScopedPointer<TextButton> guideOnButton;
+    ScopedPointer<TextButton> guideButton;
     ScopedPointer<Slider> positionSlider;
     ScopedPointer<Label> positionLabel;
     ScopedPointer<Label> lengthLabel;
     ScopedPointer<Label> songLabel;
     ScopedPointer<TextButton> chooseSongButton;
     ScopedPointer<TextButton> pauseButton;
-    ScopedPointer<TextButton> guideOffButton;
-    ScopedPointer<TextButton> lightsOnButton;
-    ScopedPointer<TextButton> lightsOffButton;
+    ScopedPointer<TextButton> lightsButton;
     ScopedPointer<Label> remoteIpLabel;
     ScopedPointer<TextEditor> remoteIpEdit;
     ScopedPointer<GroupComponent> songGroup;
+    ScopedPointer<TextButton> connectButton;
 
 
     //==============================================================================

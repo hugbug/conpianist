@@ -25,8 +25,8 @@ class CspControllerListener
 {
 public:
 	virtual ~CspControllerListener() {}
-	virtual void SongLengthChanged() {}
-	virtual void SongPositionChanged() {}
+	virtual void PlaybackStateChanged() {}
+	virtual void SettingsChanged() {}
 };
 
 class CspController : public MidiInputCallback
@@ -34,14 +34,22 @@ class CspController : public MidiInputCallback
 public:
 	void SetListener(CspControllerListener* listener) { m_listener = listener; }
 	void Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp);
-	void SwitchLocalControl(bool enabled);
+	void Connect();
+	void LocalControl(bool enabled);
 	bool UploadSong(const File& file);
 	void Play();
 	void Pause();
 	void Guide(bool enable);
 	void StreamLights(bool enable);
+	bool GetConnected() { return m_connected; }
+	bool GetPlaying() { return m_playing; }
+	bool GetGuide() { return m_guide; }
+	bool GetStreamLights() { return m_streamLights; }
+	bool GetLocalControl() { return m_localControl; }
 	int GetSongLength() { return m_songLength; }
 	int GetSongPosition() { return m_songPosition; }
+	const String& GetModel() { return m_model; }
+	const String& GetVersion() { return m_version; }
 
 	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
 
@@ -49,9 +57,17 @@ private:
 	CspControllerListener* m_listener = nullptr;
 	AudioDeviceManager* m_audioDeviceManager;
 	String m_remoteIp;
+	bool m_connected = false;
+	bool m_localControl = false;
+	bool m_guide = false;
+	bool m_streamLights = false;
+	bool m_playing = false;
 	int m_songLength = 0;
-	int m_songPosition = 0;
+	int m_songPosition = 1;
+	String m_model;
+	String m_version;
 
 	void SendSysExMessage(const String& command);
-	void SendCspMessage(const String& command, const char* category = nullptr);
+	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
+	bool IsCspMessage(const MidiMessage& message, const char* messageHex);
 };
