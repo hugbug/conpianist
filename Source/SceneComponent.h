@@ -56,6 +56,9 @@ public:
 	void updateSongState();
 	void updateSettingsState();
 	void updateEnabledControls();
+	void saveState();
+	void loadState();
+	void restoreState();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -69,6 +72,7 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
     CspController cspController;
+    ScopedPointer<XmlElement> savedState;
     //[/UserVariables]
 
     //==============================================================================

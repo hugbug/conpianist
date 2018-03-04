@@ -30,6 +30,8 @@
 SceneComponent::SceneComponent ()
 {
     //[Constructor_pre] You can add your own custom stuff here..
+	loadState();
+	audioDeviceManager.initialise(0, 0, savedState ? savedState->getChildByName("DEVICESETUP") : nullptr, true);
     //[/Constructor_pre]
 
     addAndMakeVisible (playbackGroup = new GroupComponent ("Playback",
@@ -151,6 +153,7 @@ SceneComponent::SceneComponent ()
     cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
     cspController.SetListener(this);
     remoteIpEdit->addListener(this);
+    restoreState();
     updateEnabledControls();
     //[/Constructor]
 }
@@ -158,6 +161,7 @@ SceneComponent::SceneComponent ()
 SceneComponent::~SceneComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
+	saveState();
     //[/Destructor_pre]
 
     playbackGroup = nullptr;
@@ -309,6 +313,7 @@ void SceneComponent::textEditorReturnKeyPressed(TextEditor & editor)
 {
 	if (&editor == remoteIpEdit.get())
 	{
+		saveState();
     	cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
 	}
 }
@@ -383,6 +388,44 @@ void SceneComponent::updateEnabledControls()
 	}
 }
 
+void SceneComponent::saveState()
+{
+	XmlElement state("ConPianistState");
+    XmlElement* audioState = audioDeviceManager.createStateXml();
+    if (audioState)
+    {
+    	state.addChildElement(audioState);
+	}
+
+	state.createNewChildElement("RemoteIp")->addTextElement(remoteIpEdit->getText());
+
+	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
+    state.writeToFile(stateFile, "");
+}
+
+void SceneComponent::loadState()
+{
+	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
+	if (!stateFile.exists())
+	{
+		return;
+	}
+
+	savedState = XmlDocument::parse(stateFile);
+	if (!savedState)
+	{
+		return;
+	}
+}
+
+void SceneComponent::restoreState()
+{
+	XmlElement* el = savedState->getChildByName("RemoteIp");
+	if (el)
+	{
+		remoteIpEdit->setText(el->getAllSubText());
+	}
+}
 //[/MiscUserCode]
 
 
