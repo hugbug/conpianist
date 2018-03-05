@@ -24,6 +24,7 @@ static const char* CSP_COMMAND = "43 73 01 52 25 26 01 01 ";
 static const char* CSP_GUIDE_ON = "04 03 00 01 00 01 00 00 01 01";
 static const char* CSP_GUIDE_OFF = "04 03 00 01 00 01 00 00 01 00";
 static const char* CSP_GUIDE_STATE = "00 01 04 03 00 01 00 01 00 00 00 00 01";
+static const char* CSP_POSITION = "04 00 0a 01 00 01 00 00 04 ";
 static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
 static const char* CSP_POSITION_EVENTS = "02 00 04 00 0a 01";
 static const char* CSP_LENGTH_STATE = "00 00 04 00 1b 01 00 01 00 00 04";
@@ -172,6 +173,13 @@ void PianoController::Guide(bool enable)
 void PianoController::StreamLights(bool enable)
 {
 	SendCspMessage(enable ? CSP_STREAM_LIGHTS_ON : CSP_STREAM_LIGHTS_OFF);
+}
+
+void PianoController::SetSongPosition(int position)
+{
+	String pos = String::toHexString(position >> 8 & 0x3f + position & 0x80).paddedLeft('0', 2) +
+		" " + String::toHexString(position & 0x7f).paddedLeft('0', 2);
+	SendCspMessage(String(CSP_POSITION) + pos + " 00 00");
 }
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)

@@ -54,11 +54,11 @@ SceneComponent::SceneComponent ()
     playButton->addListener (this);
 
     addAndMakeVisible (rewindButton = new TextButton ("Rewind Button"));
-    rewindButton->setButtonText (TRANS("Rewind"));
+    rewindButton->setButtonText (TRANS("<<"));
     rewindButton->addListener (this);
 
     addAndMakeVisible (forwardButton = new TextButton ("Forward Button"));
-    forwardButton->setButtonText (TRANS("Forward"));
+    forwardButton->setButtonText (TRANS(">>"));
     forwardButton->addListener (this);
 
     addAndMakeVisible (guideButton = new TextButton ("Guide Button"));
@@ -67,7 +67,7 @@ SceneComponent::SceneComponent ()
 
     addAndMakeVisible (positionSlider = new Slider ("Song Position slider"));
     positionSlider->setTooltip (TRANS("Song Position"));
-    positionSlider->setRange (1, 999, 0);
+    positionSlider->setRange (1, 999, 1);
     positionSlider->setSliderStyle (Slider::LinearHorizontal);
     positionSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
     positionSlider->addListener (this);
@@ -99,7 +99,7 @@ SceneComponent::SceneComponent ()
     songLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     addAndMakeVisible (chooseSongButton = new TextButton ("Choose Song Button"));
-    chooseSongButton->setButtonText (TRANS("Choose"));
+    chooseSongButton->setButtonText (TRANS("Choose..."));
     chooseSongButton->addListener (this);
 
     addAndMakeVisible (lightsButton = new TextButton ("Lights Button"));
@@ -182,16 +182,16 @@ void SceneComponent::resized()
     songGroup->setBounds (16, 0 + 64 - 8, getWidth() - 32, 70);
     playbackGroup->setBounds (16, (0 + 64 - 8) + 70 - 7, getWidth() - 32, 95);
     systemGroup->setBounds (16, 0, getWidth() - 32, 64);
-    localControlButton->setBounds (16 + (getWidth() - 32) - 51 - (70 / 2), 0 + 24, 70, 24);
+    localControlButton->setBounds (16 + (getWidth() - 32) - 86, 0 + 24, 70, 24);
     playButton->setBounds (16 + 131 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
     rewindButton->setBounds (16 + 51 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
     forwardButton->setBounds (16 + 211 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
-    guideButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
+    guideButton->setBounds (16 + (getWidth() - 32) - 129 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
     positionSlider->setBounds (16 + 64, ((0 + 64 - 8) + 70 - 7) + 16, getWidth() - 155, 24);
     lengthLabel->setBounds (16 + (getWidth() - 32) - 51, ((0 + 64 - 8) + 70 - 7) + 16, 36, 24);
     songLabel->setBounds (16 + 8, (0 + 64 - 8) + 15, (getWidth() - 32) - 102, 70 - 24);
     chooseSongButton->setBounds (16 + (getWidth() - 32) - 86, (0 + 64 - 8) + 28, 70, 24);
-    lightsButton->setBounds (16 + (getWidth() - 32) - 57 - (70 / 2), ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
+    lightsButton->setBounds (16 + (getWidth() - 32) - 86, ((0 + 64 - 8) + 70 - 7) + 56, 70, 24);
     connectButton->setBounds (16 + 124 - (216 / 2), 0 + 24, 216, 24);
     settingsButton->setBounds (16 + 284 - (88 / 2), 0 + 24, 88, 24);
     //[UserResized] Add your own custom resize handling here..
@@ -218,11 +218,13 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == rewindButton)
     {
         //[UserButtonCode_rewindButton] -- add your button handler code here..
+        pianoController.SetSongPosition(pianoController.GetSongPosition() - 1);
         //[/UserButtonCode_rewindButton]
     }
     else if (buttonThatWasClicked == forwardButton)
     {
         //[UserButtonCode_forwardButton] -- add your button handler code here..
+        pianoController.SetSongPosition(pianoController.GetSongPosition() + 1);
         //[/UserButtonCode_forwardButton]
     }
     else if (buttonThatWasClicked == guideButton)
@@ -268,6 +270,7 @@ void SceneComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == positionSlider)
     {
         //[UserSliderCode_positionSlider] -- add your slider handling code here..
+        pianoController.SetSongPosition(positionSlider->getValue());
         //[/UserSliderCode_positionSlider]
     }
 
@@ -319,10 +322,10 @@ void SceneComponent::updateSongState()
 		{
 			int songLength = pianoController.GetSongLength() > 0 ? pianoController.GetSongLength() : 999;
 			lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
-			positionSlider->setRange(1, songLength, 0);
+			positionSlider->setRange(1, songLength, 1);
 			positionLabel->setText(String::formatted("%03d", pianoController.GetSongPosition()),
 				NotificationType::dontSendNotification);
-			positionSlider->setValue(pianoController.GetSongPosition());
+			positionSlider->setValue(pianoController.GetSongPosition(), NotificationType::dontSendNotification);
 			playButton->setButtonText(pianoController.GetPlaying() ? "Pause" : "Play");
 		});
 }
@@ -382,7 +385,7 @@ BEGIN_JUCER_METADATA
                   virtualName="" explicitFocusOrder="0" pos="16 0 32M 64" title="System Control"
                   textpos="36"/>
   <TEXTBUTTON name="Local-Control Button" id="99f311ed53591c70" memberName="localControlButton"
-              virtualName="" explicitFocusOrder="0" pos="51Rc 24 70 24" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="86R 24 70 24" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Tone" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Play Button" id="be38d66c26f6bda6" memberName="playButton"
@@ -391,20 +394,20 @@ BEGIN_JUCER_METADATA
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Rewind Button" id="c1113d02cbf7d143" memberName="rewindButton"
               virtualName="" explicitFocusOrder="0" pos="51c 56 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Rewind" connectedEdges="0"
+              posRelativeY="c7b94b60aa96c6e2" buttonText="&lt;&lt;" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Forward Button" id="82d7c8c8e52fdffb" memberName="forwardButton"
               virtualName="" explicitFocusOrder="0" pos="211c 56 70 24" posRelativeX="c7b94b60aa96c6e2"
-              posRelativeY="c7b94b60aa96c6e2" buttonText="Forward" connectedEdges="0"
+              posRelativeY="c7b94b60aa96c6e2" buttonText="&gt;&gt;" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Guide Button" id="c850d2e92ae26093" memberName="guideButton"
-              virtualName="" explicitFocusOrder="0" pos="136Rc 56 70 24" posRelativeX="c7b94b60aa96c6e2"
+              virtualName="" explicitFocusOrder="0" pos="129Rc 56 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Guide" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="64 16 155M 24" posRelativeX="c7b94b60aa96c6e2"
           posRelativeY="c7b94b60aa96c6e2" tooltip="Song Position" min="1.00000000000000000000"
-          max="999.00000000000000000000" int="0.00000000000000000000" style="LinearHorizontal"
+          max="999.00000000000000000000" int="1.00000000000000000000" style="LinearHorizontal"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1.00000000000000000000" needsCallback="1"/>
   <LABEL name="Song Position Label" id="17ac2967e993dc43" memberName="positionLabel"
@@ -428,10 +431,10 @@ BEGIN_JUCER_METADATA
          kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Choose Song Button" id="73e64e146d2a4fc2" memberName="chooseSongButton"
               virtualName="" explicitFocusOrder="0" pos="86R 28 70 24" posRelativeX="4e6df4a0ae6e851b"
-              posRelativeY="4e6df4a0ae6e851b" buttonText="Choose" connectedEdges="0"
+              posRelativeY="4e6df4a0ae6e851b" buttonText="Choose..." connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Lights Button" id="5e04ec6b8d091999" memberName="lightsButton"
-              virtualName="" explicitFocusOrder="0" pos="57Rc 56 70 24" posRelativeX="c7b94b60aa96c6e2"
+              virtualName="" explicitFocusOrder="0" pos="86R 56 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Lights" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Connect Button" id="a82c92b5d1470311" memberName="connectButton"

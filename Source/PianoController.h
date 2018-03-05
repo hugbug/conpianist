@@ -51,6 +51,7 @@ public:
 	bool GetLocalControl() { return m_localControl; }
 	int GetSongLength() { return m_songLength; }
 	int GetSongPosition() { return m_songPosition; }
+	void SetSongPosition(int position);
 	const String& GetModel() { return m_model; }
 	const String& GetVersion() { return m_version; }
 
