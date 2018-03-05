@@ -17,7 +17,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "CspController.h"
+#include "PianoController.h"
 
 static const char* CSP_PREFIX = "43 73 01 52 25 26 ";
 static const char* CSP_COMMAND = "43 73 01 52 25 26 01 01 ";
@@ -41,13 +41,13 @@ void Sleep(int Milliseconds)
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + Milliseconds);
 }
 
-void CspController::SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager)
+void PianoController::SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager)
 {
 	m_audioDeviceManager = audioDeviceManager;
     audioDeviceManager->addMidiInputCallback("", this);
 }
 
-void CspController::Connect()
+void PianoController::Connect()
 {
 	SendCspMessage(CSP_DUMP_MODEL, false);
 	SendCspMessage(CSP_DUMP_VERSION, false);
@@ -69,7 +69,7 @@ void CspController::Connect()
 	if (m_listener) m_listener->PlaybackStateChanged();
 }
 
-void CspController::LocalControl(bool enabled)
+void PianoController::LocalControl(bool enabled)
 {
 	if (!m_audioDeviceManager->getDefaultMidiOutput())
 	{
@@ -82,7 +82,7 @@ void CspController::LocalControl(bool enabled)
 	if (m_listener) m_listener->SettingsChanged();
 }
 
-bool CspController::UploadSong(const File& file)
+bool PianoController::UploadSong(const File& file)
 {
 	String headerHex =
 		"01 00 00 06 00 00 00 01 00 00 00 00 00 00 00 01 "
@@ -116,7 +116,7 @@ bool CspController::UploadSong(const File& file)
 	return ok;
 }
 
-void CspController::SendSysExMessage(const String& command)
+void PianoController::SendSysExMessage(const String& command)
 {
 	if (!m_audioDeviceManager->getDefaultMidiOutput())
 	{
@@ -129,7 +129,7 @@ void CspController::SendSysExMessage(const String& command)
 	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(message);
 }
 
-void CspController::SendCspMessage(const String& command, bool addDefaultCommandPrefix)
+void PianoController::SendCspMessage(const String& command, bool addDefaultCommandPrefix)
 {
 	if (addDefaultCommandPrefix)
 	{
@@ -141,27 +141,27 @@ void CspController::SendCspMessage(const String& command, bool addDefaultCommand
 	}
 }
 
-void CspController::Play()
+void PianoController::Play()
 {
 	SendCspMessage(CSP_PLAY);
 }
 
-void CspController::Pause()
+void PianoController::Pause()
 {
 	SendCspMessage(CSP_PAUSE);
 }
 
-void CspController::Guide(bool enable)
+void PianoController::Guide(bool enable)
 {
 	SendCspMessage(enable ? CSP_GUIDE_ON : CSP_GUIDE_OFF);
 }
 
-void CspController::StreamLights(bool enable)
+void PianoController::StreamLights(bool enable)
 {
 	SendCspMessage(enable ? CSP_STREAM_LIGHTS_ON : CSP_STREAM_LIGHTS_OFF);
 }
 
-bool CspController::IsCspMessage(const MidiMessage& message, const char* messageHex)
+bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
 {
 	MemoryBlock sig;
 	sig.loadFromHexString(String(CSP_PREFIX) + messageHex);
@@ -170,7 +170,7 @@ bool CspController::IsCspMessage(const MidiMessage& message, const char* message
 	return ret;
 }
 
-void CspController::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
+void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
 {
 	if (message.isSysEx())
 	{

@@ -21,7 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "CspController.h"
+#include "PianoController.h"
 //[/Headers]
 
 #include "../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
@@ -39,14 +39,14 @@ class SettingsComponent  : public Component
 {
 public:
     //==============================================================================
-    SettingsComponent (AudioDeviceManager& audioDeviceManager, CspController& cspController);
+    SettingsComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
     ~SettingsComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-	static void saveState(AudioDeviceManager& audioDeviceManager, CspController& cspController);
-	static void loadState(AudioDeviceManager& audioDeviceManager, CspController& cspController);
-	static void showDialog(AudioDeviceManager& audioDeviceManager, CspController& cspController);
+	static void saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
+	static void loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
+	static void showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -57,7 +57,7 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	AudioDeviceManager& audioDeviceManager;
-	CspController& cspController;
+	PianoController& pianoController;
     //[/UserVariables]
 
     //==============================================================================

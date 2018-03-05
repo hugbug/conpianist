@@ -27,8 +27,8 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, CspController& cspController)
-    : audioDeviceManager(audioDeviceManager), cspController(cspController)
+SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+    : audioDeviceManager(audioDeviceManager), pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -56,7 +56,7 @@ SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, Cs
 
     //[UserPreSize]
 	remoteIpLabel->attachToComponent(remoteIpEdit, true);
-	remoteIpEdit->setText(cspController.GetRemoteIp());
+	remoteIpEdit->setText(pianoController.GetRemoteIp());
     //[/UserPreSize]
 
     setSize (500, 200);
@@ -70,8 +70,8 @@ SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, Cs
 SettingsComponent::~SettingsComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	cspController.SetRemoteIp(remoteIpEdit->getText());
-	saveState(audioDeviceManager, cspController);
+	pianoController.SetRemoteIp(remoteIpEdit->getText());
+	saveState(audioDeviceManager, pianoController);
     //[/Destructor_pre]
 
     audioSelector = nullptr;
@@ -111,7 +111,7 @@ void SettingsComponent::resized()
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void SettingsComponent::saveState(AudioDeviceManager& audioDeviceManager, CspController& cspController)
+void SettingsComponent::saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	XmlElement state("ConPianistState");
 	XmlElement* audioState = audioDeviceManager.createStateXml();
@@ -120,13 +120,13 @@ void SettingsComponent::saveState(AudioDeviceManager& audioDeviceManager, CspCon
 		state.addChildElement(audioState);
 	}
 
-	state.createNewChildElement("RemoteIp")->addTextElement(cspController.GetRemoteIp());
+	state.createNewChildElement("RemoteIp")->addTextElement(pianoController.GetRemoteIp());
 
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	state.writeToFile(stateFile, "");
 }
 
-void SettingsComponent::loadState(AudioDeviceManager& audioDeviceManager, CspController& cspController)
+void SettingsComponent::loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	if (!stateFile.exists())
@@ -146,14 +146,14 @@ void SettingsComponent::loadState(AudioDeviceManager& audioDeviceManager, CspCon
 	XmlElement* el = savedState->getChildByName("RemoteIp");
 	if (el)
 	{
-		cspController.SetRemoteIp(el->getAllSubText());
+		pianoController.SetRemoteIp(el->getAllSubText());
 	}
 }
 
-void SettingsComponent::showDialog(AudioDeviceManager& audioDeviceManager, CspController& cspController)
+void SettingsComponent::showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(new SettingsComponent(audioDeviceManager, cspController));
+	dialog.content.setOwned(new SettingsComponent(audioDeviceManager, pianoController));
 	dialog.dialogTitle = "Settings";
 	dialog.launchAsync();
 }
@@ -170,8 +170,8 @@ void SettingsComponent::showDialog(AudioDeviceManager& audioDeviceManager, CspCo
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SettingsComponent" componentName=""
-                 parentClasses="public Component" constructorParams="AudioDeviceManager&amp; audioDeviceManager, CspController&amp; cspController"
-                 variableInitialisers="audioDeviceManager(audioDeviceManager), cspController(cspController)"
+                 parentClasses="public Component" constructorParams="AudioDeviceManager&amp; audioDeviceManager, PianoController&amp; pianoController"
+                 variableInitialisers="audioDeviceManager(audioDeviceManager), pianoController(pianoController)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="500" initialHeight="200">
   <BACKGROUND backgroundColour="ff323e44"/>

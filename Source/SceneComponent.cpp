@@ -132,9 +132,9 @@ SceneComponent::SceneComponent ()
 
 
     //[Constructor] You can add your own custom stuff here..
-	SettingsComponent::loadState(audioDeviceManager, cspController);
-	cspController.SetAudioDeviceManager(&audioDeviceManager);
-    cspController.SetListener(this);
+	SettingsComponent::loadState(audioDeviceManager, pianoController);
+	pianoController.SetAudioDeviceManager(&audioDeviceManager);
+    pianoController.SetListener(this);
     updateEnabledControls();
     //[/Constructor]
 }
@@ -212,13 +212,13 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == localControlButton)
     {
         //[UserButtonCode_localControlButton] -- add your button handler code here..
-        cspController.LocalControl(!cspController.GetLocalControl());
+        pianoController.LocalControl(!pianoController.GetLocalControl());
         //[/UserButtonCode_localControlButton]
     }
     else if (buttonThatWasClicked == playButton)
     {
         //[UserButtonCode_playButton] -- add your button handler code here..
-        cspController.Play();
+        pianoController.Play();
         //[/UserButtonCode_playButton]
     }
     else if (buttonThatWasClicked == rewindButton)
@@ -234,7 +234,7 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == guideButton)
     {
         //[UserButtonCode_guideButton] -- add your button handler code here..
-        cspController.Guide(!cspController.GetGuide());
+        pianoController.Guide(!pianoController.GetGuide());
         //[/UserButtonCode_guideButton]
     }
     else if (buttonThatWasClicked == chooseSongButton)
@@ -246,19 +246,19 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == pauseButton)
     {
         //[UserButtonCode_pauseButton] -- add your button handler code here..
-        cspController.Pause();
+        pianoController.Pause();
         //[/UserButtonCode_pauseButton]
     }
     else if (buttonThatWasClicked == lightsButton)
     {
         //[UserButtonCode_lightsButton] -- add your button handler code here..
-        cspController.StreamLights(!cspController.GetStreamLights());
+        pianoController.StreamLights(!pianoController.GetStreamLights());
         //[/UserButtonCode_lightsButton]
     }
     else if (buttonThatWasClicked == connectButton)
     {
         //[UserButtonCode_connectButton] -- add your button handler code here..
-        cspController.Connect();
+        pianoController.Connect();
         //[/UserButtonCode_connectButton]
     }
     else if (buttonThatWasClicked == settingsButton)
@@ -314,7 +314,7 @@ void SceneComponent::loadSong(const File& file)
 		return;
 	}
 
-	if (!cspController.UploadSong(file))
+	if (!pianoController.UploadSong(file))
 	{
 		songLabel->setText(TRANS("Error loading midi"), NotificationType::dontSendNotification);
 		return;
@@ -329,12 +329,12 @@ void SceneComponent::updateSongState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			int songLength = cspController.GetSongLength() > 0 ? cspController.GetSongLength() : 999;
+			int songLength = pianoController.GetSongLength() > 0 ? pianoController.GetSongLength() : 999;
 			lengthLabel->setText(String(songLength), NotificationType::dontSendNotification);
 			positionSlider->setRange(1, songLength, 0);
-			positionLabel->setText(String::formatted("%03d", cspController.GetSongPosition()),
+			positionLabel->setText(String::formatted("%03d", pianoController.GetSongPosition()),
 				NotificationType::dontSendNotification);
-			positionSlider->setValue(cspController.GetSongPosition());
+			positionSlider->setValue(pianoController.GetSongPosition());
 		});
 }
 
@@ -342,12 +342,12 @@ void SceneComponent::updateSettingsState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			localControlButton->setToggleState(cspController.GetLocalControl() && cspController.GetConnected(), NotificationType::dontSendNotification);
-			lightsButton->setToggleState(cspController.GetStreamLights() && cspController.GetConnected(), NotificationType::dontSendNotification);
-			guideButton->setToggleState(cspController.GetGuide() && cspController.GetConnected(), NotificationType::dontSendNotification);
-			connectButton->setToggleState(cspController.GetConnected(), NotificationType::dontSendNotification);
-			connectButton->setButtonText(!cspController.GetConnected() ? "Connect" :
-				String("Connected to ") + cspController.GetModel() + " (" + cspController.GetVersion() + ")");
+			localControlButton->setToggleState(pianoController.GetLocalControl() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			guideButton->setToggleState(pianoController.GetGuide() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			connectButton->setToggleState(pianoController.GetConnected(), NotificationType::dontSendNotification);
+			connectButton->setButtonText(!pianoController.GetConnected() ? "Connect" :
+				String("Connected to ") + pianoController.GetModel() + " (" + pianoController.GetVersion() + ")");
 			updateEnabledControls();
 		});
 }
@@ -357,13 +357,13 @@ void SceneComponent::updateEnabledControls()
 	for (Component* co : getChildren())
 	{
 		bool alwaysEnabled = co == connectButton || co == settingsButton;
-		co->setEnabled(cspController.GetConnected() || alwaysEnabled);
+		co->setEnabled(pianoController.GetConnected() || alwaysEnabled);
 	}
 }
 
 void SceneComponent::showSettingsDialog()
 {
-	SettingsComponent::showDialog(audioDeviceManager, cspController);
+	SettingsComponent::showDialog(audioDeviceManager, pianoController);
 }
 //[/MiscUserCode]
 
@@ -378,7 +378,7 @@ void SceneComponent::showSettingsDialog()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public CspControllerListener"
+                 parentClasses="public Component, public PianoControllerListener"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
                  initialHeight="250">

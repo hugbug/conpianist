@@ -7,9 +7,10 @@
             file="Source/SettingsComponent.cpp"/>
       <FILE id="q3B7qa" name="SettingsComponent.h" compile="0" resource="0"
             file="Source/SettingsComponent.h"/>
-      <FILE id="lUlOfq" name="CspController.cpp" compile="1" resource="0"
-            file="Source/CspController.cpp"/>
-      <FILE id="HktPbc" name="CspController.h" compile="0" resource="0" file="Source/CspController.h"/>
+      <FILE id="lUlOfq" name="PianoController.cpp" compile="1" resource="0"
+            file="Source/PianoController.cpp"/>
+      <FILE id="HktPbc" name="PianoController.h" compile="0" resource="0"
+            file="Source/PianoController.h"/>
       <FILE id="Nx8Yie" name="SceneComponent.cpp" compile="1" resource="0"
             file="Source/SceneComponent.cpp"/>
       <FILE id="eF3Bqz" name="SceneComponent.h" compile="0" resource="0"

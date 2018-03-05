@@ -21,7 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "CspController.h"
+#include "PianoController.h"
 //[/Headers]
 
 
@@ -35,7 +35,7 @@
                                                                     //[/Comments]
 */
 class SceneComponent  : public Component,
-                        public CspControllerListener,
+                        public PianoControllerListener,
                         public Button::Listener,
                         public Slider::Listener
 {
@@ -66,7 +66,7 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
-    CspController cspController;
+    PianoController pianoController;
     //[/UserVariables]
 
     //==============================================================================
