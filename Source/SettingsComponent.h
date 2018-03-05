@@ -24,6 +24,7 @@
 #include "CspController.h"
 //[/Headers]
 
+#include "../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
 
 
 //==============================================================================
@@ -34,63 +35,39 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class SceneComponent  : public Component,
-                        public CspControllerListener,
-                        public Button::Listener,
-                        public Slider::Listener
+class SettingsComponent  : public Component
 {
 public:
     //==============================================================================
-    SceneComponent ();
-    ~SceneComponent();
+    SettingsComponent (AudioDeviceManager& audioDeviceManager, CspController& cspController);
+    ~SettingsComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void chooseSong();
-    void loadSong(const File& file);
-	void PlaybackStateChanged() override { updateSongState(); };
-	void SettingsChanged() override { updateSettingsState(); };
-	void updateSongState();
-	void updateSettingsState();
-	void updateEnabledControls();
-	void showSettingsDialog();
+	static void saveState(AudioDeviceManager& audioDeviceManager, CspController& cspController);
+	static void loadState(AudioDeviceManager& audioDeviceManager, CspController& cspController);
+	static void showDialog(AudioDeviceManager& audioDeviceManager, CspController& cspController);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void buttonClicked (Button* buttonThatWasClicked) override;
-    void sliderValueChanged (Slider* sliderThatWasMoved) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    AudioDeviceManager audioDeviceManager;
-    CspController cspController;
+	AudioDeviceManager& audioDeviceManager;
+	CspController& cspController;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> songGroup;
-    ScopedPointer<GroupComponent> playbackGroup;
-    ScopedPointer<GroupComponent> systemGroup;
-    ScopedPointer<TextButton> localControlButton;
-    ScopedPointer<TextButton> playButton;
-    ScopedPointer<TextButton> rewindButton;
-    ScopedPointer<TextButton> forwardButton;
-    ScopedPointer<TextButton> guideButton;
-    ScopedPointer<Slider> positionSlider;
-    ScopedPointer<Label> positionLabel;
-    ScopedPointer<Label> lengthLabel;
-    ScopedPointer<Label> songLabel;
-    ScopedPointer<TextButton> chooseSongButton;
-    ScopedPointer<TextButton> pauseButton;
-    ScopedPointer<TextButton> lightsButton;
-    ScopedPointer<TextButton> connectButton;
-    ScopedPointer<TextButton> settingsButton;
+    ScopedPointer<AudioDeviceSelectorComponent> audioSelector;
+    ScopedPointer<Label> remoteIpLabel;
+    ScopedPointer<TextEditor> remoteIpEdit;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsComponent)
 };
 
 //[EndFile] You can add extra defines here...

@@ -36,10 +36,14 @@ static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
 static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
 static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
 
-void CspController::Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp)
+void Sleep(int Milliseconds)
+{
+	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + Milliseconds);
+}
+
+void CspController::SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager)
 {
 	m_audioDeviceManager = audioDeviceManager;
-	m_remoteIp = remoteIp;
     audioDeviceManager->addMidiInputCallback("", this);
 }
 
@@ -103,7 +107,7 @@ bool CspController::UploadSong(const File& file)
 	file.loadFileAsData(message);
 
 	Pause();
-	usleep(1000*10);   // this is not nice, we should wait for a confirmation message instead
+	Sleep(10);   // this is not nice, we should wait for a confirmation message instead
 
 	StreamingSocket socket;
 	bool ok = socket.connect(m_remoteIp, 10504) &&

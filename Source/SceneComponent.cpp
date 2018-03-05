@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "SettingsComponent.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -30,15 +31,16 @@
 SceneComponent::SceneComponent ()
 {
     //[Constructor_pre] You can add your own custom stuff here..
-	loadState();
-	audioDeviceManager.initialise(0, 0, savedState ? savedState->getChildByName("DEVICESETUP") : nullptr, true);
     //[/Constructor_pre]
+
+    addAndMakeVisible (songGroup = new GroupComponent ("Song",
+                                                       TRANS("Song")));
+    songGroup->setTextLabelPosition (Justification::centred);
 
     addAndMakeVisible (playbackGroup = new GroupComponent ("Playback",
                                                            TRANS("Playback")));
     playbackGroup->setTextLabelPosition (Justification::centred);
 
-    addAndMakeVisible (audioSelector = new AudioDeviceSelectorComponent (audioDeviceManager, 0, 0, 0, 0, true, true, false, false));
     addAndMakeVisible (systemGroup = new GroupComponent ("System Control",
                                                          TRANS("System Control")));
     systemGroup->setTextLabelPosition (Justification::centred);
@@ -71,14 +73,14 @@ SceneComponent::SceneComponent ()
     positionSlider->addListener (this);
 
     addAndMakeVisible (positionLabel = new Label ("Song Position Label",
-                                                  TRANS("1")));
+                                                  TRANS("001")));
     positionLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     positionLabel->setJustificationType (Justification::centred);
     positionLabel->setEditable (false, false, false);
     positionLabel->setColour (TextEditor::textColourId, Colours::black);
     positionLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    positionLabel->setBounds ((16 + 131 - (70 / 2)) + -80, ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 24, 36, 24);
+    positionLabel->setBounds ((16 + 131 - (70 / 2)) + -80, ((0 + 64) + 72) + 24, 36, 24);
 
     addAndMakeVisible (lengthLabel = new Label ("Song Length Label",
                                                 TRANS("999")));
@@ -108,32 +110,13 @@ SceneComponent::SceneComponent ()
     lightsButton->setButtonText (TRANS("Lights"));
     lightsButton->addListener (this);
 
-    addAndMakeVisible (remoteIpLabel = new Label ("RemoteIP Label",
-                                                  TRANS("Piano IP Address:")));
-    remoteIpLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    remoteIpLabel->setJustificationType (Justification::centredRight);
-    remoteIpLabel->setEditable (false, false, false);
-    remoteIpLabel->setColour (TextEditor::textColourId, Colours::black);
-    remoteIpLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    remoteIpLabel->setBounds (176, 104, 112, 24);
-
-    addAndMakeVisible (remoteIpEdit = new TextEditor ("Remote IP Edit"));
-    remoteIpEdit->setMultiLine (false);
-    remoteIpEdit->setReturnKeyStartsNewLine (false);
-    remoteIpEdit->setReadOnly (false);
-    remoteIpEdit->setScrollbarsShown (false);
-    remoteIpEdit->setCaretVisible (true);
-    remoteIpEdit->setPopupMenuEnabled (true);
-    remoteIpEdit->setText (TRANS("192.168.1.235"));
-
-    addAndMakeVisible (songGroup = new GroupComponent ("Song",
-                                                       TRANS("Song")));
-    songGroup->setTextLabelPosition (Justification::centred);
-
     addAndMakeVisible (connectButton = new TextButton ("Connect Button"));
     connectButton->setButtonText (TRANS("Connect"));
     connectButton->addListener (this);
+
+    addAndMakeVisible (settingsButton = new TextButton ("Settings Button"));
+    settingsButton->setButtonText (TRANS("Settings..."));
+    settingsButton->addListener (this);
 
 
     //[UserPreSize]
@@ -143,17 +126,15 @@ SceneComponent::SceneComponent ()
     playbackGroup->setText("");
     songGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
     songGroup->setText("");
-    remoteIpLabel->attachToComponent(remoteIpEdit, true);
     //[/UserPreSize]
 
-    setSize (600, 600);
+    setSize (600, 250);
 
 
     //[Constructor] You can add your own custom stuff here..
-    cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
+	SettingsComponent::loadState(audioDeviceManager, cspController);
+	cspController.SetAudioDeviceManager(&audioDeviceManager);
     cspController.SetListener(this);
-    remoteIpEdit->addListener(this);
-    restoreState();
     updateEnabledControls();
     //[/Constructor]
 }
@@ -161,11 +142,10 @@ SceneComponent::SceneComponent ()
 SceneComponent::~SceneComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	saveState();
     //[/Destructor_pre]
 
+    songGroup = nullptr;
     playbackGroup = nullptr;
-    audioSelector = nullptr;
     systemGroup = nullptr;
     localControlButton = nullptr;
     playButton = nullptr;
@@ -179,10 +159,8 @@ SceneComponent::~SceneComponent()
     chooseSongButton = nullptr;
     pauseButton = nullptr;
     lightsButton = nullptr;
-    remoteIpLabel = nullptr;
-    remoteIpEdit = nullptr;
-    songGroup = nullptr;
     connectButton = nullptr;
+    settingsButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -206,25 +184,23 @@ void SceneComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    playbackGroup->setBounds (16, (((-20) + 108 - -48) + 64 - 9) + 72 - 9, getWidth() - 32, 106);
-    audioSelector->setBounds (16, -20, getWidth() - 30, 108);
-    systemGroup->setBounds (16, (-20) + 108 - -48, getWidth() - 32, 64);
-    localControlButton->setBounds (16 + (getWidth() - 32) - 49 - (70 / 2), ((-20) + 108 - -48) + 24, 70, 24);
-    playButton->setBounds (16 + 131 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    rewindButton->setBounds (16 + 51 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    forwardButton->setBounds (16 + 291 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    guideButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    positionSlider->setBounds (16 + 64, ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 24, getWidth() - 155, 24);
-    lengthLabel->setBounds (16 + (getWidth() - 32) - 51, ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 24, 36, 24);
-    songLabel->setBounds (16 + 10, (((-20) + 108 - -48) + 64 - 9) + 17, (getWidth() - 32) - 101, 72 - 27);
-    chooseSongButton->setBounds (16 + (getWidth() - 32) - 83, (((-20) + 108 - -48) + 64 - 9) + 28, 70, 24);
-    pauseButton->setBounds (16 + 211 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    lightsButton->setBounds (16 + (getWidth() - 32) - 57 - (70 / 2), ((((-20) + 108 - -48) + 64 - 9) + 72 - 9) + 64, 70, 24);
-    remoteIpEdit->setBounds (proportionOfWidth (0.3498f), (-20) + 124, 136, 24);
-    songGroup->setBounds (16, ((-20) + 108 - -48) + 64 - 9, getWidth() - 32, 72);
-    connectButton->setBounds (16 + 124 - (216 / 2), ((-20) + 108 - -48) + 24, 216, 24);
+    songGroup->setBounds (16, 0 + 64, getWidth() - 32, 72);
+    playbackGroup->setBounds (16, (0 + 64) + 72, getWidth() - 32, 106);
+    systemGroup->setBounds (16, 0, getWidth() - 32, 64);
+    localControlButton->setBounds (16 + (getWidth() - 32) - 51 - (70 / 2), 0 + 24, 70, 24);
+    playButton->setBounds (16 + 131 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    rewindButton->setBounds (16 + 51 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    forwardButton->setBounds (16 + 291 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    guideButton->setBounds (16 + (getWidth() - 32) - 136 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    positionSlider->setBounds (16 + 64, ((0 + 64) + 72) + 24, getWidth() - 155, 24);
+    lengthLabel->setBounds (16 + (getWidth() - 32) - 51, ((0 + 64) + 72) + 24, 36, 24);
+    songLabel->setBounds (16 + 8, (0 + 64) + 21, (getWidth() - 32) - 102, 72 - 35);
+    chooseSongButton->setBounds (16 + (getWidth() - 32) - 86, (0 + 64) + 24, 70, 24);
+    pauseButton->setBounds (16 + 211 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    lightsButton->setBounds (16 + (getWidth() - 32) - 57 - (70 / 2), ((0 + 64) + 72) + 64, 70, 24);
+    connectButton->setBounds (16 + 124 - (216 / 2), 0 + 24, 216, 24);
+    settingsButton->setBounds (16 + 284 - (88 / 2), 0 + 24, 88, 24);
     //[UserResized] Add your own custom resize handling here..
-    remoteIpEdit->setBounds (6 + proportionOfWidth (0.3500f), (-20) + 124, 136, 24);
     //[/UserResized]
 }
 
@@ -285,6 +261,12 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         cspController.Connect();
         //[/UserButtonCode_connectButton]
     }
+    else if (buttonThatWasClicked == settingsButton)
+    {
+        //[UserButtonCode_settingsButton] -- add your button handler code here..
+		showSettingsDialog();
+        //[/UserButtonCode_settingsButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -308,15 +290,6 @@ void SceneComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-
-void SceneComponent::textEditorReturnKeyPressed(TextEditor & editor)
-{
-	if (&editor == remoteIpEdit.get())
-	{
-		saveState();
-    	cspController.Init(&audioDeviceManager, remoteIpEdit->getText());
-	}
-}
 
 void SceneComponent::chooseSong()
 {
@@ -348,7 +321,7 @@ void SceneComponent::loadSong(const File& file)
 	}
 
 	songLabel->setText(file.getFileNameWithoutExtension(), NotificationType::dontSendNotification);
-	positionLabel->setText("1", NotificationType::dontSendNotification);
+	positionLabel->setText("001", NotificationType::dontSendNotification);
 	lengthLabel->setText("999", NotificationType::dontSendNotification);
 }
 
@@ -359,7 +332,8 @@ void SceneComponent::updateSongState()
 			int songLength = cspController.GetSongLength() > 0 ? cspController.GetSongLength() : 999;
 			lengthLabel->setText(String(songLength), NotificationType::dontSendNotification);
 			positionSlider->setRange(1, songLength, 0);
-			positionLabel->setText(String(cspController.GetSongPosition()), NotificationType::dontSendNotification);
+			positionLabel->setText(String::formatted("%03d", cspController.GetSongPosition()),
+				NotificationType::dontSendNotification);
 			positionSlider->setValue(cspController.GetSongPosition());
 		});
 }
@@ -382,49 +356,14 @@ void SceneComponent::updateEnabledControls()
 {
 	for (Component* co : getChildren())
 	{
-		bool alwaysEnabled = co == connectButton || co == audioSelector ||
-			co == remoteIpEdit || co == remoteIpLabel;
+		bool alwaysEnabled = co == connectButton || co == settingsButton;
 		co->setEnabled(cspController.GetConnected() || alwaysEnabled);
 	}
 }
 
-void SceneComponent::saveState()
+void SceneComponent::showSettingsDialog()
 {
-	XmlElement state("ConPianistState");
-    XmlElement* audioState = audioDeviceManager.createStateXml();
-    if (audioState)
-    {
-    	state.addChildElement(audioState);
-	}
-
-	state.createNewChildElement("RemoteIp")->addTextElement(remoteIpEdit->getText());
-
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-    state.writeToFile(stateFile, "");
-}
-
-void SceneComponent::loadState()
-{
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	if (!stateFile.exists())
-	{
-		return;
-	}
-
-	savedState = XmlDocument::parse(stateFile);
-	if (!savedState)
-	{
-		return;
-	}
-}
-
-void SceneComponent::restoreState()
-{
-	XmlElement* el = savedState->getChildByName("RemoteIp");
-	if (el)
-	{
-		remoteIpEdit->setText(el->getAllSubText());
-	}
+	SettingsComponent::showDialog(audioDeviceManager, cspController);
 }
 //[/MiscUserCode]
 
@@ -439,23 +378,22 @@ void SceneComponent::restoreState()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public TextEditor::Listener, public CspControllerListener"
+                 parentClasses="public Component, public CspControllerListener"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
-                 initialHeight="600">
+                 initialHeight="250">
   <BACKGROUND backgroundColour="ff323e44"/>
+  <GROUPCOMPONENT name="Song" id="4e6df4a0ae6e851b" memberName="songGroup" virtualName=""
+                  explicitFocusOrder="0" pos="16 0R 32M 72" posRelativeY="69305d91c2150486"
+                  title="Song" textpos="36"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="16 9R 32M 106" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="16 0R 32M 106" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
-  <JUCERCOMP name="Audio Selector" id="ddeb8c497281f468" memberName="audioSelector"
-             virtualName="AudioDeviceSelectorComponent" explicitFocusOrder="0"
-             pos="16 -20 30M 108" sourceFile="../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
-             constructorParams="audioDeviceManager, 0, 0, 0, 0, true, true, false, false"/>
   <GROUPCOMPONENT name="System Control" id="69305d91c2150486" memberName="systemGroup"
-                  virtualName="" explicitFocusOrder="0" pos="16 -48R 32M 64" posRelativeY="ddeb8c497281f468"
-                  title="System Control" textpos="36"/>
+                  virtualName="" explicitFocusOrder="0" pos="16 0 32M 64" title="System Control"
+                  textpos="36"/>
   <TEXTBUTTON name="Local-Control Button" id="99f311ed53591c70" memberName="localControlButton"
-              virtualName="" explicitFocusOrder="0" pos="49Rc 24 70 24" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="51Rc 24 70 24" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Tone" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Play Button" id="be38d66c26f6bda6" memberName="playButton"
@@ -483,7 +421,7 @@ BEGIN_JUCER_METADATA
   <LABEL name="Song Position Label" id="17ac2967e993dc43" memberName="positionLabel"
          virtualName="" explicitFocusOrder="0" pos="-80 24 36 24" posRelativeX="be38d66c26f6bda6"
          posRelativeY="c7b94b60aa96c6e2" edTextCol="ff000000" edBkgCol="0"
-         labelText="1" editableSingleClick="0" editableDoubleClick="0"
+         labelText="001" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="36"/>
   <LABEL name="Song Length Label" id="537604aa6486f948" memberName="lengthLabel"
@@ -493,14 +431,14 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="36"/>
   <LABEL name="Song Label" id="8682794e760bce8" memberName="songLabel"
-         virtualName="" explicitFocusOrder="0" pos="10 17 101M 27M" posRelativeX="4e6df4a0ae6e851b"
+         virtualName="" explicitFocusOrder="0" pos="8 21 102M 35M" posRelativeX="4e6df4a0ae6e851b"
          posRelativeY="4e6df4a0ae6e851b" posRelativeW="4e6df4a0ae6e851b"
          posRelativeH="4e6df4a0ae6e851b" edTextCol="ff000000" edBkgCol="0"
          labelText="&lt;no song loaded&gt;" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="37.89999999999999857891"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Choose Song Button" id="73e64e146d2a4fc2" memberName="chooseSongButton"
-              virtualName="" explicitFocusOrder="0" pos="83R 28 70 24" posRelativeX="4e6df4a0ae6e851b"
+              virtualName="" explicitFocusOrder="0" pos="86R 24 70 24" posRelativeX="4e6df4a0ae6e851b"
               posRelativeY="4e6df4a0ae6e851b" buttonText="Choose" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Pause Button" id="28873e78ae76dcd9" memberName="pauseButton"
@@ -511,22 +449,13 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="57Rc 64 70 24" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Lights" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
-  <LABEL name="RemoteIP Label" id="a2bb47b511220552" memberName="remoteIpLabel"
-         virtualName="" explicitFocusOrder="0" pos="176 104 112 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Piano IP Address:" editableSingleClick="0"
-         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
-         bold="0" italic="0" justification="34"/>
-  <TEXTEDITOR name="Remote IP Edit" id="83358b622e96ec09" memberName="remoteIpEdit"
-              virtualName="" explicitFocusOrder="0" pos="34.977% 124 136 24"
-              posRelativeY="ddeb8c497281f468" initialText="192.168.1.235" multiline="0"
-              retKeyStartsLine="0" readonly="0" scrollbars="0" caret="1" popupmenu="1"/>
-  <GROUPCOMPONENT name="Song" id="4e6df4a0ae6e851b" memberName="songGroup" virtualName=""
-                  explicitFocusOrder="0" pos="16 9R 32M 72" posRelativeY="69305d91c2150486"
-                  title="Song" textpos="36"/>
   <TEXTBUTTON name="Connect Button" id="a82c92b5d1470311" memberName="connectButton"
               virtualName="" explicitFocusOrder="0" pos="124c 24 216 24" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Connect" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="Settings Button" id="bf47ed7d30088c39" memberName="settingsButton"
+              virtualName="" explicitFocusOrder="0" pos="284c 24 88 24" posRelativeX="69305d91c2150486"
+              posRelativeY="69305d91c2150486" buttonText="Settings..." connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 

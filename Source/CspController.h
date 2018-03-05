@@ -33,7 +33,9 @@ class CspController : public MidiInputCallback
 {
 public:
 	void SetListener(CspControllerListener* listener) { m_listener = listener; }
-	void Init(AudioDeviceManager* audioDeviceManager, const String& remoteIp);
+	void SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager);
+	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
+	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
 	void LocalControl(bool enabled);
 	bool UploadSong(const File& file);
