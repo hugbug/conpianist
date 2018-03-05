@@ -41,6 +41,7 @@ public:
 	bool UploadSong(const File& file);
 	void Play();
 	void Pause();
+	void Stop();
 	void Guide(bool enable);
 	void StreamLights(bool enable);
 	bool GetConnected() { return m_connected; }

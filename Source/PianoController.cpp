@@ -25,12 +25,17 @@ static const char* CSP_GUIDE_ON = "04 03 00 01 00 01 00 00 01 01";
 static const char* CSP_GUIDE_OFF = "04 03 00 01 00 01 00 00 01 00";
 static const char* CSP_GUIDE_STATE = "00 01 04 03 00 01 00 01 00 00 00 00 01";
 static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
+static const char* CSP_POSITION_EVENTS = "02 00 04 00 0a 01";
 static const char* CSP_LENGTH_STATE = "00 00 04 00 1b 01 00 01 00 00 04";
+static const char* CSP_LENGTH_EVENTS = "02 00 04 00 1b 01";
+static const char* CSP_PLAY_STATE = "00 00 04 00 05 01 00 01 00 00 01";
+static const char* CSP_PLAY_EVENTS = "02 00 04 00 05 01";
 static const char* CSP_STREAM_LIGHTS_ON = "04 02 00 01 00 01 00 00 01 01";
 static const char* CSP_STREAM_LIGHTS_OFF = "04 02 00 01 00 01 00 00 01 00";
 static const char* CSP_STREAM_LIGHTS_STATE = "00 01 04 02 00 01 00 01 00 00 00 00 01";
 static const char* CSP_PLAY = "04 00 05 01 00 01 00 00 01 01";
 static const char* CSP_PAUSE = "04 00 05 01 00 01 00 00 01 02";
+static const char* CSP_STOP = "04 00 05 01 00 01 00 00 01 00";
 static const char* CSP_DUMP_MODEL = "01 00 0f 01 18 01 00 01 00";
 static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
 static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
@@ -52,12 +57,15 @@ void PianoController::Connect()
 	SendCspMessage(CSP_DUMP_MODEL, false);
 	SendCspMessage(CSP_DUMP_VERSION, false);
 
-	// Activate song length events
-	SendCspMessage("02 00 04 00 1b 01", false);
-	// Activate song position events
-	SendCspMessage("02 00 04 00 0a 01", false);
+	// Activate feedback events from piano:
+	//   song length info after a song is loaded
+	SendCspMessage(CSP_LENGTH_EVENTS, false);
+	//   song position info
+	SendCspMessage(CSP_POSITION_EVENTS, false);
+	//   playback status (playing,paused,stop)
+  	SendCspMessage(CSP_PLAY_EVENTS, false);
 
-	Pause();
+	Stop();
 
 	m_guide = false;
 	m_streamLights = true;
@@ -151,6 +159,11 @@ void PianoController::Pause()
 	SendCspMessage(CSP_PAUSE);
 }
 
+void PianoController::Stop()
+{
+	SendCspMessage(CSP_STOP);
+}
+
 void PianoController::Guide(bool enable)
 {
 	SendCspMessage(enable ? CSP_GUIDE_ON : CSP_GUIDE_OFF);
@@ -184,14 +197,19 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 			m_songLength = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
 			if (m_listener) m_listener->PlaybackStateChanged();
 		}
+		else if (IsCspMessage(message, CSP_PLAY_STATE))
+		{
+			m_playing = message.getSysExData()[17] == 1;
+			if (m_listener) m_listener->PlaybackStateChanged();
+		}
 		else if (IsCspMessage(message, CSP_GUIDE_STATE))
 		{
-			m_guide = message.getSysExData()[19];
+			m_guide = message.getSysExData()[19] == 1;
 			if (m_listener) m_listener->SettingsChanged();
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
 		{
-			m_streamLights = message.getSysExData()[19];
+			m_streamLights = message.getSysExData()[19] == 1;
 			if (m_listener) m_listener->SettingsChanged();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))

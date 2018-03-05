@@ -83,7 +83,6 @@ private:
     ScopedPointer<Label> lengthLabel;
     ScopedPointer<Label> songLabel;
     ScopedPointer<TextButton> chooseSongButton;
-    ScopedPointer<TextButton> pauseButton;
     ScopedPointer<TextButton> lightsButton;
     ScopedPointer<TextButton> connectButton;
     ScopedPointer<TextButton> settingsButton;
