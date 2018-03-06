@@ -54,6 +54,7 @@ public:
 	void updateSettingsState();
 	void updateEnabledControls();
 	void showSettingsDialog();
+	void mouseUp(const MouseEvent& event) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -71,21 +72,21 @@ private:
 
     //==============================================================================
     ScopedPointer<GroupComponent> songGroup;
+    ScopedPointer<Label> songLabel;
     ScopedPointer<GroupComponent> playbackGroup;
     ScopedPointer<GroupComponent> systemGroup;
-    ScopedPointer<TextButton> localControlButton;
-    ScopedPointer<TextButton> playButton;
-    ScopedPointer<TextButton> rewindButton;
-    ScopedPointer<TextButton> forwardButton;
     ScopedPointer<TextButton> guideButton;
     ScopedPointer<Slider> positionSlider;
     ScopedPointer<Label> positionLabel;
     ScopedPointer<Label> lengthLabel;
-    ScopedPointer<Label> songLabel;
-    ScopedPointer<TextButton> chooseSongButton;
     ScopedPointer<TextButton> lightsButton;
     ScopedPointer<TextButton> connectButton;
     ScopedPointer<TextButton> settingsButton;
+    ScopedPointer<ImageButton> playButton;
+    ScopedPointer<ImageButton> rewindButton;
+    ScopedPointer<ImageButton> forwardButton;
+    ScopedPointer<ImageButton> chooseSongButton;
+    ScopedPointer<ImageButton> muteButton;
 
 
     //==============================================================================
