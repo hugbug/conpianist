@@ -50,6 +50,7 @@ public:
     void loadSong(const File& file);
 	void PlaybackStateChanged() override { updateSongState(); };
 	void SettingsChanged() override { updateSettingsState(); };
+	void SongLoaded() override;
 	void updateSongState();
 	void updateSettingsState();
 	void updateEnabledControls();
@@ -87,6 +88,11 @@ private:
     ScopedPointer<ImageButton> forwardButton;
     ScopedPointer<ImageButton> chooseSongButton;
     ScopedPointer<ImageButton> muteButton;
+    ScopedPointer<TextButton> backingPartButton;
+    ScopedPointer<Label> partLabel;
+    ScopedPointer<TextButton> leftPartButton;
+    ScopedPointer<TextButton> rightPartButton;
+    ScopedPointer<TextButton> lightsFastButton;
 
 
     //==============================================================================

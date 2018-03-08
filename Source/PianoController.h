@@ -27,6 +27,7 @@ public:
 	virtual ~PianoControllerListener() {}
 	virtual void PlaybackStateChanged() {}
 	virtual void SettingsChanged() {}
+	virtual void SongLoaded() {}
 };
 
 class PianoController : public MidiInputCallback
@@ -37,23 +38,31 @@ public:
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
-	void LocalControl(bool enabled);
 	bool UploadSong(const File& file);
 	void Play();
 	void Pause();
 	void Stop();
-	void Guide(bool enable);
-	void StreamLights(bool enable);
+	const String& GetModel() { return m_model; }
+	const String& GetVersion() { return m_version; }
 	bool GetConnected() { return m_connected; }
 	bool GetPlaying() { return m_playing; }
 	bool GetGuide() { return m_guide; }
-	bool GetStreamLights() { return m_streamLights; }
+	void SetGuide(bool enable);
 	bool GetLocalControl() { return m_localControl; }
+	void SetLocalControl(bool enabled);
+	bool GetStreamLights() { return m_streamLights; }
+	void SetStreamLights(bool enable);
+	bool GetStreamLightsFast() { return m_streamLightsFast; }
+	void SetStreamLightsFast(bool fast);
 	int GetSongLength() { return m_songLength; }
 	int GetSongPosition() { return m_songPosition; }
 	void SetSongPosition(int position);
-	const String& GetModel() { return m_model; }
-	const String& GetVersion() { return m_version; }
+	bool GetBackingPart() { return m_backingPart; }
+	void SetBackingPart(bool enable);
+	bool GetLeftPart() { return m_leftPart; }
+	void SetLeftPart(bool enable);
+	bool GetRightPart() { return m_rightPart; }
+	void SetRightPart(bool enable);
 
 	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
 
@@ -61,15 +70,19 @@ private:
 	PianoControllerListener* m_listener = nullptr;
 	AudioDeviceManager* m_audioDeviceManager;
 	String m_remoteIp;
-	bool m_connected = false;
-	bool m_localControl = false;
-	bool m_guide = false;
-	bool m_streamLights = false;
-	bool m_playing = false;
-	int m_songLength = 0;
-	int m_songPosition = 1;
 	String m_model;
 	String m_version;
+	bool m_connected = false;
+	bool m_playing = false;
+	bool m_localControl = true;
+	bool m_guide = false;
+	bool m_streamLights = false;
+	bool m_streamLightsFast = false;
+	int m_songLength = 0;
+	int m_songPosition = 1;
+	bool m_backingPart = false;
+	bool m_leftPart = false;
+	bool m_rightPart = false;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);

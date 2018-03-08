@@ -73,7 +73,7 @@ SceneComponent::SceneComponent ()
     positionLabel->setColour (TextEditor::textColourId, Colours::black);
     positionLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    positionLabel->setBounds (16, (((-8) + 64 - 8) + 70 - 7) + 17, 36, 24);
+    positionLabel->setBounds (16, (((-8) + 64 - 8) + 70 - 7) + 25, 36, 24);
 
     addAndMakeVisible (lengthLabel = new Label ("Song Length Label",
                                                 TRANS("999")));
@@ -135,6 +135,38 @@ SceneComponent::SceneComponent ()
                            ImageCache::getFromMemory (BinaryData::buttonvolume_png, BinaryData::buttonvolume_pngSize), 1.000f, Colour (0x00000000),
                            Image(), 0.750f, Colour (0x00000000),
                            Image(), 1.000f, Colour (0x00000000));
+    addAndMakeVisible (backingPartButton = new TextButton ("Backing Part Button"));
+    backingPartButton->setButtonText (TRANS("Backing"));
+    backingPartButton->addListener (this);
+
+    backingPartButton->setBounds (64, (((-8) + 64 - 8) + 70 - 7) + 126, 70, 28);
+
+    addAndMakeVisible (partLabel = new Label ("Part Label",
+                                              TRANS("Part")));
+    partLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    partLabel->setJustificationType (Justification::centredLeft);
+    partLabel->setEditable (false, false, false);
+    partLabel->setColour (TextEditor::textColourId, Colours::black);
+    partLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    partLabel->setBounds (16, (((-8) + 64 - 8) + 70 - 7) + 128, 40, 24);
+
+    addAndMakeVisible (leftPartButton = new TextButton ("Left Part Button"));
+    leftPartButton->setButtonText (TRANS("Left"));
+    leftPartButton->addListener (this);
+
+    leftPartButton->setBounds (135, (((-8) + 64 - 8) + 70 - 7) + 126, 70, 28);
+
+    addAndMakeVisible (rightPartButton = new TextButton ("Right Part Button"));
+    rightPartButton->setButtonText (TRANS("Right"));
+    rightPartButton->addListener (this);
+
+    rightPartButton->setBounds (206, (((-8) + 64 - 8) + 70 - 7) + 126, 70, 28);
+
+    addAndMakeVisible (lightsFastButton = new TextButton ("Lights Fast Button"));
+    lightsFastButton->setButtonText (TRANS("Fast"));
+    lightsFastButton->addListener (this);
+
 
     //[UserPreSize]
     systemGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -145,7 +177,7 @@ SceneComponent::SceneComponent ()
     songGroup->setText("");
     //[/UserPreSize]
 
-    setSize (600, 210);
+    setSize (600, 285);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -178,6 +210,11 @@ SceneComponent::~SceneComponent()
     forwardButton = nullptr;
     chooseSongButton = nullptr;
     muteButton = nullptr;
+    backingPartButton = nullptr;
+    partLabel = nullptr;
+    leftPartButton = nullptr;
+    rightPartButton = nullptr;
+    lightsFastButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -201,6 +238,15 @@ void SceneComponent::paint (Graphics& g)
         g.fillRect (x, y, width, height);
     }
 
+    {
+        int x = 0, y = 220, width = getWidth() - 0, height = 2;
+        Colour fillColour = Colour (0xff4e5b62);
+        //[UserPaintCustomArguments] Customize the painting arguments here..
+        //[/UserPaintCustomArguments]
+        g.setColour (fillColour);
+        g.fillRect (x, y, width, height);
+    }
+
     //[UserPaint] Add your own custom painting code here..
     //[/UserPaint]
 }
@@ -212,19 +258,20 @@ void SceneComponent::resized()
 
     songGroup->setBounds (0, (-8) + 64 - 8, getWidth() - 0, 70);
     songLabel->setBounds (0 + 12, ((-8) + 64 - 8) + 18, (getWidth() - 0) - 59, 70 - 25);
-    playbackGroup->setBounds (0, ((-8) + 64 - 8) + 70 - 7, getWidth() - 0, 95);
+    playbackGroup->setBounds (0, ((-8) + 64 - 8) + 70 - 7, getWidth() - 0, 169);
     systemGroup->setBounds (0, -8, getWidth() - 0, 64);
-    guideButton->setBounds (0 + (getWidth() - 0) - 129 - (70 / 2), (((-8) + 64 - 8) + 70 - 7) + 56, 70, 24);
-    positionSlider->setBounds (0 + 64, (((-8) + 64 - 8) + 70 - 7) + 16, getWidth() - 131, 24);
-    lengthLabel->setBounds (0 + (getWidth() - 0) - 51, (((-8) + 64 - 8) + 70 - 7) + 16, 36, 24);
-    lightsButton->setBounds (0 + (getWidth() - 0) - 86, (((-8) + 64 - 8) + 70 - 7) + 56, 70, 24);
-    connectButton->setBounds (0 + 124 - (216 / 2), (-8) + 24, 216, 24);
-    settingsButton->setBounds (0 + 284 - (88 / 2), (-8) + 24, 88, 24);
-    playButton->setBounds (0 + 78 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 57, 40, 24);
-    rewindButton->setBounds (0 + 28 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 57, 40, 24);
-    forwardButton->setBounds (0 + 128 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 57, 40, 24);
+    guideButton->setBounds (0 + (getWidth() - 0) - 170 - 70, (((-8) + 64 - 8) + 70 - 7) + 65, 70, 28);
+    positionSlider->setBounds (0 + 64, (((-8) + 64 - 8) + 70 - 7) + 24, getWidth() - 131, 24);
+    lengthLabel->setBounds (0 + (getWidth() - 0) - 51, (((-8) + 64 - 8) + 70 - 7) + 24, 36, 24);
+    lightsButton->setBounds (0 + (getWidth() - 0) - 92 - 70, (((-8) + 64 - 8) + 70 - 7) + 65, 70, 28);
+    connectButton->setBounds (0 + 124 - (216 / 2), (-8) + 21, 216, 28);
+    settingsButton->setBounds (0 + 284 - (88 / 2), (-8) + 21, 88, 28);
+    playButton->setBounds (0 + 82 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 65, 40, 28);
+    rewindButton->setBounds (0 + 32 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 65, 40, 28);
+    forwardButton->setBounds (0 + 132 - (40 / 2), (((-8) + 64 - 8) + 70 - 7) + 65, 40, 28);
     chooseSongButton->setBounds (0 + (getWidth() - 0) - 20 - (20 / 2), ((-8) + 64 - 8) + 29, 20, 24);
-    muteButton->setBounds (0 + (getWidth() - 0) - 28 - (40 / 2), (-8) + 24, 40, 24);
+    muteButton->setBounds (0 + (getWidth() - 0) - 8 - 40, (-8) + 21, 40, 28);
+    lightsFastButton->setBounds (0 + (getWidth() - 0) - 21 - 70, (((-8) + 64 - 8) + 70 - 7) + 65, 70, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -237,13 +284,13 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == guideButton)
     {
         //[UserButtonCode_guideButton] -- add your button handler code here..
-        pianoController.Guide(!pianoController.GetGuide());
+        pianoController.SetGuide(!pianoController.GetGuide());
         //[/UserButtonCode_guideButton]
     }
     else if (buttonThatWasClicked == lightsButton)
     {
         //[UserButtonCode_lightsButton] -- add your button handler code here..
-        pianoController.StreamLights(!pianoController.GetStreamLights());
+        pianoController.SetStreamLights(!pianoController.GetStreamLights());
         //[/UserButtonCode_lightsButton]
     }
     else if (buttonThatWasClicked == connectButton)
@@ -285,8 +332,32 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == muteButton)
     {
         //[UserButtonCode_muteButton] -- add your button handler code here..
-        pianoController.LocalControl(!pianoController.GetLocalControl());
+        pianoController.SetLocalControl(!pianoController.GetLocalControl());
         //[/UserButtonCode_muteButton]
+    }
+    else if (buttonThatWasClicked == backingPartButton)
+    {
+        //[UserButtonCode_backingPartButton] -- add your button handler code here..
+        pianoController.SetBackingPart(!pianoController.GetBackingPart());
+        //[/UserButtonCode_backingPartButton]
+    }
+    else if (buttonThatWasClicked == leftPartButton)
+    {
+        //[UserButtonCode_leftPartButton] -- add your button handler code here..
+        pianoController.SetLeftPart(!pianoController.GetLeftPart());
+        //[/UserButtonCode_leftPartButton]
+    }
+    else if (buttonThatWasClicked == rightPartButton)
+    {
+        //[UserButtonCode_rightPartButton] -- add your button handler code here..
+        pianoController.SetRightPart(!pianoController.GetRightPart());
+        //[/UserButtonCode_rightPartButton]
+    }
+    else if (buttonThatWasClicked == lightsFastButton)
+    {
+        //[UserButtonCode_lightsFastButton] -- add your button handler code here..
+        pianoController.SetStreamLightsFast(!pianoController.GetStreamLightsFast());
+        //[/UserButtonCode_lightsFastButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -376,9 +447,14 @@ void SceneComponent::updateSettingsState()
 					mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
 					1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 
-			muteButton->setToggleState(!pianoController.GetLocalControl() && pianoController.GetConnected(), NotificationType::dontSendNotification);
-			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.GetConnected(), NotificationType::dontSendNotification);
 			guideButton->setToggleState(pianoController.GetGuide() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+
+			backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+
 			connectButton->setToggleState(pianoController.GetConnected(), NotificationType::dontSendNotification);
 			connectButton->setButtonText(!pianoController.GetConnected() ? "Connect" :
 				String("Connected to ") + pianoController.GetModel() + " (" + pianoController.GetVersion() + ")");
@@ -388,6 +464,11 @@ void SceneComponent::updateSettingsState()
 				songLabel->setText("Click here and select a Song", NotificationType::dontSendNotification);
 			}
 		});
+}
+
+void SceneComponent::SongLoaded()
+{
+	// Here we can load per-song settings
 }
 
 void SceneComponent::updateEnabledControls()
@@ -428,9 +509,10 @@ BEGIN_JUCER_METADATA
                  parentClasses="public Component, public PianoControllerListener"
                  constructorParams="" variableInitialisers="" snapPixels="8" snapActive="1"
                  snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="600"
-                 initialHeight="210">
+                 initialHeight="285">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="0 60 0M 58" fill="solid: ff4e5b62" hasStroke="0"/>
+    <RECT pos="0 220 0M 2" fill="solid: ff4e5b62" hasStroke="0"/>
   </BACKGROUND>
   <GROUPCOMPONENT name="Song" id="4e6df4a0ae6e851b" memberName="songGroup" virtualName=""
                   explicitFocusOrder="0" pos="0 8R 0M 70" posRelativeY="69305d91c2150486"
@@ -444,61 +526,61 @@ BEGIN_JUCER_METADATA
          fontsize="44.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="0 7R 0M 95" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="0 7R 0M 169" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
   <GROUPCOMPONENT name="System Control" id="69305d91c2150486" memberName="systemGroup"
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 64" title="System Control"
                   textpos="36"/>
   <TEXTBUTTON name="Guide Button" id="c850d2e92ae26093" memberName="guideButton"
-              virtualName="" explicitFocusOrder="0" pos="129Rc 56 70 24" posRelativeX="c7b94b60aa96c6e2"
+              virtualName="" explicitFocusOrder="0" pos="170Rr 65 70 28" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Guide" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
-          virtualName="" explicitFocusOrder="0" pos="64 16 131M 24" posRelativeX="c7b94b60aa96c6e2"
+          virtualName="" explicitFocusOrder="0" pos="64 24 131M 24" posRelativeX="c7b94b60aa96c6e2"
           posRelativeY="c7b94b60aa96c6e2" tooltip="Song Position" min="1.00000000000000000000"
           max="999.00000000000000000000" int="1.00000000000000000000" style="LinearHorizontal"
           textBoxPos="NoTextBox" textBoxEditable="0" textBoxWidth="80"
           textBoxHeight="20" skewFactor="1.00000000000000000000" needsCallback="1"/>
   <LABEL name="Song Position Label" id="17ac2967e993dc43" memberName="positionLabel"
-         virtualName="" explicitFocusOrder="0" pos="16 17 36 24" posRelativeX="be38d66c26f6bda6"
+         virtualName="" explicitFocusOrder="0" pos="16 25 36 24" posRelativeX="be38d66c26f6bda6"
          posRelativeY="c7b94b60aa96c6e2" edTextCol="ff000000" edBkgCol="0"
          labelText="001" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="36"/>
   <LABEL name="Song Length Label" id="537604aa6486f948" memberName="lengthLabel"
-         virtualName="" explicitFocusOrder="0" pos="51R 16 36 24" posRelativeX="c7b94b60aa96c6e2"
+         virtualName="" explicitFocusOrder="0" pos="51R 24 36 24" posRelativeX="c7b94b60aa96c6e2"
          posRelativeY="c7b94b60aa96c6e2" edTextCol="ff000000" edBkgCol="0"
          labelText="999" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="36"/>
   <TEXTBUTTON name="Lights Button" id="5e04ec6b8d091999" memberName="lightsButton"
-              virtualName="" explicitFocusOrder="0" pos="86R 56 70 24" posRelativeX="c7b94b60aa96c6e2"
+              virtualName="" explicitFocusOrder="0" pos="92Rr 65 70 28" posRelativeX="c7b94b60aa96c6e2"
               posRelativeY="c7b94b60aa96c6e2" buttonText="Lights" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Connect Button" id="a82c92b5d1470311" memberName="connectButton"
-              virtualName="" explicitFocusOrder="0" pos="124c 24 216 24" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="124c 21 216 28" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Connect" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Settings Button" id="bf47ed7d30088c39" memberName="settingsButton"
-              virtualName="" explicitFocusOrder="0" pos="284c 24 88 24" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="284c 21 88 28" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" buttonText="Settings..." connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <IMAGEBUTTON name="Play Button" id="e85b378cc3166e44" memberName="playButton"
-               virtualName="" explicitFocusOrder="0" pos="78c 57 40 24" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="82c 65 40 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" buttonText="Play" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttonplay_png"
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
   <IMAGEBUTTON name="Rewind Button" id="e7074d9d71bdc0e6" memberName="rewindButton"
-               virtualName="" explicitFocusOrder="0" pos="28c 57 40 24" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="32c 65 40 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" buttonText="Rewind" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttonrewind_png"
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
   <IMAGEBUTTON name="Forward Button" id="80a800a526f191f0" memberName="forwardButton"
-               virtualName="" explicitFocusOrder="0" pos="128c 57 40 24" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="132c 65 40 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" buttonText="Play" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttonfastforward_png"
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
@@ -512,12 +594,31 @@ BEGIN_JUCER_METADATA
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
   <IMAGEBUTTON name="Mute Button" id="5fb10e62b96082d3" memberName="muteButton"
-               virtualName="" explicitFocusOrder="0" pos="28Rc 24 40 24" posRelativeX="69305d91c2150486"
+               virtualName="" explicitFocusOrder="0" pos="8Rr 21 40 28" posRelativeX="69305d91c2150486"
                posRelativeY="69305d91c2150486" buttonText="Mute" connectedEdges="0"
                needsCallback="1" radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
+  <TEXTBUTTON name="Backing Part Button" id="c44e73ef2ac29304" memberName="backingPartButton"
+              virtualName="" explicitFocusOrder="0" pos="64 126 70 28" posRelativeY="c7b94b60aa96c6e2"
+              buttonText="Backing" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <LABEL name="Part Label" id="35efabd1f34f8989" memberName="partLabel"
+         virtualName="" explicitFocusOrder="0" pos="16 128 40 24" posRelativeY="c7b94b60aa96c6e2"
+         edTextCol="ff000000" edBkgCol="0" labelText="Part" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="33"/>
+  <TEXTBUTTON name="Left Part Button" id="e9e1457f74b6fe2f" memberName="leftPartButton"
+              virtualName="" explicitFocusOrder="0" pos="135 126 70 28" posRelativeY="c7b94b60aa96c6e2"
+              buttonText="Left" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="Right Part Button" id="7413d6f9d0d8d631" memberName="rightPartButton"
+              virtualName="" explicitFocusOrder="0" pos="206 126 70 28" posRelativeY="c7b94b60aa96c6e2"
+              buttonText="Right" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="Lights Fast Button" id="88cbd655c4b5df0e" memberName="lightsFastButton"
+              virtualName="" explicitFocusOrder="0" pos="21Rr 65 70 28" posRelativeX="c7b94b60aa96c6e2"
+              posRelativeY="c7b94b60aa96c6e2" buttonText="Fast" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

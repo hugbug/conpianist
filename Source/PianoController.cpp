@@ -21,9 +21,14 @@
 
 static const char* CSP_PREFIX = "43 73 01 52 25 26 ";
 static const char* CSP_COMMAND = "43 73 01 52 25 26 01 01 ";
+static const char* CSP_DUMP_MODEL = "01 00 0f 01 18 01 00 01 00";
+static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
+static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
+static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
 static const char* CSP_GUIDE_ON = "04 03 00 01 00 01 00 00 01 01";
 static const char* CSP_GUIDE_OFF = "04 03 00 01 00 01 00 00 01 00";
-static const char* CSP_GUIDE_STATE = "00 01 04 03 00 01 00 01 00 00 00 00 01";
+static const char* CSP_GUIDE_STATE = "00 00 04 03 00 01 00 01 00 00 01";
+static const char* CSP_GUIDE_EVENTS = "02 00 04 03 00 01";
 static const char* CSP_POSITION = "04 00 0a 01 00 01 00 00 04 ";
 static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
 static const char* CSP_POSITION_EVENTS = "02 00 04 00 0a 01";
@@ -33,14 +38,26 @@ static const char* CSP_PLAY_STATE = "00 00 04 00 05 01 00 01 00 00 01";
 static const char* CSP_PLAY_EVENTS = "02 00 04 00 05 01";
 static const char* CSP_STREAM_LIGHTS_ON = "04 02 00 01 00 01 00 00 01 01";
 static const char* CSP_STREAM_LIGHTS_OFF = "04 02 00 01 00 01 00 00 01 00";
-static const char* CSP_STREAM_LIGHTS_STATE = "00 01 04 02 00 01 00 01 00 00 00 00 01";
+static const char* CSP_STREAM_LIGHTS_STATE = "00 00 04 02 00 01 00 01 00 00 01";
+static const char* CSP_STREAM_LIGHTS_EVENTS = "02 00 04 02 00 01";
+static const char* CSP_STREAM_LIGHTS_FAST = "04 02 02 01 00 01 00 00 01 01";
+static const char* CSP_STREAM_LIGHTS_SLOW = "04 02 02 01 00 01 00 00 01 00";
+static const char* CSP_STREAM_LIGHTS_SPEED_STATE = "00 00 04 02 02 01 00 01 00 00 01";
+static const char* CSP_STREAM_LIGHTS_SPEED_EVENTS = "02 00 04 02 02 01";
 static const char* CSP_PLAY = "04 00 05 01 00 01 00 00 01 01";
 static const char* CSP_PAUSE = "04 00 05 01 00 01 00 00 01 02";
 static const char* CSP_STOP = "04 00 05 01 00 01 00 00 01 00";
-static const char* CSP_DUMP_MODEL = "01 00 0f 01 18 01 00 01 00";
-static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
-static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
-static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
+static const char* CSP_BACKING_PART_ON = "04 00 0e 01 02 01 00 00 01 01";
+static const char* CSP_BACKING_PART_OFF = "04 00 0e 01 02 01 00 00 01 00";
+static const char* CSP_BACKING_PART_STATE = "00 00 04 00 0e 01 02 01 00 00 01";
+static const char* CSP_LEFT_PART_ON = "04 00 0e 01 01 01 00 00 01 01";
+static const char* CSP_LEFT_PART_OFF = "04 00 0e 01 01 01 00 00 01 00";
+static const char* CSP_LEFT_PART_STATE = "00 00 04 00 0e 01 01 01 00 00 01";
+static const char* CSP_RIGHT_PART_ON = "04 00 0e 01 00 01 00 00 01 01";
+static const char* CSP_RIGHT_PART_OFF = "04 00 0e 01 00 01 00 00 01 00";
+static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
+static const char* CSP_PART_EVENTS = "02 00 04 00 0e 01";
+static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
 
 void Sleep(int Milliseconds)
 {
@@ -65,20 +82,34 @@ void PianoController::Connect()
 	SendCspMessage(CSP_POSITION_EVENTS, false);
 	//   playback status (playing,paused,stop)
   	SendCspMessage(CSP_PLAY_EVENTS, false);
+	//   playing parts on/off
+  	SendCspMessage(CSP_PART_EVENTS, false);
+	//   guide-mode on/off
+  	SendCspMessage(CSP_GUIDE_EVENTS, false);
+  	//   stream lights on/off
+  	SendCspMessage(CSP_STREAM_LIGHTS_EVENTS, false);
+  	//   stream lights slow/fast
+  	SendCspMessage(CSP_STREAM_LIGHTS_SPEED_EVENTS, false);
 
 	Stop();
 
-	m_guide = false;
-	m_streamLights = true;
-	m_localControl = true;
+	// Sleep is not nice, we should wait for a confirmation message instead.
+	// Without waiting the config-commands below do not issue change events.
+	Sleep(150);
 
-	Guide(false);
-	StreamLights(true);
-	LocalControl(true);
+	SetLocalControl(true);
+
+	SetGuide(true);
+	SetStreamLights(false);
+	SetStreamLightsFast(false);
+	SetGuide(false);
+	SetStreamLights(true);
+	SetStreamLightsFast(true);
+
 	if (m_listener) m_listener->PlaybackStateChanged();
 }
 
-void PianoController::LocalControl(bool enabled)
+void PianoController::SetLocalControl(bool enabled)
 {
 	if (!m_audioDeviceManager->getDefaultMidiOutput())
 	{
@@ -165,14 +196,19 @@ void PianoController::Stop()
 	SendCspMessage(CSP_STOP);
 }
 
-void PianoController::Guide(bool enable)
+void PianoController::SetGuide(bool enable)
 {
 	SendCspMessage(enable ? CSP_GUIDE_ON : CSP_GUIDE_OFF);
 }
 
-void PianoController::StreamLights(bool enable)
+void PianoController::SetStreamLights(bool enable)
 {
 	SendCspMessage(enable ? CSP_STREAM_LIGHTS_ON : CSP_STREAM_LIGHTS_OFF);
+}
+
+void PianoController::SetStreamLightsFast(bool fast)
+{
+	SendCspMessage(fast ? CSP_STREAM_LIGHTS_FAST : CSP_STREAM_LIGHTS_SLOW);
 }
 
 void PianoController::SetSongPosition(int position)
@@ -180,6 +216,21 @@ void PianoController::SetSongPosition(int position)
 	String pos = String::toHexString(position >> 8 & 0x3f + position & 0x80).paddedLeft('0', 2) +
 		" " + String::toHexString(position & 0x7f).paddedLeft('0', 2);
 	SendCspMessage(String(CSP_POSITION) + pos + " 00 00");
+}
+
+void PianoController::SetBackingPart(bool enable)
+{
+	SendCspMessage(enable ? CSP_BACKING_PART_ON : CSP_BACKING_PART_OFF);
+}
+
+void PianoController::SetLeftPart(bool enable)
+{
+	SendCspMessage(enable ? CSP_LEFT_PART_ON : CSP_LEFT_PART_OFF);
+}
+
+void PianoController::SetRightPart(bool enable)
+{
+	SendCspMessage(enable ? CSP_RIGHT_PART_ON : CSP_RIGHT_PART_OFF);
 }
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
@@ -204,6 +255,7 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 		{
 			m_songLength = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
 			if (m_listener) m_listener->PlaybackStateChanged();
+			if (m_listener) m_listener->SongLoaded();
 		}
 		else if (IsCspMessage(message, CSP_PLAY_STATE))
 		{
@@ -212,12 +264,32 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 		}
 		else if (IsCspMessage(message, CSP_GUIDE_STATE))
 		{
-			m_guide = message.getSysExData()[19] == 1;
+			m_guide = message.getSysExData()[17] == 1;
 			if (m_listener) m_listener->SettingsChanged();
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
 		{
-			m_streamLights = message.getSysExData()[19] == 1;
+			m_streamLights = message.getSysExData()[17] == 1;
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_SPEED_STATE))
+		{
+			m_streamLightsFast = message.getSysExData()[17] == 1;
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_BACKING_PART_STATE))
+		{
+			m_backingPart = message.getSysExData()[17] == 1;
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_LEFT_PART_STATE))
+		{
+			m_leftPart = message.getSysExData()[17] == 1;
+			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_RIGHT_PART_STATE))
+		{
+			m_rightPart = message.getSysExData()[17] == 1;
 			if (m_listener) m_listener->SettingsChanged();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))
@@ -235,6 +307,10 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 			m_version = str;
 			m_connected = true;
 			if (m_listener) m_listener->SettingsChanged();
+		}
+		else if (IsCspMessage(message, CSP_SONG_NAME_STATE))
+		{
+			if (m_listener) m_listener->SongLoaded();
 		}
 	}
 }
