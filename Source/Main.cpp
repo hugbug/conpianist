@@ -9,7 +9,7 @@
 */
 
 #include "../JuceLibraryCode/JuceHeader.h"
-#include "MainComponent.h"
+#include "SceneComponent.h"
 
 //==============================================================================
 class ConnectedPianistApplication  : public JUCEApplication
@@ -66,7 +66,7 @@ public:
                                                     DocumentWindow::allButtons)
         {
             setUsingNativeTitleBar (true);
-            setContentOwned (new MainComponent(), true);
+            setContentOwned (new SceneComponent(), true);
             setResizable (true, true);
 
             centreWithSize (getWidth(), getHeight());

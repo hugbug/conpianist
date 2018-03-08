@@ -30,9 +30,6 @@
             file="Source/SceneComponent.cpp"/>
       <FILE id="eF3Bqz" name="SceneComponent.h" compile="0" resource="0"
             file="Source/SceneComponent.h"/>
-      <FILE id="rKinko" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
-      <FILE id="npCL5o" name="MainComponent.cpp" compile="1" resource="0"
-            file="Source/MainComponent.cpp"/>
       <FILE id="cjF4iJ" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
     </GROUP>
   </MAINGROUP>
