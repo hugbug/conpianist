@@ -22,7 +22,6 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
-#include "PlaybackComponent.h"
 //[/Headers]
 
 
@@ -35,45 +34,64 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class SceneComponent  : public Component,
-                        public ChangeListener,
-                        public Button::Listener
+class PlaybackComponent  : public Component,
+                           public ChangeListener,
+                           public Button::Listener,
+                           public Slider::Listener
 {
 public:
     //==============================================================================
-    SceneComponent ();
-    ~SceneComponent();
+    PlaybackComponent (PianoController& pianoController);
+    ~PlaybackComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
+    void chooseSong();
+    void loadSong(const File& file);
+	void updateSongState();
 	void updateSettingsState();
-	void showSettingsDialog();
+	void updateEnabledControls();
+	void mouseUp(const MouseEvent& event) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
     void buttonClicked (Button* buttonThatWasClicked) override;
+    void sliderValueChanged (Slider* sliderThatWasMoved) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    AudioDeviceManager audioDeviceManager;
-    PianoController pianoController;
-    PlaybackComponent playbackComponent;
+    PianoController& pianoController;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> topbarPanel;
-    ScopedPointer<TextButton> connectButton;
-    ScopedPointer<TextButton> settingsButton;
-    ScopedPointer<Component> playbackPanel;
-    ScopedPointer<Component> largeContentPanel;
+    ScopedPointer<GroupComponent> songGroup;
+    ScopedPointer<Label> songLabel;
+    ScopedPointer<GroupComponent> playbackGroup;
+    ScopedPointer<TextButton> guideButton;
+    ScopedPointer<Slider> positionSlider;
+    ScopedPointer<Label> positionLabel;
+    ScopedPointer<Label> lengthLabel;
+    ScopedPointer<TextButton> lightsButton;
+    ScopedPointer<ImageButton> playButton;
+    ScopedPointer<ImageButton> rewindButton;
+    ScopedPointer<ImageButton> forwardButton;
+    ScopedPointer<ImageButton> chooseSongButton;
+    ScopedPointer<TextButton> backingPartButton;
+    ScopedPointer<Label> partLabel;
+    ScopedPointer<TextButton> leftPartButton;
+    ScopedPointer<TextButton> rightPartButton;
+    ScopedPointer<TextButton> lightsFastButton;
+    ScopedPointer<Label> partLabel2;
+    ScopedPointer<ImageButton> loopButton;
+    ScopedPointer<ImageButton> muteButton;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PlaybackComponent)
 };
 
 //[EndFile] You can add extra defines here...

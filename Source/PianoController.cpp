@@ -106,7 +106,7 @@ void PianoController::Connect()
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
 
-	if (m_listener) m_listener->PlaybackStateChanged();
+	sendChangeMessage();
 }
 
 void PianoController::SetLocalControl(bool enabled)
@@ -119,7 +119,7 @@ void PianoController::SetLocalControl(bool enabled)
 	m_localControl = enabled;
 	MidiMessage localControlMessage = MidiMessage::controllerEvent(1, 122, enabled ? 127 : 0);
 	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(localControlMessage);
-	if (m_listener) m_listener->SettingsChanged();
+	sendChangeMessage();
 }
 
 bool PianoController::UploadSong(const File& file)
@@ -249,48 +249,47 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 		if (IsCspMessage(message, CSP_POSITION_STATE))
 		{
 			m_songPosition = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
-			if (m_listener) m_listener->PlaybackStateChanged();
+		sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_LENGTH_STATE))
 		{
 			m_songLength = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
-			if (m_listener) m_listener->PlaybackStateChanged();
-			if (m_listener) m_listener->SongLoaded();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_PLAY_STATE))
 		{
 			m_playing = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->PlaybackStateChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_GUIDE_STATE))
 		{
 			m_guide = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
 		{
 			m_streamLights = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_SPEED_STATE))
 		{
 			m_streamLightsFast = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_BACKING_PART_STATE))
 		{
 			m_backingPart = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_LEFT_PART_STATE))
 		{
 			m_leftPart = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_RIGHT_PART_STATE))
 		{
 			m_rightPart = message.getSysExData()[17] == 1;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))
 		{
@@ -306,11 +305,11 @@ void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMes
 			//TODO: make thread safe
 			m_version = str;
 			m_connected = true;
-			if (m_listener) m_listener->SettingsChanged();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_SONG_NAME_STATE))
 		{
-			if (m_listener) m_listener->SongLoaded();
+			// if (m_listener) m_listener->SongLoaded();
 		}
 	}
 }

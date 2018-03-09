@@ -4,6 +4,8 @@
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
       <FILE id="dJQtiu" name="app-icon.svg" compile="0" resource="0" file="Graphics/app-icon.svg"/>
+      <FILE id="LeY4n6" name="button-abloop.png" compile="0" resource="1"
+            file="Graphics/button-abloop.png"/>
       <FILE id="PJo2ya" name="button-expand.png" compile="0" resource="1"
             file="Graphics/button-expand.png"/>
       <FILE id="OFWZDB" name="button-fastforward.png" compile="0" resource="1"
@@ -18,6 +20,10 @@
             file="Graphics/button-volume.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="F9hRC0" name="PlaybackComponent.cpp" compile="1" resource="0"
+            file="Source/PlaybackComponent.cpp"/>
+      <FILE id="jTu8hN" name="PlaybackComponent.h" compile="0" resource="0"
+            file="Source/PlaybackComponent.h"/>
       <FILE id="RrTKjG" name="SettingsComponent.cpp" compile="1" resource="0"
             file="Source/SettingsComponent.cpp"/>
       <FILE id="q3B7qa" name="SettingsComponent.h" compile="0" resource="0"

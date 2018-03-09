@@ -21,19 +21,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class PianoControllerListener
+class PianoController : public MidiInputCallback, public ChangeBroadcaster
 {
 public:
-	virtual ~PianoControllerListener() {}
-	virtual void PlaybackStateChanged() {}
-	virtual void SettingsChanged() {}
-	virtual void SongLoaded() {}
-};
-
-class PianoController : public MidiInputCallback
-{
-public:
-	void SetListener(PianoControllerListener* listener) { m_listener = listener; }
 	void SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
@@ -67,7 +57,6 @@ public:
 	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
 
 private:
-	PianoControllerListener* m_listener = nullptr;
 	AudioDeviceManager* m_audioDeviceManager;
 	String m_remoteIp;
 	String m_model;
