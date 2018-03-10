@@ -10,6 +10,10 @@
             file="Graphics/button-expand.png"/>
       <FILE id="OFWZDB" name="button-fastforward.png" compile="0" resource="1"
             file="Graphics/button-fastforward.png"/>
+      <FILE id="ZnCh3Z" name="button-guide.png" compile="0" resource="1"
+            file="Graphics/button-guide.png"/>
+      <FILE id="CQLPJd" name="button-lights.png" compile="0" resource="1"
+            file="Graphics/button-lights.png"/>
       <FILE id="ZCgQlX" name="button-mute.png" compile="0" resource="1" file="Graphics/button-mute.png"/>
       <FILE id="H3P4oz" name="button-pause.png" compile="0" resource="1"
             file="Graphics/button-pause.png"/>
@@ -20,6 +24,8 @@
             file="Graphics/button-volume.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="QzvRE7" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
+      <FILE id="AoMl9j" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
       <FILE id="F9hRC0" name="PlaybackComponent.cpp" compile="1" resource="0"
             file="Source/PlaybackComponent.cpp"/>
       <FILE id="jTu8hN" name="PlaybackComponent.h" compile="0" resource="0"

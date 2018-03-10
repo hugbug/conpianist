@@ -53,6 +53,17 @@ SceneComponent::SceneComponent ()
     addAndMakeVisible (largeContentPanel = new Component());
     largeContentPanel->setName ("Large Content");
 
+    addAndMakeVisible (muteButton = new ImageButton ("Mute Button"));
+    muteButton->setTooltip (TRANS("Local Control on/off"));
+    muteButton->setButtonText (TRANS("Mute"));
+    muteButton->addListener (this);
+
+    muteButton->setImages (false, true, true,
+                           ImageCache::getFromMemory (BinaryData::buttonvolume_png, BinaryData::buttonvolume_pngSize), 1.000f, Colour (0x00000000),
+                           Image(), 0.750f, Colour (0x00000000),
+                           Image(), 1.000f, Colour (0x00000000));
+    muteButton->setBounds (808, 13, 32, 28);
+
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -81,6 +92,7 @@ SceneComponent::~SceneComponent()
     settingsButton = nullptr;
     playbackPanel = nullptr;
     largeContentPanel = nullptr;
+    muteButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -140,6 +152,12 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
 		showSettingsDialog();
         //[/UserButtonCode_settingsButton]
     }
+    else if (buttonThatWasClicked == muteButton)
+    {
+        //[UserButtonCode_muteButton] -- add your button handler code here..
+        pianoController.SetLocalControl(!pianoController.GetLocalControl());
+        //[/UserButtonCode_muteButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -163,6 +181,12 @@ void SceneComponent::updateSettingsState()
 			connectButton->setToggleState(pianoController.GetConnected(), NotificationType::dontSendNotification);
 			connectButton->setButtonText(!pianoController.GetConnected() ? "Connect" :
 				String("Connected to ") + pianoController.GetModel() + " (" + pianoController.GetVersion() + ")");
+
+			bool mute = !pianoController.GetLocalControl() && pianoController.GetConnected();
+			muteButton->setImages(false, true, true, ImageCache::getFromMemory(
+					mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
+					mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
+					1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 		});
 }
 
@@ -208,6 +232,14 @@ BEGIN_JUCER_METADATA
   <GENERICCOMPONENT name="Large Content" id="5d00b51e97f2c31f" memberName="largeContentPanel"
                     virtualName="" explicitFocusOrder="0" pos="0R 64 290M 54M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
+  <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
+               virtualName="" explicitFocusOrder="0" pos="808 13 32 28" posRelativeX="c7b94b60aa96c6e2"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
+               buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
+               keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
+               opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
+               opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
+               opacityDown="1.00000000000000000000" colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

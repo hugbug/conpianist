@@ -36,8 +36,8 @@
 */
 class PlaybackComponent  : public Component,
                            public ChangeListener,
-                           public Button::Listener,
-                           public Slider::Listener
+                           public Slider::Listener,
+                           public Button::Listener
 {
 public:
     //==============================================================================
@@ -53,12 +53,13 @@ public:
 	void updateSettingsState();
 	void updateEnabledControls();
 	void mouseUp(const MouseEvent& event) override;
+	void loopButtonClicked();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void buttonClicked (Button* buttonThatWasClicked) override;
     void sliderValueChanged (Slider* sliderThatWasMoved) override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
 
 
 
@@ -71,11 +72,9 @@ private:
     ScopedPointer<GroupComponent> songGroup;
     ScopedPointer<Label> songLabel;
     ScopedPointer<GroupComponent> playbackGroup;
-    ScopedPointer<TextButton> guideButton;
     ScopedPointer<Slider> positionSlider;
     ScopedPointer<Label> positionLabel;
     ScopedPointer<Label> lengthLabel;
-    ScopedPointer<TextButton> lightsButton;
     ScopedPointer<ImageButton> playButton;
     ScopedPointer<ImageButton> rewindButton;
     ScopedPointer<ImageButton> forwardButton;
@@ -84,10 +83,9 @@ private:
     ScopedPointer<Label> partLabel;
     ScopedPointer<TextButton> leftPartButton;
     ScopedPointer<TextButton> rightPartButton;
-    ScopedPointer<TextButton> lightsFastButton;
-    ScopedPointer<Label> partLabel2;
+    ScopedPointer<ImageButton> guideButton;
     ScopedPointer<ImageButton> loopButton;
-    ScopedPointer<ImageButton> muteButton;
+    ScopedPointer<ImageButton> lightsButton;
 
 
     //==============================================================================

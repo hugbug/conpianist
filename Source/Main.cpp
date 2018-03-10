@@ -9,6 +9,7 @@
 */
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "LookAndFeel.h"
 #include "SceneComponent.h"
 
 //==============================================================================
@@ -21,6 +22,8 @@ public:
     const String getApplicationName() override       { return ProjectInfo::projectName; }
     const String getApplicationVersion() override    { return ProjectInfo::versionString; }
     bool moreThanOneInstanceAllowed() override       { return true; }
+    TooltipWindow tooltipWindow{nullptr, 1500};
+    ::LookAndFeel lookAndFeel;
 
     //==============================================================================
     void initialise (const String& commandLine) override
@@ -28,6 +31,7 @@ public:
         // This method is where you should put your application's initialisation code..
 
         mainWindow = new MainWindow (getApplicationName());
+        mainWindow->setLookAndFeel(&lookAndFeel);
     }
 
     void shutdown() override

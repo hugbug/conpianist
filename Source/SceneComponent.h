@@ -70,6 +70,7 @@ private:
     ScopedPointer<TextButton> settingsButton;
     ScopedPointer<Component> playbackPanel;
     ScopedPointer<Component> largeContentPanel;
+    ScopedPointer<ImageButton> muteButton;
 
 
     //==============================================================================
