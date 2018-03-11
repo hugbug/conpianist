@@ -30,8 +30,14 @@ public:
     {
         // This method is where you should put your application's initialisation code..
 
+#if TARGET_OS_IPHONE
+		Desktop::getInstance().setGlobalScaleFactor(1.2);
+#endif
         mainWindow = new MainWindow (getApplicationName());
         mainWindow->setLookAndFeel(&lookAndFeel);
+#if TARGET_OS_IPHONE
+		mainWindow->setFullScreen(true);
+#endif
     }
 
     void shutdown() override

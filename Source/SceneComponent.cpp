@@ -62,8 +62,6 @@ SceneComponent::SceneComponent ()
                            ImageCache::getFromMemory (BinaryData::buttonvolume_png, BinaryData::buttonvolume_pngSize), 1.000f, Colour (0x00000000),
                            Image(), 0.750f, Colour (0x00000000),
                            Image(), 1.000f, Colour (0x00000000));
-    muteButton->setBounds (808, 13, 32, 28);
-
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -131,6 +129,7 @@ void SceneComponent::resized()
     settingsButton->setBounds (0 + 284 - (88 / 2), (-8) + 21, 88, 28);
     playbackPanel->setBounds (0, (-8) + 64, 290, getHeight() - 54);
     largeContentPanel->setBounds (0 + 290, (-8) + 64, getWidth() - 290, getHeight() - 54);
+    muteButton->setBounds (getWidth() - 11 - 32, 13, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -233,7 +232,7 @@ BEGIN_JUCER_METADATA
                     virtualName="" explicitFocusOrder="0" pos="0R 64 290M 54M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
-               virtualName="" explicitFocusOrder="0" pos="808 13 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="11Rr 13 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"

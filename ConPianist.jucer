@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.2.1">
+<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.2.1" bundleIdentifier="prygunkov.ConPianist"
+              companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
+              companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist">
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
       <FILE id="dJQtiu" name="app-icon.svg" compile="0" resource="0" file="Graphics/app-icon.svg"/>
