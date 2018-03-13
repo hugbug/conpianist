@@ -2,7 +2,8 @@
 
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.2.1" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
-              companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist">
+              companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist"
+              headerPath="../../Library/AppleMIDI">
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
       <FILE id="dJQtiu" name="app-icon.svg" compile="0" resource="0" file="Graphics/app-icon.svg"/>
@@ -26,6 +27,8 @@
             file="Graphics/button-volume.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="Gr0GeF" name="MidiSocket.cpp" compile="1" resource="0" file="Source/MidiSocket.cpp"/>
+      <FILE id="eipjpN" name="MidiSocket.h" compile="0" resource="0" file="Source/MidiSocket.h"/>
       <FILE id="QzvRE7" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
       <FILE id="AoMl9j" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
       <FILE id="F9hRC0" name="PlaybackComponent.cpp" compile="1" resource="0"
