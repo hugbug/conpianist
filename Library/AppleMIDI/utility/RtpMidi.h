@@ -57,7 +57,7 @@ public:
 	}
 
 private:
-	void _write(Stream* stream)
+	void _write(UdpClass* stream)
 	{
 		size_t bytesWritten = 0;
 

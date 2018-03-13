@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <cstdlib>
+
 #include "utility/AppleMidi_Settings.h"
 #include "utility/AppleMidi_Defs.h"
 

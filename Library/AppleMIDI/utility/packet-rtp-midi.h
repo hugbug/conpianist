@@ -2085,7 +2085,7 @@ DEBUGSTREAM.println("aborted MIDI-command: decode_song_select");
 		int				length;
 		int				logitemhdrlen;
 		int				logitemlen;
-		boolean			no_pnum_msb;
+		uint8_t			no_pnum_msb;
 		unsigned int start_offset = offset;
 
 		/* first we need to get the flags & length of this chapter */

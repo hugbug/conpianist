@@ -14,12 +14,17 @@
 
 #if ARDUINO
 	#include <Arduino.h>
+	#include <IPAddress.h>
 #else
 	#include <inttypes.h>
 	typedef uint8_t byte;
 #endif
 
-#include <IPAddress.h>
+#ifdef _MSC_VER
+#define PACKED 
+#else
+#define PACKED __attribute__((__packed__))
+#endif
 
 #ifndef UDP_TX_PACKET_MAX_SIZE
 #define UDP_TX_PACKET_MAX_SIZE 24
@@ -112,7 +117,22 @@ const uint8_t amBitrateReceiveLimit[] = { 'R', 'L' };
 
 const unsigned char stringTerminator[] = { 0x00 };
 
-typedef struct __attribute__((packed)) AppleMIDI_Invitation
+#ifdef _MSC_VER
+#pragma pack(push, 1) 
+#endif
+
+#ifndef ARDUINO
+struct IPAddress
+{
+	char host[100];
+	IPAddress() { host[0] = '\0'; }
+	IPAddress(const char* host) { operator=(host); }
+	operator const char*() { return host; }
+	void operator =(const char* host) { strncpy(this->host, host, sizeof(this->host)); }
+};
+#endif
+
+typedef struct PACKED AppleMIDI_Invitation
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -135,7 +155,7 @@ typedef struct __attribute__((packed)) AppleMIDI_Invitation
 
 } AppleMIDI_Invitation_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_InvitationAccepted
+typedef struct PACKED AppleMIDI_InvitationAccepted
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -165,7 +185,7 @@ typedef struct __attribute__((packed)) AppleMIDI_InvitationAccepted
 
 } AppleMIDI_InvitationAccepted_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_InvitationRejected
+typedef struct PACKED AppleMIDI_InvitationRejected
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -190,7 +210,7 @@ typedef struct __attribute__((packed)) AppleMIDI_InvitationRejected
 
 } AppleMIDI_InvitationRejected_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_ReceiverFeedback
+typedef struct PACKED AppleMIDI_ReceiverFeedback
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -206,7 +226,7 @@ typedef struct __attribute__((packed)) AppleMIDI_ReceiverFeedback
 
 } AppleMIDI_ReceiverFeedback_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_Syncronization
+typedef struct PACKED AppleMIDI_Syncronization
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -233,7 +253,7 @@ typedef struct __attribute__((packed)) AppleMIDI_Syncronization
 
 } AppleMIDI_Syncronization_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_EndSession
+typedef struct PACKED AppleMIDI_EndSession
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -249,7 +269,7 @@ typedef struct __attribute__((packed)) AppleMIDI_EndSession
 	}
 } AppleMIDI_EndSession_t;
 
-typedef struct __attribute__((packed)) AppleMIDI_BitrateReceiveLimit
+typedef struct PACKED AppleMIDI_BitrateReceiveLimit
 {
 	uint8_t		signature[2];
 	uint8_t		command[2];
@@ -264,6 +284,9 @@ typedef struct __attribute__((packed)) AppleMIDI_BitrateReceiveLimit
 	}
 } AppleMIDI_BitrateReceiveLimit_t;
 
+#ifdef _MSC_VER
+#pragma pack(pop) 
+#endif
 
 /*! Enumeration of MIDI types */
 enum MidiType

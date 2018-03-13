@@ -124,14 +124,20 @@ inline void AppleMidi_Class<UdpClass>::run()
 	int packetSize = _controlPort.parsePacket();
 	if (packetSize) {
 		packetSize = _controlPort.read(_packetBuffer, sizeof(_packetBuffer));
-		_controlPortDissector.addPacket(_packetBuffer, packetSize);
+		if (packetSize > 0)
+		{
+			_controlPortDissector.addPacket(_packetBuffer, packetSize);
+		}
 	}
 
 	// Process one control packet, if available
 	packetSize = _dataPort.parsePacket();
 	if (packetSize) {
 		packetSize = _dataPort.read(_packetBuffer, sizeof(_packetBuffer));
-		_dataPortDissector.addPacket(_packetBuffer, packetSize);
+		if (packetSize > 0)
+		{
+			_dataPortDissector.addPacket(_packetBuffer, packetSize);
+		}
 	}
 
 	// resend invitations
@@ -151,11 +157,12 @@ inline uint32_t AppleMidi_Class<UdpClass>::getSynchronizationSource()
 		// A call randonSeed is mandatory, with millis as a seed.
 		// The time between booting and needing the SSRC for the first time (first network traffic) is
 		// a good enough random seed.
-		long seed = (long)micros();
-		randomSeed(seed);
+		//long seed = (long)micros();
+		//randomSeed(seed);
 
 		// not full range of UINT32_MAX (unsigned!), but (signed) long should suffice
-		_ssrc = random(1, INT32_MAX);
+		//_ssrc = random(1, INT32_MAX);
+		_ssrc = std::rand();
 
 #if (APPLEMIDI_DEBUG)
 		DEBUGSTREAM.print(F("Lazy init of SSRC. Value is 0x"));
