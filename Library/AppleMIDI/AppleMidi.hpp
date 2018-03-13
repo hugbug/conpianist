@@ -51,6 +51,8 @@ inline AppleMidi_Class<UdpClass>::AppleMidi_Class()
 
 	uint32_t initialTimestamp_ = 0;
 	_rtpMidiClock.Init(initialTimestamp_, MIDI_SAMPLING_RATE_DEFAULT);
+
+	DeleteSessions();
 }
 
 /*! \brief Default destructor for MIDI_Class.

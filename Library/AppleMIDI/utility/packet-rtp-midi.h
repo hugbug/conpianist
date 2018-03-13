@@ -937,6 +937,7 @@ DEBUGSTREAM.println("decodetime");
 #endif
 
 		unsigned int consumed = 0;
+		unsigned long deltatime = 0;
 
 		/* RTP-MIDI deltatime is "compressed" using only the necessary amount of octets */
 		for (int i = 0; i < 4; i++ ) {
@@ -945,7 +946,7 @@ DEBUGSTREAM.println("decodetime");
 			}
 
 			uint8_t octet = packetBuffer[offset + consumed];
-			unsigned long deltatime = ( deltatime << 7 ) | ( octet & RTP_MIDI_DELTA_TIME_OCTET_MASK );
+			deltatime = ( deltatime << 7 ) | ( octet & RTP_MIDI_DELTA_TIME_OCTET_MASK );
 			consumed++;
 
 			if ( ( octet & RTP_MIDI_DELTA_TIME_EXTENSION ) == 0 ) {
