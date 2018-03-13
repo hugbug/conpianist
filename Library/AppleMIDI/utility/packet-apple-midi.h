@@ -45,7 +45,7 @@ DEBUGSTREAM.println (packetSize);
 		{
 #ifdef APPLEMIDI_DEBUG
 DEBUGSTREAM.print ("Not enough data ");
-DEBUGSTREAM.println (packetSize);
+DEBUGSTREAM.println ((int)packetSize);
 #endif
 			return NOT_ENOUGH_DATA;
 		}
@@ -88,7 +88,7 @@ DEBUGSTREAM.println("Signature not supported.");
 
 					offset += (i + 1);
 
-					return offset;
+					return (int)offset;
 				}
 			}
 
@@ -120,7 +120,7 @@ DEBUGSTREAM.println("Not enough data for Invitation");
 
 					offset += (i + 1);
 
-					return offset;
+					return (int)offset;
 				}
 			}
 
@@ -152,7 +152,7 @@ DEBUGSTREAM.println("Not enough data for AcceptInvitation");
 
 				offset += 4 + 1 + 3 + (3 * 8);
 
-				return offset;
+				return (int)offset;
 			}
 
 #ifdef APPLEMIDI_DEBUG_VERBOSE
@@ -175,7 +175,7 @@ DEBUGSTREAM.println("Not enough data for Syncronization");
 
 				offset += (4 + 2 + 2);
 
-				return offset;
+				return (int)offset;
 			}
 
 #ifdef APPLEMIDI_DEBUG_VERBOSE
@@ -197,7 +197,7 @@ DEBUGSTREAM.println("Not enough data for ReceiverFeedback");
 
 				offset += (4);
 
-				return offset;
+				return (int)offset;
 			}
 
 #ifdef APPLEMIDI_DEBUG_VERBOSE
@@ -221,7 +221,7 @@ DEBUGSTREAM.println("Not enough data for BitrateReceiveLimit");
 
 				offset += 4 + 4 + 4;
 
-				return offset;
+				return (int)offset;
 			}
 
 #ifdef APPLEMIDI_DEBUG_VERBOSE
@@ -234,7 +234,7 @@ DEBUGSTREAM.println("Not enough data for EndSession");
 		DEBUGSTREAM.println("dissect_apple_midi. Signature OK, command unknown Not valid, skipping");
 #endif
 
-		return offset;
+		return (int)offset;
 	}
 
 };

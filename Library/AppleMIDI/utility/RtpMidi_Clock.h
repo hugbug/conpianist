@@ -15,8 +15,13 @@
 BEGIN_APPLEMIDI_NAMESPACE
 
 #define MSEC_PER_SEC 1000
-#define USEC_PER_SEC 1000000
-#define NSEC_PER_SEC 1000000000
+#ifndef USEC_PER_SEC
+#  define USEC_PER_SEC 1000000
+#endif
+#ifndef NSEC_PER_SEC
+#  define NSEC_PER_SEC 1000000000
+#endif
+
 unsigned long millis();
 
 typedef struct RtpMidi_Clock {
@@ -67,7 +72,7 @@ private:
 	/// </summary>
 	uint32_t CalculateTimeSpent()
 	{
-		uint32_t ticks = Ticks() - startTime_;
+		uint32_t ticks = (uint32_t)(Ticks() - startTime_);
 		uint32_t lapse = (ticks * clockRate_) / MSEC_PER_SEC;
 		return lapse;
 	}

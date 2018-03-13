@@ -27,7 +27,7 @@ public:
 
 	static void Assert(bool result, const char* message)
 	{
-		if (!result) DEBUGSTREAM.print(message);
+		if (!result) DEBUGSTREAM.println(message);
 	}
 	static void Write(const char* message)
 	{
@@ -38,11 +38,15 @@ public:
 		DEBUGSTREAM.println(message);
 	}
 #else
-	static void Assert(bool, const char*) {}
+	static void Assert(int, const char*) {}
 	static void Write(const char*) {}
 	static void WriteLine(const char*) {}
 #endif
 };
+
+#if defined(DEBUG_BUILD) && !defined(Arduino)
+inline const char* F(const char* a) { return a; }
+#endif
 
 class AppleMIDI_Util {
 public:

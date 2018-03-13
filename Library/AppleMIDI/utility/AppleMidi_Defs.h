@@ -150,7 +150,7 @@ typedef struct PACKED AppleMIDI_Invitation
 
 	inline uint8_t getLength()
 	{
-		return sizeof(AppleMIDI_Invitation) - (SESSION_NAME_MAX_LEN)+strlen(sessionName);
+		return (uint8_t)(sizeof(AppleMIDI_Invitation) - (SESSION_NAME_MAX_LEN)+strlen(sessionName));
 	}
 
 } AppleMIDI_Invitation_t;
@@ -180,7 +180,7 @@ typedef struct PACKED AppleMIDI_InvitationAccepted
 
 	inline uint8_t getLength()
 	{
-		return sizeof(AppleMIDI_InvitationAccepted) - (SESSION_NAME_MAX_LEN)+strlen(sessionName);
+		return uint8_t(sizeof(AppleMIDI_InvitationAccepted) - (SESSION_NAME_MAX_LEN)+strlen(sessionName));
 	}
 
 } AppleMIDI_InvitationAccepted_t;

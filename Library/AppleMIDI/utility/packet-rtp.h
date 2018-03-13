@@ -125,13 +125,13 @@ public:
 			return 0;
 		}
 
-		bool padding_set = RTP_PADDING(octet1);
-		bool extension_set = RTP_EXTENSION(octet1);
+		bool padding_set = RTP_PADDING(octet1) != 0;
+		bool extension_set = RTP_EXTENSION(octet1) != 0;
 		unsigned int csrc_count = RTP_CSRC_COUNT(octet1);
 
 		/* Get the fields in the second octet */
 		byte octet2 = packetBuffer[offset + 1];
-		bool marker_set = RTP_MARKER( octet2 );
+		bool marker_set = RTP_MARKER( octet2 ) != 0;
 		unsigned int payload_type = RTP_PAYLOAD_TYPE(octet2);
 
 		/* Get the subsequent fields */
@@ -228,10 +228,10 @@ public:
 		if ( extension_set ) {
 			#ifdef APPLEMIDI_DEBUG_VERBOSE
 			DEBUGSTREAM.print  ("extension ");
-			#endif
 			// not supported
 			/* Defined by profile field is 16 bits (2 octets) */
 			int hdr_extension_id = AppleMIDI_Util::readUInt32(packetBuffer + offset);
+			#endif
 			offset += 2;
 
 			#ifdef APPLEMIDI_DEBUG_VERBOSE
@@ -265,7 +265,7 @@ public:
 			#endif
 
 			// not supported
-			int padding_count = 0;
+			//int padding_count = 0;
 			int data_len = 0;
 
 			if (data_len > 0) {
@@ -281,14 +281,14 @@ public:
 			DEBUGSTREAM.println("No padding set");
 			#endif
 
-			rtp_info->info_payload_offset = offset;
+			rtp_info->info_payload_offset = (unsigned int)offset;
 
 			#ifdef APPLEMIDI_DEBUG_VERBOSE
 			DEBUGSTREAM.print("end: dissect_rtp, offset = ");
 			DEBUGSTREAM.println(offset);
 			#endif
 
-			return offset;
+			return (int)offset;
 		}
 
 		#ifdef APPLEMIDI_DEBUG_VERBOSE

@@ -25,8 +25,9 @@
 // (MIDI in, out, thru), or to 0 to disable the feature and save space.
 // Note that thru can work only if input and output are enabled.
 
-//#define DEBUG
-#define RELEASE
+#ifndef DEBUG
+#  define RELEASE
+#endif
 
 #if defined(RELEASE)
 #define RELEASE_BUILD
@@ -80,5 +81,21 @@
 // -----------------------------------------------------------------------------
 
 BEGIN_APPLEMIDI_NAMESPACE
+
+#if defined(APPLEMIDI_DEBUG) && !defined(Arduino)
+class SerialClass
+{
+public:
+	void print(const char* msg) { printf("%s", msg); }
+	void print(int val) { printf("%d", val); }
+	void print(int val, int flags) { printf("%x", val); }
+	void println(const char* msg) { printf("%s\n", msg); }
+	void println(int val) { printf("%d\n", val); }
+	void println(int val, int flags) { printf("%x\n", val); }
+	void println() { printf("\n"); }
+};
+extern SerialClass Serial;
+static const int HEX = 1;
+#endif
 
 END_APPLEMIDI_NAMESPACE

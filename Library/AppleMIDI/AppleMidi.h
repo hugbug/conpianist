@@ -37,6 +37,7 @@ BEGIN_APPLEMIDI_NAMESPACE
 class IRtpMidi
 {
 public:
+	virtual ~IRtpMidi() {}
 	virtual bool PassesFilter(void* sender, DataByte, DataByte) = 0;
 
 	virtual void OnNoteOn(void* sender, DataByte, DataByte, DataByte) = 0;

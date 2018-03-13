@@ -62,10 +62,10 @@ public:
 	void addPacket(unsigned char* packetBuffer, size_t packetSize)
 	{
 		#ifdef APPLEMIDI_DEBUG_PARSING
-		DEBUGSTREAM.print("Incoming buffer of " + String(packetSize, DEC) + " bytes: ");
+		DEBUGSTREAM.print("Incoming buffer of "); DEBUGSTREAM.print((int)packetSize); DEBUGSTREAM.print(" bytes: ");
 		int idx = 0;
 		while (idx < packetSize) {
-			DEBUGSTREAM.print(String(packetBuffer[idx], HEX) + " ");
+			DEBUGSTREAM.print(packetBuffer[idx], HEX); DEBUGSTREAM.print(" ");
 			idx++;
 		}
 		DEBUGSTREAM.println();
