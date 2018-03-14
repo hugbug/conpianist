@@ -27,6 +27,15 @@
             file="Graphics/button-volume.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="xAI2R7" name="LocalMidiConnector.cpp" compile="1" resource="0"
+            file="Source/LocalMidiConnector.cpp"/>
+      <FILE id="QXgKBk" name="LocalMidiConnector.h" compile="0" resource="0"
+            file="Source/LocalMidiConnector.h"/>
+      <FILE id="lJUC5J" name="MidiConnector.h" compile="0" resource="0" file="Source/MidiConnector.h"/>
+      <FILE id="GiMFc0" name="RtpMidiConnector.cpp" compile="1" resource="0"
+            file="Source/RtpMidiConnector.cpp"/>
+      <FILE id="rDuod0" name="RtpMidiConnector.h" compile="0" resource="0"
+            file="Source/RtpMidiConnector.h"/>
       <FILE id="Gr0GeF" name="MidiSocket.cpp" compile="1" resource="0" file="Source/MidiSocket.cpp"/>
       <FILE id="eipjpN" name="MidiSocket.h" compile="0" resource="0" file="Source/MidiSocket.h"/>
       <FILE id="QzvRE7" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>

@@ -75,7 +75,8 @@ SceneComponent::SceneComponent ()
 	playbackPanel->addAndMakeVisible(playbackComponent);
 
 	SettingsComponent::loadState(audioDeviceManager, pianoController);
-	pianoController.SetAudioDeviceManager(&audioDeviceManager);
+	localMidiConnector.SetAudioDeviceManager(&audioDeviceManager);
+	pianoController.SetMidiConnector(&localMidiConnector);
     pianoController.addChangeListener(this);
     //[/Constructor]
 }

@@ -21,10 +21,12 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class PianoController : public MidiInputCallback, public ChangeBroadcaster
+#include "MidiConnector.h"
+
+class PianoController : public MidiConnector::Listener, public ChangeBroadcaster
 {
 public:
-	void SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager);
+	void SetMidiConnector(MidiConnector* midiConnector);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
@@ -54,10 +56,10 @@ public:
 	bool GetRightPart() { return m_rightPart; }
 	void SetRightPart(bool enable);
 
-	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
+	void IncomingMidiMessage(const MidiMessage& message);
 
 private:
-	AudioDeviceManager* m_audioDeviceManager;
+	MidiConnector* m_midiConnector;
 	String m_remoteIp;
 	String m_model;
 	String m_version;

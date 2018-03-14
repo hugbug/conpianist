@@ -23,6 +23,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
 #include "PlaybackComponent.h"
+#include "LocalMidiConnector.h"
 //[/Headers]
 
 
@@ -62,6 +63,7 @@ private:
     AudioDeviceManager audioDeviceManager;
     PianoController pianoController;
     PlaybackComponent playbackComponent;
+	LocalMidiConnector localMidiConnector;
     //[/UserVariables]
 
     //==============================================================================

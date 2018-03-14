@@ -64,10 +64,10 @@ void Sleep(int Milliseconds)
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + Milliseconds);
 }
 
-void PianoController::SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager)
+void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 {
-	m_audioDeviceManager = audioDeviceManager;
-    audioDeviceManager->addMidiInputCallback("", this);
+	m_midiConnector = midiConnector;
+	midiConnector->SetListener(this);
 }
 
 void PianoController::Connect()
@@ -111,14 +111,9 @@ void PianoController::Connect()
 
 void PianoController::SetLocalControl(bool enabled)
 {
-	if (!m_audioDeviceManager->getDefaultMidiOutput())
-	{
-		return;
-	}
-
 	m_localControl = enabled;
 	MidiMessage localControlMessage = MidiMessage::controllerEvent(1, 122, enabled ? 127 : 0);
-	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(localControlMessage);
+	m_midiConnector->SendMessage(localControlMessage);
 	sendChangeMessage();
 }
 
@@ -158,15 +153,10 @@ bool PianoController::UploadSong(const File& file)
 
 void PianoController::SendSysExMessage(const String& command)
 {
-	if (!m_audioDeviceManager->getDefaultMidiOutput())
-	{
-		return;
-	}
-
 	MemoryBlock rawData;
 	rawData.loadFromHexString(command);
 	MidiMessage message = MidiMessage::createSysExMessage(rawData.getData(), (int)rawData.getSize());
-	m_audioDeviceManager->getDefaultMidiOutput()->sendMessageNow(message);
+	m_midiConnector->SendMessage(message);
 }
 
 void PianoController::SendCspMessage(const String& command, bool addDefaultCommandPrefix)
@@ -242,7 +232,7 @@ bool PianoController::IsCspMessage(const MidiMessage& message, const char* messa
 	return ret;
 }
 
-void PianoController::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
+void PianoController::IncomingMidiMessage(const MidiMessage& message)
 {
 	if (message.isSysEx())
 	{
