@@ -30,13 +30,14 @@ public:
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
+	void Disconnect();
 	bool UploadSong(const File& file);
 	void Play();
 	void Pause();
 	void Stop();
 	const String& GetModel() { return m_model; }
 	const String& GetVersion() { return m_version; }
-	bool GetConnected() { return m_connected; }
+	bool IsConnected() { return m_connected; }
 	bool GetPlaying() { return m_playing; }
 	bool GetGuide() { return m_guide; }
 	void SetGuide(bool enable);

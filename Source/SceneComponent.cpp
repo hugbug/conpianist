@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.2.1
+  Created with Projucer version: 5.3.0
 
   ------------------------------------------------------------------------------
 
@@ -18,7 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include "SettingsComponent.h"
+#include "ConnectionComponent.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -39,14 +39,6 @@ SceneComponent::SceneComponent ()
                                                          TRANS("Top Bar")));
     topbarPanel->setTextLabelPosition (Justification::centred);
 
-    addAndMakeVisible (connectButton = new TextButton ("Connect Button"));
-    connectButton->setButtonText (TRANS("Connect"));
-    connectButton->addListener (this);
-
-    addAndMakeVisible (settingsButton = new TextButton ("Settings Button"));
-    settingsButton->setButtonText (TRANS("Settings..."));
-    settingsButton->addListener (this);
-
     addAndMakeVisible (playbackPanel = new Component());
     playbackPanel->setName ("Playback Panel");
 
@@ -62,6 +54,27 @@ SceneComponent::SceneComponent ()
                            ImageCache::getFromMemory (BinaryData::buttonvolume_png, BinaryData::buttonvolume_pngSize), 1.000f, Colour (0x00000000),
                            Image(), 0.750f, Colour (0x00000000),
                            Image(), 1.000f, Colour (0x00000000));
+    addAndMakeVisible (statusLabel = new Label ("Status Label",
+                                                TRANS("Looking for the instrument")));
+    statusLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    statusLabel->setJustificationType (Justification::centredLeft);
+    statusLabel->setEditable (false, false, false);
+    statusLabel->setColour (TextEditor::textColourId, Colours::black);
+    statusLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    statusLabel->setBounds (48, 11, 240, 24);
+
+    addAndMakeVisible (connectionButton = new ImageButton ("Connection Button"));
+    connectionButton->setTooltip (TRANS("Connection Settings"));
+    connectionButton->setButtonText (TRANS("Mute"));
+    connectionButton->addListener (this);
+
+    connectionButton->setImages (false, true, true,
+                                 ImageCache::getFromMemory (BinaryData::buttonport_png, BinaryData::buttonport_pngSize), 1.000f, Colour (0x00000000),
+                                 Image(), 0.750f, Colour (0x00000000),
+                                 Image(), 1.000f, Colour (0x00000000));
+    connectionButton->setBounds (8, 8, 32, 28);
+
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -74,13 +87,16 @@ SceneComponent::SceneComponent ()
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
 
-	SettingsComponent::loadState(audioDeviceManager, pianoController);
+	ConnectionComponent::loadState(audioDeviceManager, pianoController);
 	localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
-	//pianoController.SetMidiConnector(localMidiConnector);
     pianoController.addChangeListener(this);
 	rtpMidiConnector = new RtpMidiConnector(pianoController.GetRemoteIp());
+	midiConnector = rtpMidiConnector;
+	pianoController.SetMidiConnector(midiConnector);
+
 	rtpMidiConnector->startThread();
-	pianoController.SetMidiConnector(rtpMidiConnector);
+
+	startTimer(250);
     //[/Constructor]
 }
 
@@ -91,11 +107,11 @@ SceneComponent::~SceneComponent()
     //[/Destructor_pre]
 
     topbarPanel = nullptr;
-    connectButton = nullptr;
-    settingsButton = nullptr;
     playbackPanel = nullptr;
     largeContentPanel = nullptr;
     muteButton = nullptr;
+    statusLabel = nullptr;
+    connectionButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -111,7 +127,7 @@ void SceneComponent::paint (Graphics& g)
     g.fillAll (Colour (0xff323e44));
 
     {
-        int x = 290, y = 56, width = getWidth() - 288, height = getHeight() - 52;
+        int x = 290, y = 44, width = getWidth() - 288, height = getHeight() - 36;
         Colour strokeColour = Colour (0xff4e5b62);
         //[UserPaintCustomArguments] Customize the painting arguments here..
         //[/UserPaintCustomArguments]
@@ -129,12 +145,10 @@ void SceneComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    topbarPanel->setBounds (0, -8, getWidth() - 0, 64);
-    connectButton->setBounds (0 + 124 - (216 / 2), (-8) + 21, 216, 28);
-    settingsButton->setBounds (0 + 284 - (88 / 2), (-8) + 21, 88, 28);
-    playbackPanel->setBounds (0, (-8) + 64, 290, getHeight() - 54);
-    largeContentPanel->setBounds (0 + 290, (-8) + 64, getWidth() - 290, getHeight() - 54);
-    muteButton->setBounds (getWidth() - 11 - 32, 13, 32, 28);
+    topbarPanel->setBounds (0, -8, getWidth() - 0, 52);
+    playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 42);
+    largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 42);
+    muteButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -144,23 +158,17 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == connectButton)
-    {
-        //[UserButtonCode_connectButton] -- add your button handler code here..
-        pianoController.Connect();
-        //[/UserButtonCode_connectButton]
-    }
-    else if (buttonThatWasClicked == settingsButton)
-    {
-        //[UserButtonCode_settingsButton] -- add your button handler code here..
-		showSettingsDialog();
-        //[/UserButtonCode_settingsButton]
-    }
-    else if (buttonThatWasClicked == muteButton)
+    if (buttonThatWasClicked == muteButton)
     {
         //[UserButtonCode_muteButton] -- add your button handler code here..
         pianoController.SetLocalControl(!pianoController.GetLocalControl());
         //[/UserButtonCode_muteButton]
+    }
+    else if (buttonThatWasClicked == connectionButton)
+    {
+        //[UserButtonCode_connectionButton] -- add your button handler code here..
+		showConnectionDialog();
+        //[/UserButtonCode_connectionButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -182,11 +190,14 @@ void SceneComponent::updateSettingsState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			connectButton->setToggleState(pianoController.GetConnected(), NotificationType::dontSendNotification);
-			connectButton->setButtonText(!pianoController.GetConnected() ? "Connect" :
-				String("Connected to ") + pianoController.GetModel() + " (" + pianoController.GetVersion() + ")");
+			if (pianoController.IsConnected())
+			{
+				statusLabel->setText(String("Connected to ") + pianoController.GetModel() +
+					" (" + pianoController.GetVersion() + ")",
+					NotificationType::dontSendNotification);
+			}
 
-			bool mute = !pianoController.GetLocalControl() && pianoController.GetConnected();
+			bool mute = !pianoController.GetLocalControl() && pianoController.IsConnected();
 			muteButton->setImages(false, true, true, ImageCache::getFromMemory(
 					mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
 					mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
@@ -194,10 +205,36 @@ void SceneComponent::updateSettingsState()
 		});
 }
 
-void SceneComponent::showSettingsDialog()
+void SceneComponent::showConnectionDialog()
 {
-	SettingsComponent::showDialog(audioDeviceManager, pianoController);
+	ConnectionComponent::showDialog(audioDeviceManager, pianoController);
 }
+
+void SceneComponent::timerCallback()
+{
+	if (!midiConnector->IsConnected())
+	{
+		pianoController.Disconnect();
+	}
+
+	if (!pianoController.IsConnected())
+	{
+		String prefix = midiConnector->IsConnected() ? "Connecting to the instrument" : "Looking for the instrument";
+		String status = statusLabel->getText();
+		if (status.startsWith(prefix) && status.length() < prefix.length() + 10)
+		{
+			status += ".";
+		}
+		else
+		{
+			status = prefix;
+		}
+		statusLabel->setText(status, NotificationType::dontSendNotification);
+
+		pianoController.Connect();
+	}
+}
+
 //[/MiscUserCode]
 
 
@@ -211,36 +248,42 @@ void SceneComponent::showSettingsDialog()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public ChangeListener" constructorParams=""
-                 variableInitialisers="playbackComponent(pianoController)" snapPixels="8"
-                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="850" initialHeight="550">
+                 parentClasses="public Component, public ChangeListener, public Timer"
+                 constructorParams="" variableInitialisers="playbackComponent(pianoController)"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
-    <RECT pos="290 56 288M 52M" fill="solid: f0ffff" hasStroke="1" stroke="2.1, mitered, butt"
+    <RECT pos="290 44 288M 36M" fill="solid: f0ffff" hasStroke="1" stroke="2.1, mitered, butt"
           strokeColour="solid: ff4e5b62"/>
   </BACKGROUND>
   <GROUPCOMPONENT name="Top Bar" id="69305d91c2150486" memberName="topbarPanel"
-                  virtualName="" explicitFocusOrder="0" pos="0 -8 0M 64" title="Top Bar"
+                  virtualName="" explicitFocusOrder="0" pos="0 -8 0M 52" title="Top Bar"
                   textpos="36"/>
-  <TEXTBUTTON name="Connect Button" id="a82c92b5d1470311" memberName="connectButton"
-              virtualName="" explicitFocusOrder="0" pos="124c 21 216 28" posRelativeX="69305d91c2150486"
-              posRelativeY="69305d91c2150486" buttonText="Connect" connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="Settings Button" id="bf47ed7d30088c39" memberName="settingsButton"
-              virtualName="" explicitFocusOrder="0" pos="284c 21 88 28" posRelativeX="69305d91c2150486"
-              posRelativeY="69305d91c2150486" buttonText="Settings..." connectedEdges="0"
-              needsCallback="1" radioGroupId="0"/>
   <GENERICCOMPONENT name="Playback Panel" id="cf6dcbcdc3b17ace" memberName="playbackPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0 64 290 54M" posRelativeY="69305d91c2150486"
+                    virtualName="" explicitFocusOrder="0" pos="0 52 290 42M" posRelativeY="69305d91c2150486"
                     class="Component" params=""/>
   <GENERICCOMPONENT name="Large Content" id="5d00b51e97f2c31f" memberName="largeContentPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0R 64 290M 54M" posRelativeX="cf6dcbcdc3b17ace"
+                    virtualName="" explicitFocusOrder="0" pos="0R 52 290M 42M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
-               virtualName="" explicitFocusOrder="0" pos="11Rr 13 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
+               opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
+               opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
+               opacityDown="1.00000000000000000000" colourDown="0"/>
+  <LABEL name="Status Label" id="71086bde8935001" memberName="statusLabel"
+         virtualName="" explicitFocusOrder="0" pos="48 11 240 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Looking for the instrument" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="33"/>
+  <IMAGEBUTTON name="Connection Button" id="c87eaad1c0559e4c" memberName="connectionButton"
+               virtualName="" explicitFocusOrder="0" pos="8 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Connection Settings"
+               buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
+               keepProportions="1" resourceNormal="BinaryData::buttonport_png"
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>

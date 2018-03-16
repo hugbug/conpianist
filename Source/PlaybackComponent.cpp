@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.2.1
+  Created with Projucer version: 5.3.0
 
   ------------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     songGroup->setTextLabelPosition (Justification::centred);
 
     addAndMakeVisible (songLabel = new Label ("Song Label",
-                                              TRANS("Not connected to piano yet")));
+                                              TRANS("Click here and select a Song")));
     songLabel->setFont (Font (23.70f, Font::plain).withTypefaceStyle ("Regular"));
     songLabel->setJustificationType (Justification::centredLeft);
     songLabel->setEditable (false, false, false);
@@ -432,19 +432,15 @@ void PlaybackComponent::updateSettingsState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			guideButton->setToggleState(pianoController.GetGuide() && pianoController.GetConnected(), NotificationType::dontSendNotification);
-			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.GetConnected(), NotificationType::dontSendNotification);
-			//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			guideButton->setToggleState(pianoController.GetGuide() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+			//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 
-			backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
-			leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
-			rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.GetConnected(), NotificationType::dontSendNotification);
+			backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+			leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+			rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 
 			updateEnabledControls();
-			if (pianoController.GetConnected() && songLabel->getText() == "Not connected to piano yet")
-			{
-				songLabel->setText("Click here and select a Song", NotificationType::dontSendNotification);
-			}
 		});
 }
 
@@ -452,7 +448,7 @@ void PlaybackComponent::updateEnabledControls()
 {
 	for (Component* co : getChildren())
 	{
-		co->setEnabled(pianoController.GetConnected());
+		co->setEnabled(pianoController.IsConnected());
 	}
 }
 
@@ -497,7 +493,7 @@ BEGIN_JUCER_METADATA
          virtualName="" explicitFocusOrder="0" pos="12 16 59M 29M" posRelativeX="4e6df4a0ae6e851b"
          posRelativeY="4e6df4a0ae6e851b" posRelativeW="4e6df4a0ae6e851b"
          posRelativeH="4e6df4a0ae6e851b" edTextCol="ff000000" edBkgCol="0"
-         labelText="Not connected to piano yet" editableSingleClick="0"
+         labelText="Click here and select a Song" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="23.69999999999999928946" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>

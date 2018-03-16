@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.2.1
+  Created with Projucer version: 5.3.0
 
   ------------------------------------------------------------------------------
 
@@ -39,6 +39,7 @@
 */
 class SceneComponent  : public Component,
                         public ChangeListener,
+                        public Timer,
                         public Button::Listener
 {
 public:
@@ -50,7 +51,8 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
 	void updateSettingsState();
-	void showSettingsDialog();
+	void showConnectionDialog();
+	void timerCallback() override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -66,15 +68,16 @@ private:
     PlaybackComponent playbackComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
+	MidiConnector* midiConnector;
     //[/UserVariables]
 
     //==============================================================================
     ScopedPointer<GroupComponent> topbarPanel;
-    ScopedPointer<TextButton> connectButton;
-    ScopedPointer<TextButton> settingsButton;
     ScopedPointer<Component> playbackPanel;
     ScopedPointer<Component> largeContentPanel;
     ScopedPointer<ImageButton> muteButton;
+    ScopedPointer<Label> statusLabel;
+    ScopedPointer<ImageButton> connectionButton;
 
 
     //==============================================================================

@@ -37,5 +37,5 @@ public:
 	virtual bool IsConnected() = 0;
 
 protected:
-	Listener* m_listener;
+	Listener* m_listener = nullptr;
 };

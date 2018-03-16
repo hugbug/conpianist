@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.2.1
+  Created with Projucer version: 5.3.0
 
   ------------------------------------------------------------------------------
 
@@ -24,7 +24,7 @@
 #include "PianoController.h"
 //[/Headers]
 
-#include "../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
+#include "../JuceLibraryCode/JuceHeader.h"
 
 
 //==============================================================================
@@ -35,12 +35,12 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class SettingsComponent  : public Component
+class ConnectionComponent  : public Component
 {
 public:
     //==============================================================================
-    SettingsComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
-    ~SettingsComponent();
+    ConnectionComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
+    ~ConnectionComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -67,7 +67,7 @@ private:
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SettingsComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ConnectionComponent)
 };
 
 //[EndFile] You can add extra defines here...

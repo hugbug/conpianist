@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.2.1" bundleIdentifier="prygunkov.ConPianist"
+<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.3.0" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
               companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist"
               headerPath="../../Library/AppleMIDI">
@@ -21,6 +21,7 @@
       <FILE id="H3P4oz" name="button-pause.png" compile="0" resource="1"
             file="Graphics/button-pause.png"/>
       <FILE id="U2jTFv" name="button-play.png" compile="0" resource="1" file="Graphics/button-play.png"/>
+      <FILE id="Vr6xUh" name="button-port.png" compile="0" resource="1" file="Graphics/button-port.png"/>
       <FILE id="RvNrFL" name="button-rewind.png" compile="0" resource="1"
             file="Graphics/button-rewind.png"/>
       <FILE id="IAf0NR" name="button-volume.png" compile="0" resource="1"
@@ -44,10 +45,10 @@
             file="Source/PlaybackComponent.cpp"/>
       <FILE id="jTu8hN" name="PlaybackComponent.h" compile="0" resource="0"
             file="Source/PlaybackComponent.h"/>
-      <FILE id="RrTKjG" name="SettingsComponent.cpp" compile="1" resource="0"
-            file="Source/SettingsComponent.cpp"/>
-      <FILE id="q3B7qa" name="SettingsComponent.h" compile="0" resource="0"
-            file="Source/SettingsComponent.h"/>
+      <FILE id="RrTKjG" name="ConnectionComponent.cpp" compile="1" resource="0"
+            file="Source/ConnectionComponent.cpp"/>
+      <FILE id="q3B7qa" name="ConnectionComponent.h" compile="0" resource="0"
+            file="Source/ConnectionComponent.h"/>
       <FILE id="lUlOfq" name="PianoController.cpp" compile="1" resource="0"
             file="Source/PianoController.cpp"/>
       <FILE id="HktPbc" name="PianoController.h" compile="0" resource="0"

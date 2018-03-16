@@ -109,6 +109,12 @@ void PianoController::Connect()
 	sendChangeMessage();
 }
 
+void PianoController::Disconnect()
+{
+	m_connected = false;
+	sendChangeMessage();
+}
+
 void PianoController::SetLocalControl(bool enabled)
 {
 	m_localControl = enabled;

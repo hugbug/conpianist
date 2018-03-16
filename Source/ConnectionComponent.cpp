@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.2.1
+  Created with Projucer version: 5.3.0
 
   ------------------------------------------------------------------------------
 
@@ -20,14 +20,14 @@
 //[Headers] You can add your own extra header files here...
 //[/Headers]
 
-#include "SettingsComponent.h"
+#include "ConnectionComponent.h"
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
 //[/MiscUserDefs]
 
 //==============================================================================
-SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+ConnectionComponent::ConnectionComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
     : audioDeviceManager(audioDeviceManager), pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
@@ -67,7 +67,7 @@ SettingsComponent::SettingsComponent (AudioDeviceManager& audioDeviceManager, Pi
     //[/Constructor]
 }
 
-SettingsComponent::~SettingsComponent()
+ConnectionComponent::~ConnectionComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
 	pianoController.SetRemoteIp(remoteIpEdit->getText());
@@ -84,7 +84,7 @@ SettingsComponent::~SettingsComponent()
 }
 
 //==============================================================================
-void SettingsComponent::paint (Graphics& g)
+void ConnectionComponent::paint (Graphics& g)
 {
     //[UserPrePaint] Add your own custom painting code here..
     //[/UserPrePaint]
@@ -95,13 +95,13 @@ void SettingsComponent::paint (Graphics& g)
     //[/UserPaint]
 }
 
-void SettingsComponent::resized()
+void ConnectionComponent::resized()
 {
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
     audioSelector->setBounds (16, 16 + 24, getWidth() - 30, 192);
-    remoteIpEdit->setBounds (proportionOfWidth (0.3601f), 16, 136, 24);
+    remoteIpEdit->setBounds (proportionOfWidth (0.3605f), 16, 136, 24);
     //[UserResized] Add your own custom resize handling here..
 	audioSelector->resized();
 	remoteIpEdit->setTopLeftPosition(6 + proportionOfWidth (0.3500f), remoteIpEdit->getY());
@@ -111,7 +111,7 @@ void SettingsComponent::resized()
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void SettingsComponent::saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+void ConnectionComponent::saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	XmlElement state("ConPianistState");
 	XmlElement* audioState = audioDeviceManager.createStateXml();
@@ -126,7 +126,7 @@ void SettingsComponent::saveState(AudioDeviceManager& audioDeviceManager, PianoC
 	state.writeToFile(stateFile, "");
 }
 
-void SettingsComponent::loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+void ConnectionComponent::loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	if (!stateFile.exists())
@@ -150,11 +150,13 @@ void SettingsComponent::loadState(AudioDeviceManager& audioDeviceManager, PianoC
 	}
 }
 
-void SettingsComponent::showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+void ConnectionComponent::showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
 {
 	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(new SettingsComponent(audioDeviceManager, pianoController));
-	dialog.dialogTitle = "Settings";
+	dialog.content.setOwned(new ConnectionComponent(audioDeviceManager, pianoController));
+	dialog.dialogTitle = "Connection Settings";
+	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
+		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
 	dialog.launchAsync();
 }
 //[/MiscUserCode]
@@ -169,7 +171,7 @@ void SettingsComponent::showDialog(AudioDeviceManager& audioDeviceManager, Piano
 
 BEGIN_JUCER_METADATA
 
-<JUCER_COMPONENT documentType="Component" className="SettingsComponent" componentName=""
+<JUCER_COMPONENT documentType="Component" className="ConnectionComponent" componentName=""
                  parentClasses="public Component" constructorParams="AudioDeviceManager&amp; audioDeviceManager, PianoController&amp; pianoController"
                  variableInitialisers="audioDeviceManager(audioDeviceManager), pianoController(pianoController)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
@@ -177,7 +179,7 @@ BEGIN_JUCER_METADATA
   <BACKGROUND backgroundColour="ff323e44"/>
   <JUCERCOMP name="Audio Selector" id="ddeb8c497281f468" memberName="audioSelector"
              virtualName="AudioDeviceSelectorComponent" explicitFocusOrder="0"
-             pos="16 0R 30M 192" posRelativeY="83358b622e96ec09" sourceFile="../../JUCE/modules/juce_audio_utils/juce_audio_utils.h"
+             pos="16 0R 30M 192" posRelativeY="83358b622e96ec09" sourceFile="../JuceLibraryCode/JuceHeader.h"
              constructorParams="audioDeviceManager, 0, 0, 0, 0, true, true, true, false"/>
   <LABEL name="RemoteIP Label" id="a2bb47b511220552" memberName="remoteIpLabel"
          virtualName="" explicitFocusOrder="0" pos="104 16 112 24" edTextCol="ff000000"
@@ -186,7 +188,7 @@ BEGIN_JUCER_METADATA
          fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="34"/>
   <TEXTEDITOR name="Remote IP Edit" id="83358b622e96ec09" memberName="remoteIpEdit"
-              virtualName="" explicitFocusOrder="0" pos="36.013% 16 136 24"
+              virtualName="" explicitFocusOrder="0" pos="36.045% 16 136 24"
               initialText="192.168.1.235" multiline="0" retKeyStartsLine="0"
               readonly="0" scrollbars="0" caret="1" popupmenu="1"/>
 </JUCER_COMPONENT>
