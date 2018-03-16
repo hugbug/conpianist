@@ -23,9 +23,16 @@
 
 #include "MidiConnector.h"
 
-class RtpMidiConnector : public MidiConnector
+class RtpMidiConnector : public MidiConnector, public Thread
 {
 public:
+	RtpMidiConnector(String remoteIp) : Thread("RtpMidiConnector"), m_remoteIp(remoteIp) {}
+	void SendMessage(const MidiMessage& message) override;
+	bool IsConnected() override { return m_connected; }
+	void run() override;
 
 private:
+	String m_remoteIp;
+	void* m_socket = nullptr;
+	bool m_connected = false;
 };

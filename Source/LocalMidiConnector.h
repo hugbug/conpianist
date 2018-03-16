@@ -26,11 +26,11 @@
 class LocalMidiConnector : public MidiConnector, public MidiInputCallback
 {
 public:
-	void SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager);
+	LocalMidiConnector(AudioDeviceManager* audioDeviceManager);
 	void SendMessage(const MidiMessage& message) override;
 	bool IsConnected() override;
 	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
 
 private:
-	AudioDeviceManager* m_audioDeviceManager = nullptr;
+	AudioDeviceManager* m_audioDeviceManager;
 };

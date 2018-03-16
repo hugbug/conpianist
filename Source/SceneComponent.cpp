@@ -75,15 +75,19 @@ SceneComponent::SceneComponent ()
 	playbackPanel->addAndMakeVisible(playbackComponent);
 
 	SettingsComponent::loadState(audioDeviceManager, pianoController);
-	localMidiConnector.SetAudioDeviceManager(&audioDeviceManager);
-	pianoController.SetMidiConnector(&localMidiConnector);
+	localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
+	//pianoController.SetMidiConnector(localMidiConnector);
     pianoController.addChangeListener(this);
+	rtpMidiConnector = new RtpMidiConnector(pianoController.GetRemoteIp());
+	rtpMidiConnector->startThread();
+	pianoController.SetMidiConnector(rtpMidiConnector);
     //[/Constructor]
 }
 
 SceneComponent::~SceneComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
+	rtpMidiConnector->stopThread(1000);
     //[/Destructor_pre]
 
     topbarPanel = nullptr;

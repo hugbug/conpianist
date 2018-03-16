@@ -21,9 +21,9 @@
 
 #include "LocalMidiConnector.h"
 
-void LocalMidiConnector::SetAudioDeviceManager(AudioDeviceManager* audioDeviceManager)
+LocalMidiConnector::LocalMidiConnector(AudioDeviceManager* audioDeviceManager)
+	: m_audioDeviceManager(audioDeviceManager)
 {
-	m_audioDeviceManager = audioDeviceManager;
 	m_audioDeviceManager->addMidiInputCallback("", this);
 }
 

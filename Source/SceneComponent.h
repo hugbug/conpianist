@@ -24,6 +24,7 @@
 #include "PianoController.h"
 #include "PlaybackComponent.h"
 #include "LocalMidiConnector.h"
+#include "RtpMidiConnector.h"
 //[/Headers]
 
 
@@ -63,7 +64,8 @@ private:
     AudioDeviceManager audioDeviceManager;
     PianoController pianoController;
     PlaybackComponent playbackComponent;
-	LocalMidiConnector localMidiConnector;
+	ScopedPointer<LocalMidiConnector> localMidiConnector;
+	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
     //[/UserVariables]
 
     //==============================================================================

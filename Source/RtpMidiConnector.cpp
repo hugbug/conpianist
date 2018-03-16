@@ -18,5 +18,93 @@
  */
 
 #include "../JuceLibraryCode/JuceHeader.h"
-
+#include "AppleMidi.h"
+#include "MidiSocket.h"
 #include "RtpMidiConnector.h"
+
+class RtpMidi : public appleMidi::AppleMidi_Class<appleMidi::MidiSocket>
+{
+public:
+	RtpMidi(MidiConnector::Listener* listener, bool& connected)
+		: m_listener(listener), m_connected(connected) {}
+	void CheckConenction();
+	void OnActiveSensing(void* sender) override;
+	void OnSysEx(void* sender, const byte* data, uint16_t size) override;
+
+private:
+	unsigned long m_lastSensing = 0;
+	MidiConnector::Listener* m_listener = nullptr;
+	bool& m_connected;
+};
+
+void RtpMidi::OnActiveSensing(void* sender)
+{
+	appleMidi::AppleMidi_Class<appleMidi::MidiSocket>::OnActiveSensing(sender);
+	m_lastSensing = appleMidi::millis();
+	m_connected = true;
+}
+
+void RtpMidi::OnSysEx(void* sender, const byte* data, uint16_t size)
+{
+	if (!m_listener)
+	{
+		return;
+	}
+
+	m_listener->IncomingMidiMessage(MidiMessage::createSysExMessage(data + 1, size - 2));
+}
+
+void RtpMidi::CheckConenction()
+{
+	unsigned long lastTime = Sessions[0].syncronization.lastTime;
+	if (lastTime > 0)
+	{
+		unsigned long delta = appleMidi::millis() - m_lastSensing;
+		if (delta > 3000)
+		{
+			DeleteSession(0);
+			m_connected = false;
+		}
+	}
+}
+
+void RtpMidiConnector::run()
+{
+	std::srand((unsigned int)juce::Time::currentTimeMillis());
+
+	appleMidi::IPAddress remoteIp(m_remoteIp.getCharPointer());
+
+	RtpMidi rtpMidi(m_listener, m_connected);
+	m_socket = &rtpMidi;
+
+	rtpMidi.begin("ConPianist", 5006);
+
+	while (!threadShouldExit())
+	{
+		// check connection lost and reinvite
+		rtpMidi.CheckConenction();
+		if (rtpMidi.GetFreeSessionSlot() == 0)
+		{
+			rtpMidi.invite(remoteIp);
+		}
+
+		// process incoming messages
+		rtpMidi.run();
+
+		Thread::sleep(10);
+	}
+}
+
+void RtpMidiConnector::SendMessage(const MidiMessage& message)
+{
+	RtpMidi* rtpMidi = (RtpMidi*)m_socket;
+
+	if (message.isController())
+	{
+		rtpMidi->controlChange(message.getControllerNumber(), message.getControllerValue(), message.getChannel());
+	}
+	else if (message.isSysEx())
+	{
+		rtpMidi->sysEx(message.getSysExData() - 1, message.getSysExDataSize() + 2);
+	}
+}
