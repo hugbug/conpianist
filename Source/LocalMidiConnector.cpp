@@ -25,11 +25,23 @@ LocalMidiConnector::LocalMidiConnector(AudioDeviceManager* audioDeviceManager)
 	: m_audioDeviceManager(audioDeviceManager)
 {
 	m_audioDeviceManager->addMidiInputCallback("", this);
+	if (m_audioDeviceManager->getDefaultMidiOutput())
+	{
+		m_outputName = m_audioDeviceManager->getDefaultMidiOutput()->getName();
+	}
+}
+
+LocalMidiConnector::~LocalMidiConnector()
+{
+	m_audioDeviceManager->removeMidiInputCallback("", this);
 }
 
 void LocalMidiConnector::handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message)
 {
-	if (m_listener) m_listener->IncomingMidiMessage(message);
+	if (m_listener)
+	{
+		m_listener->IncomingMidiMessage(message);
+	}
 }
 
 void LocalMidiConnector::SendMessage(const MidiMessage& message)
@@ -42,5 +54,6 @@ void LocalMidiConnector::SendMessage(const MidiMessage& message)
 
 bool LocalMidiConnector::IsConnected()
 {
-	return m_audioDeviceManager->getDefaultMidiOutput() != nullptr;
+	return m_audioDeviceManager->getDefaultMidiOutput() != nullptr &&
+		m_audioDeviceManager->getDefaultMidiOutput()->getName() == m_outputName;
 }

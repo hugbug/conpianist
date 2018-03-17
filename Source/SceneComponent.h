@@ -25,6 +25,7 @@
 #include "PlaybackComponent.h"
 #include "LocalMidiConnector.h"
 #include "RtpMidiConnector.h"
+#include "Settings.h"
 //[/Headers]
 
 
@@ -53,6 +54,8 @@ public:
 	void updateSettingsState();
 	void showConnectionDialog();
 	void timerCallback() override;
+	void applySettings();
+	void checkConnection();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -68,7 +71,8 @@ private:
     PlaybackComponent playbackComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
-	MidiConnector* midiConnector;
+	MidiConnector* midiConnector = nullptr;
+	Settings settings;
     //[/UserVariables]
 
     //==============================================================================

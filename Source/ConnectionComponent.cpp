@@ -27,56 +27,73 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-ConnectionComponent::ConnectionComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
-    : audioDeviceManager(audioDeviceManager), pianoController(pianoController)
+ConnectionComponent::ConnectionComponent (Settings& settings)
+    : settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    addAndMakeVisible (audioSelector = new AudioDeviceSelectorComponent (audioDeviceManager, 0, 0, 0, 0, true, true, true, false));
-    addAndMakeVisible (remoteIpLabel = new Label ("RemoteIP Label",
-                                                  TRANS("Piano IP Address:")));
-    remoteIpLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    remoteIpLabel->setJustificationType (Justification::centredRight);
-    remoteIpLabel->setEditable (false, false, false);
-    remoteIpLabel->setColour (TextEditor::textColourId, Colours::black);
-    remoteIpLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    addAndMakeVisible (pianoIpLabel = new Label ("Piano IP Label",
+                                                 TRANS("Piano IP Address:")));
+    pianoIpLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    pianoIpLabel->setJustificationType (Justification::centredRight);
+    pianoIpLabel->setEditable (false, false, false);
+    pianoIpLabel->setColour (TextEditor::textColourId, Colours::black);
+    pianoIpLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    remoteIpLabel->setBounds (104, 16, 112, 24);
+    pianoIpLabel->setBounds (128, 16, 144, 24);
 
-    addAndMakeVisible (remoteIpEdit = new TextEditor ("Remote IP Edit"));
-    remoteIpEdit->setMultiLine (false);
-    remoteIpEdit->setReturnKeyStartsNewLine (false);
-    remoteIpEdit->setReadOnly (false);
-    remoteIpEdit->setScrollbarsShown (false);
-    remoteIpEdit->setCaretVisible (true);
-    remoteIpEdit->setPopupMenuEnabled (true);
-    remoteIpEdit->setText (TRANS("192.168.1.235"));
+    addAndMakeVisible (pianoIpEdit = new TextEditor ("Piano IP Edit"));
+    pianoIpEdit->setMultiLine (false);
+    pianoIpEdit->setReturnKeyStartsNewLine (false);
+    pianoIpEdit->setReadOnly (false);
+    pianoIpEdit->setScrollbarsShown (false);
+    pianoIpEdit->setCaretVisible (true);
+    pianoIpEdit->setPopupMenuEnabled (true);
+    pianoIpEdit->setText (TRANS("192.168.1.235"));
+
+    addAndMakeVisible (midiPortLabel = new Label ("Midi Port Label",
+                                                  TRANS("Piano Midi Port:")));
+    midiPortLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    midiPortLabel->setJustificationType (Justification::centredRight);
+    midiPortLabel->setEditable (false, false, false);
+    midiPortLabel->setColour (TextEditor::textColourId, Colours::black);
+    midiPortLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    midiPortLabel->setBounds (128, 56, 144, 24);
+
+    addAndMakeVisible (midiPortComboBox = new ComboBox ("Midi Port ComboBox"));
+    midiPortComboBox->setEditableText (false);
+    midiPortComboBox->setJustificationType (Justification::centredLeft);
+    midiPortComboBox->setTextWhenNothingSelected (String());
+    midiPortComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    midiPortComboBox->addListener (this);
 
 
     //[UserPreSize]
-	remoteIpLabel->attachToComponent(remoteIpEdit, true);
-	remoteIpEdit->setText(pianoController.GetRemoteIp());
+	pianoIpLabel->attachToComponent(pianoIpEdit, true);
+	midiPortLabel->attachToComponent(midiPortComboBox, true);
+
+	load();
     //[/UserPreSize]
 
-    setSize (500, 200);
+    setSize (400, 90);
 
 
     //[Constructor] You can add your own custom stuff here..
-	setSize(500, audioSelector->getBottom());
     //[/Constructor]
 }
 
 ConnectionComponent::~ConnectionComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	pianoController.SetRemoteIp(remoteIpEdit->getText());
-	saveState(audioDeviceManager, pianoController);
+    save();
     //[/Destructor_pre]
 
-    audioSelector = nullptr;
-    remoteIpLabel = nullptr;
-    remoteIpEdit = nullptr;
+    pianoIpLabel = nullptr;
+    pianoIpEdit = nullptr;
+    midiPortLabel = nullptr;
+    midiPortComboBox = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -100,63 +117,75 @@ void ConnectionComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    audioSelector->setBounds (16, 16 + 24, getWidth() - 30, 192);
-    remoteIpEdit->setBounds (proportionOfWidth (0.3605f), 16, 136, 24);
+    pianoIpEdit->setBounds (proportionOfWidth (0.4000f), 16, 136, 24);
+    midiPortComboBox->setBounds (proportionOfWidth (0.4000f), 56, proportionOfWidth (0.5425f), 24);
     //[UserResized] Add your own custom resize handling here..
-	audioSelector->resized();
-	remoteIpEdit->setTopLeftPosition(6 + proportionOfWidth (0.3500f), remoteIpEdit->getY());
     //[/UserResized]
+}
+
+void ConnectionComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+    //[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == midiPortComboBox)
+    {
+        //[UserComboBoxCode_midiPortComboBox] -- add your combo box handling code here..
+        //[/UserComboBoxCode_midiPortComboBox]
+    }
+
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
 }
 
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void ConnectionComponent::saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+void ConnectionComponent::save()
 {
-	XmlElement state("ConPianistState");
-	XmlElement* audioState = audioDeviceManager.createStateXml();
-	if (audioState)
+	auto oldPianoIp = settings.pianoIp;
+	auto oldMidiPort = settings.midiPort;
+
+	settings.pianoIp = pianoIpEdit->getText();
+	settings.midiPort = midiPortComboBox->getSelectedId() == 1 ? "" : midiPortComboBox->getText();
+
+	if (oldPianoIp != settings.pianoIp || oldMidiPort != settings.midiPort)
 	{
-		state.addChildElement(audioState);
-	}
-
-	state.createNewChildElement("RemoteIp")->addTextElement(pianoController.GetRemoteIp());
-
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	state.writeToFile(stateFile, "");
-}
-
-void ConnectionComponent::loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
-{
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	if (!stateFile.exists())
-	{
-		return;
-	}
-
-	ScopedPointer<XmlElement> savedState = XmlDocument::parse(stateFile);
-
-	audioDeviceManager.initialise(0, 0, savedState ? savedState->getChildByName("DEVICESETUP") : nullptr, false);
-
-	if (!savedState)
-	{
-		return;
-	}
-
-	XmlElement* el = savedState->getChildByName("RemoteIp");
-	if (el)
-	{
-		pianoController.SetRemoteIp(el->getAllSubText());
+		settings.Save();
 	}
 }
 
-void ConnectionComponent::showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController)
+void ConnectionComponent::load()
+{
+	pianoIpEdit->setText(settings.pianoIp);
+
+	midiPortComboBox->addItem("Connect via Network", 1);
+
+	StringArray ports = MidiInput::getDevices();
+	midiPortComboBox->addItemList(ports, 2);
+
+	if (settings.midiPort == "")
+	{
+		midiPortComboBox->setSelectedId(1);
+	}
+	else
+	{
+		int ind = ports.indexOf(settings.midiPort);
+		if (ind > -1)
+		{
+			midiPortComboBox->setSelectedId(ind + 2);
+		}
+	}
+}
+
+void ConnectionComponent::showDialog(Settings& settings)
 {
 	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(new ConnectionComponent(audioDeviceManager, pianoController));
+	dialog.content.setOwned(new ConnectionComponent(settings));
 	dialog.dialogTitle = "Connection Settings";
 	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
 		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
+	dialog.resizable = false;
 	dialog.launchAsync();
 }
 //[/MiscUserCode]
@@ -172,25 +201,30 @@ void ConnectionComponent::showDialog(AudioDeviceManager& audioDeviceManager, Pia
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ConnectionComponent" componentName=""
-                 parentClasses="public Component" constructorParams="AudioDeviceManager&amp; audioDeviceManager, PianoController&amp; pianoController"
-                 variableInitialisers="audioDeviceManager(audioDeviceManager), pianoController(pianoController)"
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
-                 fixedSize="0" initialWidth="500" initialHeight="200">
+                 parentClasses="public Component" constructorParams="Settings&amp; settings"
+                 variableInitialisers="settings(settings)" snapPixels="8" snapActive="1"
+                 snapShown="1" overlayOpacity="0.330" fixedSize="0" initialWidth="400"
+                 initialHeight="90">
   <BACKGROUND backgroundColour="ff323e44"/>
-  <JUCERCOMP name="Audio Selector" id="ddeb8c497281f468" memberName="audioSelector"
-             virtualName="AudioDeviceSelectorComponent" explicitFocusOrder="0"
-             pos="16 0R 30M 192" posRelativeY="83358b622e96ec09" sourceFile="../JuceLibraryCode/JuceHeader.h"
-             constructorParams="audioDeviceManager, 0, 0, 0, 0, true, true, true, false"/>
-  <LABEL name="RemoteIP Label" id="a2bb47b511220552" memberName="remoteIpLabel"
-         virtualName="" explicitFocusOrder="0" pos="104 16 112 24" edTextCol="ff000000"
+  <LABEL name="Piano IP Label" id="a2bb47b511220552" memberName="pianoIpLabel"
+         virtualName="" explicitFocusOrder="0" pos="128 16 144 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Piano IP Address:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="34"/>
-  <TEXTEDITOR name="Remote IP Edit" id="83358b622e96ec09" memberName="remoteIpEdit"
-              virtualName="" explicitFocusOrder="0" pos="36.045% 16 136 24"
+  <TEXTEDITOR name="Piano IP Edit" id="83358b622e96ec09" memberName="pianoIpEdit"
+              virtualName="" explicitFocusOrder="0" pos="39.972% 16 136 24"
               initialText="192.168.1.235" multiline="0" retKeyStartsLine="0"
               readonly="0" scrollbars="0" caret="1" popupmenu="1"/>
+  <LABEL name="Midi Port Label" id="75ce146a83116b83" memberName="midiPortLabel"
+         virtualName="" explicitFocusOrder="0" pos="128 56 144 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Piano Midi Port:" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="34"/>
+  <COMBOBOX name="Midi Port ComboBox" id="d5a3cb7506a2d491" memberName="midiPortComboBox"
+            virtualName="" explicitFocusOrder="0" pos="39.972% 56 54.278% 24"
+            editable="0" layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

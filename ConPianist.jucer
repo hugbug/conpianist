@@ -28,6 +28,8 @@
             file="Graphics/button-volume.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="LMd3D8" name="Settings.cpp" compile="1" resource="0" file="Source/Settings.cpp"/>
+      <FILE id="euWCno" name="Settings.h" compile="0" resource="0" file="Source/Settings.h"/>
       <FILE id="xAI2R7" name="LocalMidiConnector.cpp" compile="1" resource="0"
             file="Source/LocalMidiConnector.cpp"/>
       <FILE id="QXgKBk" name="LocalMidiConnector.h" compile="0" resource="0"

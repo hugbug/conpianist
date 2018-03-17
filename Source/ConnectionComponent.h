@@ -22,9 +22,9 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
+#include "Settings.h"
 //[/Headers]
 
-#include "../JuceLibraryCode/JuceHeader.h"
 
 
 //==============================================================================
@@ -35,35 +35,37 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class ConnectionComponent  : public Component
+class ConnectionComponent  : public Component,
+                             public ComboBox::Listener
 {
 public:
     //==============================================================================
-    ConnectionComponent (AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
+    ConnectionComponent (Settings& settings);
     ~ConnectionComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-	static void saveState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
-	static void loadState(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
-	static void showDialog(AudioDeviceManager& audioDeviceManager, PianoController& pianoController);
+	static void showDialog(Settings& settings);
+	void save();
+	void load();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-	AudioDeviceManager& audioDeviceManager;
-	PianoController& pianoController;
+	Settings& settings;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<AudioDeviceSelectorComponent> audioSelector;
-    ScopedPointer<Label> remoteIpLabel;
-    ScopedPointer<TextEditor> remoteIpEdit;
+    ScopedPointer<Label> pianoIpLabel;
+    ScopedPointer<TextEditor> pianoIpEdit;
+    ScopedPointer<Label> midiPortLabel;
+    ScopedPointer<ComboBox> midiPortComboBox;
 
 
     //==============================================================================

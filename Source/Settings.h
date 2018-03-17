@@ -21,18 +21,13 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "MidiConnector.h"
-
-class LocalMidiConnector : public MidiConnector, public MidiInputCallback
+class Settings : public ChangeBroadcaster
 {
 public:
-	LocalMidiConnector(AudioDeviceManager* audioDeviceManager);
-	~LocalMidiConnector();
-	void SendMessage(const MidiMessage& message) override;
-	bool IsConnected() override;
-	void handleIncomingMidiMessage(MidiInput* source, const MidiMessage& message) override;
+	Settings();
+	void Save();
+	void Load();
 
-private:
-	AudioDeviceManager* m_audioDeviceManager;
-	String m_outputName;
+	String pianoIp;
+	String midiPort;
 };

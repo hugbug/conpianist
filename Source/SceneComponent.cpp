@@ -32,7 +32,6 @@ SceneComponent::SceneComponent ()
     : playbackComponent(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
-    //Desktop::getInstance().setGlobalScaleFactor(1);
     //[/Constructor_pre]
 
     addAndMakeVisible (topbarPanel = new GroupComponent ("Top Bar",
@@ -87,14 +86,10 @@ SceneComponent::SceneComponent ()
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
 
-	ConnectionComponent::loadState(audioDeviceManager, pianoController);
-	localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
     pianoController.addChangeListener(this);
-	rtpMidiConnector = new RtpMidiConnector(pianoController.GetRemoteIp());
-	midiConnector = rtpMidiConnector;
-	pianoController.SetMidiConnector(midiConnector);
-
-	rtpMidiConnector->startThread();
+    settings.addChangeListener(this);
+	settings.Load();
+	applySettings();
 
 	startTimer(250);
     //[/Constructor]
@@ -103,7 +98,10 @@ SceneComponent::SceneComponent ()
 SceneComponent::~SceneComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-	rtpMidiConnector->stopThread(1000);
+    if (rtpMidiConnector)
+    {
+		rtpMidiConnector->stopThread(1000);
+	}
     //[/Destructor_pre]
 
     topbarPanel = nullptr;
@@ -184,6 +182,10 @@ void SceneComponent::changeListenerCallback(ChangeBroadcaster* source)
 	{
 		updateSettingsState();
 	}
+	else if (source == &settings)
+	{
+		applySettings();
+	}
 }
 
 void SceneComponent::updateSettingsState()
@@ -207,10 +209,15 @@ void SceneComponent::updateSettingsState()
 
 void SceneComponent::showConnectionDialog()
 {
-	ConnectionComponent::showDialog(audioDeviceManager, pianoController);
+	ConnectionComponent::showDialog(settings);
 }
 
 void SceneComponent::timerCallback()
+{
+	checkConnection();
+}
+
+void SceneComponent::checkConnection()
 {
 	if (!midiConnector->IsConnected())
 	{
@@ -232,6 +239,38 @@ void SceneComponent::timerCallback()
 		statusLabel->setText(status, NotificationType::dontSendNotification);
 
 		pianoController.Connect();
+	}
+}
+
+void SceneComponent::applySettings()
+{
+	pianoController.Disconnect();
+	if (midiConnector)
+	{
+		midiConnector->SetListener(nullptr);
+	}
+
+    pianoController.SetRemoteIp(settings.pianoIp);
+
+    if (rtpMidiConnector)
+    {
+		rtpMidiConnector->stopThread(1000);
+	}
+
+	if (settings.midiPort == "")
+	{
+		rtpMidiConnector = new RtpMidiConnector(settings.pianoIp);
+		midiConnector = rtpMidiConnector;
+		pianoController.SetMidiConnector(midiConnector);
+		rtpMidiConnector->startThread();
+	}
+	else
+	{
+		audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
+		audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
+		localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
+		midiConnector = localMidiConnector;
+		pianoController.SetMidiConnector(midiConnector);
 	}
 }
 
