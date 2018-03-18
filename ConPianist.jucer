@@ -26,6 +26,10 @@
             file="Graphics/button-rewind.png"/>
       <FILE id="IAf0NR" name="button-volume.png" compile="0" resource="1"
             file="Graphics/button-volume.png"/>
+      <FILE id="w1JhJu" name="button-zoomin.png" compile="0" resource="1"
+            file="Graphics/button-zoomin.png"/>
+      <FILE id="gOuJpc" name="button-zoomout.png" compile="0" resource="1"
+            file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
       <FILE id="LMd3D8" name="Settings.cpp" compile="1" resource="0" file="Source/Settings.cpp"/>

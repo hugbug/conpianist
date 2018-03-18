@@ -75,13 +75,30 @@ public:
                                                                           .findColour (ResizableWindow::backgroundColourId),
                                                     DocumentWindow::allButtons)
         {
-            setUsingNativeTitleBar (true);
-            setContentOwned (new SceneComponent(), true);
-            setResizable (true, true);
+			settings.Load();
 
+            setUsingNativeTitleBar (true);
+            setContentOwned (new SceneComponent(settings), true);
+            setResizable (true, true);
             centreWithSize (getWidth(), getHeight());
+
+#if !TARGET_OS_IPHONE
+			Rectangle<int> bounds = settings.windowPos;
+			if (bounds.getX() > -100 && bounds.getY() > -100 &&
+				bounds.getWidth() > 200 && bounds.getHeight() > 100)
+			{
+				setBounds(bounds);
+			}
+#endif
+
             setVisible (true);
         }
+
+		~MainWindow()
+		{
+			settings.windowPos = getBounds();
+			settings.Save();
+		}
 
         void closeButtonPressed() override
         {
@@ -100,6 +117,7 @@ public:
 
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
+        Settings settings;
     };
 
 private:

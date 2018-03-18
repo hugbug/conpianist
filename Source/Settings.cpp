@@ -19,17 +19,16 @@
 
 #include "Settings.h"
 
-Settings::Settings()
-{
-	// defaults
-	pianoIp = "192.168.1.3";
-}
-
 void Settings::Save()
 {
 	XmlElement state("ConPianistState");
 	state.createNewChildElement("PianoIp")->addTextElement(pianoIp);
 	state.createNewChildElement("MidiPort")->addTextElement(midiPort);
+	state.createNewChildElement("ZoomUi")->addTextElement(String(zoomUi));
+	state.createNewChildElement("Window.X")->addTextElement(String(windowPos.getX()));
+	state.createNewChildElement("Window.Y")->addTextElement(String(windowPos.getY()));
+	state.createNewChildElement("Window.Width")->addTextElement(String(windowPos.getWidth()));
+	state.createNewChildElement("Window.Height")->addTextElement(String(windowPos.getHeight()));
 
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	state.writeToFile(stateFile, "");
@@ -61,5 +60,30 @@ void Settings::Load()
 	if ((el = savedState->getChildByName("MidiPort")))
 	{
 		midiPort = el->getAllSubText();
+	}
+
+	if ((el = savedState->getChildByName("ZoomUi")))
+	{
+		zoomUi = el->getAllSubText().getFloatValue();
+	}
+
+	if ((el = savedState->getChildByName("Window.X")))
+	{
+		windowPos.setX(el->getAllSubText().getIntValue());
+	}
+
+	if ((el = savedState->getChildByName("Window.Y")))
+	{
+		windowPos.setY(el->getAllSubText().getIntValue());
+	}
+
+	if ((el = savedState->getChildByName("Window.Width")))
+	{
+		windowPos.setWidth(el->getAllSubText().getIntValue());
+	}
+
+	if ((el = savedState->getChildByName("Window.Height")))
+	{
+		windowPos.setHeight(el->getAllSubText().getIntValue());
 	}
 }

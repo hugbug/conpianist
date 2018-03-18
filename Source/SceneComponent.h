@@ -45,7 +45,7 @@ class SceneComponent  : public Component,
 {
 public:
     //==============================================================================
-    SceneComponent ();
+    SceneComponent (Settings& settings);
     ~SceneComponent();
 
     //==============================================================================
@@ -56,6 +56,7 @@ public:
 	void timerCallback() override;
 	void applySettings();
 	void checkConnection();
+	void zoomUi(bool zoomIn);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -72,7 +73,9 @@ private:
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
 	MidiConnector* midiConnector = nullptr;
-	Settings settings;
+	String currentPianoIp;
+	String currentMidiPort;
+	Settings& settings;
     //[/UserVariables]
 
     //==============================================================================
@@ -82,6 +85,8 @@ private:
     ScopedPointer<ImageButton> muteButton;
     ScopedPointer<Label> statusLabel;
     ScopedPointer<ImageButton> connectionButton;
+    ScopedPointer<ImageButton> zoomInButton;
+    ScopedPointer<ImageButton> zoomOutButton;
 
 
     //==============================================================================

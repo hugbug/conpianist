@@ -117,8 +117,8 @@ void ConnectionComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    pianoIpEdit->setBounds (proportionOfWidth (0.4000f), 16, 136, 24);
-    midiPortComboBox->setBounds (proportionOfWidth (0.4000f), 56, proportionOfWidth (0.5425f), 24);
+    pianoIpEdit->setBounds (proportionOfWidth (0.3997f), 16, 136, 24);
+    midiPortComboBox->setBounds (proportionOfWidth (0.3997f), 56, proportionOfWidth (0.5428f), 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -149,7 +149,8 @@ void ConnectionComponent::save()
 	settings.pianoIp = pianoIpEdit->getText();
 	settings.midiPort = midiPortComboBox->getSelectedId() == 1 ? "" : midiPortComboBox->getText();
 
-	if (oldPianoIp != settings.pianoIp || oldMidiPort != settings.midiPort)
+	if (oldPianoIp != settings.pianoIp ||
+		oldMidiPort != settings.midiPort)
 	{
 		settings.Save();
 	}

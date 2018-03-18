@@ -28,8 +28,8 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-SceneComponent::SceneComponent ()
-    : playbackComponent(pianoController)
+SceneComponent::SceneComponent (Settings& settings)
+    : playbackComponent(pianoController), settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -74,6 +74,24 @@ SceneComponent::SceneComponent ()
                                  Image(), 1.000f, Colour (0x00000000));
     connectionButton->setBounds (8, 8, 32, 28);
 
+    addAndMakeVisible (zoomInButton = new ImageButton ("Zoom In UI Button"));
+    zoomInButton->setTooltip (TRANS("Zoom In UI"));
+    zoomInButton->setButtonText (TRANS("Mute"));
+    zoomInButton->addListener (this);
+
+    zoomInButton->setImages (false, true, true,
+                             ImageCache::getFromMemory (BinaryData::buttonzoomin_png, BinaryData::buttonzoomin_pngSize), 1.000f, Colour (0x00000000),
+                             Image(), 0.750f, Colour (0x00000000),
+                             Image(), 1.000f, Colour (0x00000000));
+    addAndMakeVisible (zoomOutButton = new ImageButton ("Zoom Out UI Button"));
+    zoomOutButton->setTooltip (TRANS("Zoom Out UI"));
+    zoomOutButton->setButtonText (TRANS("Mute"));
+    zoomOutButton->addListener (this);
+
+    zoomOutButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (BinaryData::buttonzoomout_png, BinaryData::buttonzoomout_pngSize), 1.000f, Colour (0x00000000),
+                              Image(), 0.750f, Colour (0x00000000),
+                              Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -88,7 +106,6 @@ SceneComponent::SceneComponent ()
 
     pianoController.addChangeListener(this);
     settings.addChangeListener(this);
-	settings.Load();
 	applySettings();
 
 	startTimer(250);
@@ -110,6 +127,8 @@ SceneComponent::~SceneComponent()
     muteButton = nullptr;
     statusLabel = nullptr;
     connectionButton = nullptr;
+    zoomInButton = nullptr;
+    zoomOutButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -147,6 +166,8 @@ void SceneComponent::resized()
     playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 42);
     largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 42);
     muteButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
+    zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
+    zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -167,6 +188,18 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_connectionButton] -- add your button handler code here..
 		showConnectionDialog();
         //[/UserButtonCode_connectionButton]
+    }
+    else if (buttonThatWasClicked == zoomInButton)
+    {
+        //[UserButtonCode_zoomInButton] -- add your button handler code here..
+        zoomUi(true);
+        //[/UserButtonCode_zoomInButton]
+    }
+    else if (buttonThatWasClicked == zoomOutButton)
+    {
+        //[UserButtonCode_zoomOutButton] -- add your button handler code here..
+        zoomUi(false);
+        //[/UserButtonCode_zoomOutButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -244,36 +277,59 @@ void SceneComponent::checkConnection()
 
 void SceneComponent::applySettings()
 {
-	pianoController.Disconnect();
-	if (midiConnector)
+	if (currentPianoIp != settings.pianoIp ||
+		currentMidiPort != settings.midiPort ||
+		!midiConnector)
 	{
-		midiConnector->SetListener(nullptr);
+		pianoController.Disconnect();
+		if (midiConnector)
+		{
+			midiConnector->SetListener(nullptr);
+		}
+
+		pianoController.SetRemoteIp(settings.pianoIp);
+
+		if (rtpMidiConnector)
+		{
+			rtpMidiConnector->stopThread(1000);
+		}
+
+		if (settings.midiPort == "")
+		{
+			rtpMidiConnector = new RtpMidiConnector(settings.pianoIp);
+			midiConnector = rtpMidiConnector;
+			pianoController.SetMidiConnector(midiConnector);
+			rtpMidiConnector->startThread();
+		}
+		else
+		{
+			audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
+			audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
+			localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
+			midiConnector = localMidiConnector;
+			pianoController.SetMidiConnector(midiConnector);
+		}
+
+		currentPianoIp = settings.pianoIp;
+		currentMidiPort = settings.midiPort;
 	}
 
-    pianoController.SetRemoteIp(settings.pianoIp);
-
-    if (rtpMidiConnector)
-    {
-		rtpMidiConnector->stopThread(1000);
-	}
-
-	if (settings.midiPort == "")
-	{
-		rtpMidiConnector = new RtpMidiConnector(settings.pianoIp);
-		midiConnector = rtpMidiConnector;
-		pianoController.SetMidiConnector(midiConnector);
-		rtpMidiConnector->startThread();
-	}
-	else
-	{
-		audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
-		audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
-		localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
-		midiConnector = localMidiConnector;
-		pianoController.SetMidiConnector(midiConnector);
-	}
+	float scale = settings.zoomUi;
+	scale = std::min(std::max(scale, 0.25f), 4.0f);
+	scale = round(scale * 20) / 20;
+	Desktop::getInstance().setGlobalScaleFactor(scale);
 }
 
+void SceneComponent::zoomUi(bool zoomIn)
+{
+	float scale = Desktop::getInstance().getGlobalScaleFactor();
+	scale += zoomIn ? + 0.05 : -0.05;
+	scale = std::min(std::max(scale, 0.25f), 4.0f);
+	scale = round(scale * 20) / 20;
+	Desktop::getInstance().setGlobalScaleFactor(scale);
+	settings.zoomUi = scale;
+	settings.Save();
+}
 //[/MiscUserCode]
 
 
@@ -288,7 +344,7 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
                  parentClasses="public Component, public ChangeListener, public Timer"
-                 constructorParams="" variableInitialisers="playbackComponent(pianoController)"
+                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), settings(settings)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
@@ -326,6 +382,22 @@ BEGIN_JUCER_METADATA
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
+  <IMAGEBUTTON name="Zoom In UI Button" id="8f2ba3f851b38bd8" memberName="zoomInButton"
+               virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom In UI" buttonText="Mute"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttonzoomin_png" opacityNormal="1.00000000000000000000"
+               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
+               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
+               colourDown="0"/>
+  <IMAGEBUTTON name="Zoom Out UI Button" id="9c93ecb0c87ce0c4" memberName="zoomOutButton"
+               virtualName="" explicitFocusOrder="0" pos="89Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom Out UI" buttonText="Mute"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttonzoomout_png" opacityNormal="1.00000000000000000000"
+               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
+               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
+               colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

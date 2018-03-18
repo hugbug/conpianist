@@ -24,10 +24,11 @@
 class Settings : public ChangeBroadcaster
 {
 public:
-	Settings();
 	void Save();
 	void Load();
 
-	String pianoIp;
+	String pianoIp = "192.168.1.3";
 	String midiPort;
+	float zoomUi = 1.0;
+	Rectangle<int> windowPos;
 };
