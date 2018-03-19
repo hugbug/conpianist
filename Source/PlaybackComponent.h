@@ -86,6 +86,9 @@ private:
     ScopedPointer<ImageButton> guideButton;
     ScopedPointer<ImageButton> loopButton;
     ScopedPointer<ImageButton> lightsButton;
+    ScopedPointer<Label> volumeTitleLabel;
+    ScopedPointer<Slider> volumeSlider;
+    ScopedPointer<Label> volumeLabel;
 
 
     //==============================================================================

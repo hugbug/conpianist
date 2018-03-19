@@ -50,6 +50,8 @@ public:
 	int GetSongLength() { return m_songLength; }
 	int GetSongPosition() { return m_songPosition; }
 	void SetSongPosition(int position);
+	int GetVolume() { return m_volume; }
+	void SetVolume(int volume);
 	bool GetBackingPart() { return m_backingPart; }
 	void SetBackingPart(bool enable);
 	bool GetLeftPart() { return m_leftPart; }
@@ -75,6 +77,7 @@ private:
 	bool m_backingPart = false;
 	bool m_leftPart = false;
 	bool m_rightPart = false;
+	int m_volume = 0;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);

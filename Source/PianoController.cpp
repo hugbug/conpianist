@@ -58,6 +58,9 @@ static const char* CSP_RIGHT_PART_OFF = "04 00 0e 01 00 01 00 00 01 00";
 static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
 static const char* CSP_PART_EVENTS = "02 00 04 00 0e 01";
 static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
+static const char* CSP_VOLUME = "0c 00 00 01 50 01 00 00 01 ";
+static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01 50 01 00 00 01";
+static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
 
 void Sleep(int Milliseconds)
 {
@@ -90,6 +93,8 @@ void PianoController::Connect()
   	SendCspMessage(CSP_STREAM_LIGHTS_EVENTS, false);
   	//   stream lights slow/fast
   	SendCspMessage(CSP_STREAM_LIGHTS_SPEED_EVENTS, false);
+	//   volume info
+	SendCspMessage(CSP_VOLUME_EVENTS, false);
 
 	Stop();
 
@@ -105,6 +110,8 @@ void PianoController::Connect()
 	SetGuide(false);
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
+	SetVolume(0);
+	SetVolume(0x64);
 
 	sendChangeMessage();
 }
@@ -214,6 +221,12 @@ void PianoController::SetSongPosition(int position)
 	SendCspMessage(String(CSP_POSITION) + pos + " 00 00");
 }
 
+void PianoController::SetVolume(int volume)
+{
+	String pos = String::toHexString(volume).paddedLeft('0', 2);
+	SendCspMessage(String(CSP_VOLUME) + pos);
+}
+
 void PianoController::SetBackingPart(bool enable)
 {
 	SendCspMessage(enable ? CSP_BACKING_PART_ON : CSP_BACKING_PART_OFF);
@@ -285,6 +298,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (IsCspMessage(message, CSP_RIGHT_PART_STATE))
 		{
 			m_rightPart = message.getSysExData()[17] == 1;
+			sendChangeMessage();
+		}
+		else if (IsCspMessage(message, CSP_VOLUME_STATE))
+		{
+			m_volume = message.getSysExData()[17];
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))

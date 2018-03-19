@@ -133,7 +133,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     partLabel->setColour (TextEditor::textColourId, Colours::black);
     partLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    partLabel->setBounds (8, ((-8) + 70 - 8) + 110, 112, 24);
+    partLabel->setBounds (8, ((-8) + 70 - 8) + 110, 136, 24);
 
     addAndMakeVisible (leftPartButton = new TextButton ("Left Part Button"));
     leftPartButton->setButtonText (TRANS("Left"));
@@ -179,6 +179,33 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
                              Image(), 0.750f, Colour (0x00000000),
                              Image(), 1.000f, Colour (0x00000000));
     lightsButton->setBounds (0 + 238, ((-8) + 70 - 8) + 60, 40, 28);
+
+    addAndMakeVisible (volumeTitleLabel = new Label ("Volume Label",
+                                                     TRANS("Volume")));
+    volumeTitleLabel->setTooltip (TRANS("Playback Volume"));
+    volumeTitleLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    volumeTitleLabel->setJustificationType (Justification::centredLeft);
+    volumeTitleLabel->setEditable (false, false, false);
+    volumeTitleLabel->setColour (TextEditor::textColourId, Colours::black);
+    volumeTitleLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    volumeTitleLabel->setBounds (8, ((-8) + 70 - 8) + 186, 136, 24);
+
+    addAndMakeVisible (volumeSlider = new Slider ("Volume Slider"));
+    volumeSlider->setTooltip (TRANS("Playback Volume"));
+    volumeSlider->setRange (0, 127, 1);
+    volumeSlider->setSliderStyle (Slider::LinearHorizontal);
+    volumeSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    volumeSlider->addListener (this);
+
+    addAndMakeVisible (volumeLabel = new Label ("Volume Label",
+                                                TRANS("100")));
+    volumeLabel->setTooltip (TRANS("Playback Volume"));
+    volumeLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    volumeLabel->setJustificationType (Justification::centredRight);
+    volumeLabel->setEditable (false, false, false);
+    volumeLabel->setColour (TextEditor::textColourId, Colours::black);
+    volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
 
     //[UserPreSize]
@@ -226,6 +253,9 @@ PlaybackComponent::~PlaybackComponent()
     guideButton = nullptr;
     loopButton = nullptr;
     lightsButton = nullptr;
+    volumeTitleLabel = nullptr;
+    volumeSlider = nullptr;
+    volumeLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -269,10 +299,12 @@ void PlaybackComponent::resized()
 
     songGroup->setBounds (0, -8, getWidth() - 0, 70);
     songLabel->setBounds (0 + 12, (-8) + 16, (getWidth() - 0) - 59, 70 - 29);
-    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 186);
+    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 250);
     positionSlider->setBounds (0 + 48, ((-8) + 70 - 8) + 22, (getWidth() - 0) - 96, 24);
     lengthLabel->setBounds (0 + (getWidth() - 0) - 8 - 36, ((-8) + 70 - 8) + 24, 36, 20);
     chooseSongButton->setBounds (0 + (getWidth() - 0) - 20 - (20 / 2), (-8) + 25, 20, 24);
+    volumeSlider->setBounds (0 + 8, ((-8) + 70 - 8) + 210, (getWidth() - 0) - 16, 24);
+    volumeLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 186, 48, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -287,6 +319,12 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
         //[UserSliderCode_positionSlider] -- add your slider handling code here..
         pianoController.SetSongPosition(positionSlider->getValue());
         //[/UserSliderCode_positionSlider]
+    }
+    else if (sliderThatWasMoved == volumeSlider)
+    {
+        //[UserSliderCode_volumeSlider] -- add your slider handling code here..
+        pianoController.SetVolume(volumeSlider->getValue());
+        //[/UserSliderCode_volumeSlider]
     }
 
     //[UsersliderValueChanged_Post]
@@ -415,6 +453,7 @@ void PlaybackComponent::updateSongState()
 		{
 			int songLength = pianoController.GetSongLength() > 0 ? pianoController.GetSongLength() : 999;
 			lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
+
 			positionSlider->setRange(1, songLength, 1);
 			positionLabel->setText(String::formatted("%03d", pianoController.GetSongPosition()),
 				NotificationType::dontSendNotification);
@@ -425,6 +464,9 @@ void PlaybackComponent::updateSongState()
 					pianoController.GetPlaying() ? BinaryData::buttonpause_pngSize : BinaryData::buttonplay_pngSize),
 					1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 			playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
+
+			volumeLabel->setText(String(pianoController.GetVolume()), NotificationType::dontSendNotification);
+			volumeSlider->setValue(pianoController.GetVolume(), NotificationType::dontSendNotification);
 		});
 }
 
@@ -498,7 +540,7 @@ BEGIN_JUCER_METADATA
          fontsize="23.69999999999999928946" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 186" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 250" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="48 22 96M 24" posRelativeX="c7b94b60aa96c6e2"
@@ -552,7 +594,7 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="14 142 86 28" posRelativeY="c7b94b60aa96c6e2"
               buttonText="Backing" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <LABEL name="Part Label" id="35efabd1f34f8989" memberName="partLabel"
-         virtualName="" explicitFocusOrder="0" pos="8 110 112 24" posRelativeY="c7b94b60aa96c6e2"
+         virtualName="" explicitFocusOrder="0" pos="8 110 136 24" posRelativeY="c7b94b60aa96c6e2"
          tooltip="Playback part" edTextCol="ff000000" edBkgCol="0" labelText="Part"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
@@ -588,6 +630,25 @@ BEGIN_JUCER_METADATA
                opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
                opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
                opacityDown="1.00000000000000000000" colourDown="0"/>
+  <LABEL name="Volume Label" id="e9b9fa2403da7aeb" memberName="volumeTitleLabel"
+         virtualName="" explicitFocusOrder="0" pos="8 186 136 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Volume" edTextCol="ff000000" edBkgCol="0" labelText="Volume"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="33"/>
+  <SLIDER name="Volume Slider" id="1d5558a1e15fd965" memberName="volumeSlider"
+          virtualName="" explicitFocusOrder="0" pos="8 210 16M 24" posRelativeX="c7b94b60aa96c6e2"
+          posRelativeY="c7b94b60aa96c6e2" posRelativeW="c7b94b60aa96c6e2"
+          tooltip="Playback Volume" min="0.00000000000000000000" max="127.00000000000000000000"
+          int="1.00000000000000000000" style="LinearHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1.00000000000000000000"
+          needsCallback="1"/>
+  <LABEL name="Volume Label" id="e81fccf91e43f02a" memberName="volumeLabel"
+         virtualName="" explicitFocusOrder="0" pos="9Rr 186 48 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Volume" edTextCol="ff000000" edBkgCol="0" labelText="100"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="34"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
