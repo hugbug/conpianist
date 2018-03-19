@@ -207,6 +207,33 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     volumeLabel->setColour (TextEditor::textColourId, Colours::black);
     volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
+    addAndMakeVisible (tempoTitleLabel = new Label ("Tempo Label",
+                                                    TRANS("Tempo")));
+    tempoTitleLabel->setTooltip (TRANS("Playback Tempo"));
+    tempoTitleLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    tempoTitleLabel->setJustificationType (Justification::centredLeft);
+    tempoTitleLabel->setEditable (false, false, false);
+    tempoTitleLabel->setColour (TextEditor::textColourId, Colours::black);
+    tempoTitleLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    tempoTitleLabel->setBounds (8, ((-8) + 70 - 8) + 242, 136, 24);
+
+    addAndMakeVisible (tempoSlider = new Slider ("Tempo Slider"));
+    tempoSlider->setTooltip (TRANS("Playback Tempo"));
+    tempoSlider->setRange (5, 280, 1);
+    tempoSlider->setSliderStyle (Slider::LinearHorizontal);
+    tempoSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    tempoSlider->addListener (this);
+
+    addAndMakeVisible (tempoLabel = new Label ("Tempo Label",
+                                               TRANS("128")));
+    tempoLabel->setTooltip (TRANS("Playback Tempo"));
+    tempoLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    tempoLabel->setJustificationType (Justification::centredRight);
+    tempoLabel->setEditable (false, false, false);
+    tempoLabel->setColour (TextEditor::textColourId, Colours::black);
+    tempoLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
 
     //[UserPreSize]
     playbackGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -215,7 +242,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     songGroup->setText("");
     //[/UserPreSize]
 
-    setSize (290, 320);
+    setSize (290, 360);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -256,6 +283,9 @@ PlaybackComponent::~PlaybackComponent()
     volumeTitleLabel = nullptr;
     volumeSlider = nullptr;
     volumeLabel = nullptr;
+    tempoTitleLabel = nullptr;
+    tempoSlider = nullptr;
+    tempoLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -299,12 +329,14 @@ void PlaybackComponent::resized()
 
     songGroup->setBounds (0, -8, getWidth() - 0, 70);
     songLabel->setBounds (0 + 12, (-8) + 16, (getWidth() - 0) - 59, 70 - 29);
-    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 250);
+    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 306);
     positionSlider->setBounds (0 + 48, ((-8) + 70 - 8) + 22, (getWidth() - 0) - 96, 24);
     lengthLabel->setBounds (0 + (getWidth() - 0) - 8 - 36, ((-8) + 70 - 8) + 24, 36, 20);
     chooseSongButton->setBounds (0 + (getWidth() - 0) - 20 - (20 / 2), (-8) + 25, 20, 24);
     volumeSlider->setBounds (0 + 8, ((-8) + 70 - 8) + 210, (getWidth() - 0) - 16, 24);
     volumeLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 186, 48, 24);
+    tempoSlider->setBounds (0 + 8, ((-8) + 70 - 8) + 266, (getWidth() - 0) - 16, 24);
+    tempoLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 242, 48, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -325,6 +357,12 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
         //[UserSliderCode_volumeSlider] -- add your slider handling code here..
         pianoController.SetVolume(volumeSlider->getValue());
         //[/UserSliderCode_volumeSlider]
+    }
+    else if (sliderThatWasMoved == tempoSlider)
+    {
+        //[UserSliderCode_tempoSlider] -- add your slider handling code here..
+        pianoController.SetTempo(tempoSlider->getValue());
+        //[/UserSliderCode_tempoSlider]
     }
 
     //[UsersliderValueChanged_Post]
@@ -467,6 +505,9 @@ void PlaybackComponent::updateSongState()
 
 			volumeLabel->setText(String(pianoController.GetVolume()), NotificationType::dontSendNotification);
 			volumeSlider->setValue(pianoController.GetVolume(), NotificationType::dontSendNotification);
+
+			tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
+			tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
 		});
 }
 
@@ -524,7 +565,7 @@ BEGIN_JUCER_METADATA
                  parentClasses="public Component, public ChangeListener" constructorParams="PianoController&amp; pianoController"
                  variableInitialisers="pianoController(pianoController)" snapPixels="8"
                  snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="290" initialHeight="320">
+                 initialWidth="290" initialHeight="360">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="0 0 0M 58" fill="solid: ff4e5b62" hasStroke="0"/>
     <RECT pos="-4 156 -8M 2" fill="solid: ff4e5b62" hasStroke="0"/>
@@ -540,7 +581,7 @@ BEGIN_JUCER_METADATA
          fontsize="23.69999999999999928946" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 250" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 306" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="48 22 96M 24" posRelativeX="c7b94b60aa96c6e2"
@@ -646,6 +687,25 @@ BEGIN_JUCER_METADATA
   <LABEL name="Volume Label" id="e81fccf91e43f02a" memberName="volumeLabel"
          virtualName="" explicitFocusOrder="0" pos="9Rr 186 48 24" posRelativeY="c7b94b60aa96c6e2"
          tooltip="Playback Volume" edTextCol="ff000000" edBkgCol="0" labelText="100"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="34"/>
+  <LABEL name="Tempo Label" id="41de6fa00dd29466" memberName="tempoTitleLabel"
+         virtualName="" explicitFocusOrder="0" pos="8 242 136 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Tempo" edTextCol="ff000000" edBkgCol="0" labelText="Tempo"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
+         bold="0" italic="0" justification="33"/>
+  <SLIDER name="Tempo Slider" id="be0f7ca0a1c6df9a" memberName="tempoSlider"
+          virtualName="" explicitFocusOrder="0" pos="8 266 16M 24" posRelativeX="c7b94b60aa96c6e2"
+          posRelativeY="c7b94b60aa96c6e2" posRelativeW="c7b94b60aa96c6e2"
+          tooltip="Playback Tempo" min="5.00000000000000000000" max="280.00000000000000000000"
+          int="1.00000000000000000000" style="LinearHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1.00000000000000000000"
+          needsCallback="1"/>
+  <LABEL name="Tempo Label" id="cc3c03127fcd4516" memberName="tempoLabel"
+         virtualName="" explicitFocusOrder="0" pos="9Rr 242 48 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Tempo" edTextCol="ff000000" edBkgCol="0" labelText="128"
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="34"/>

@@ -52,6 +52,8 @@ public:
 	void SetSongPosition(int position);
 	int GetVolume() { return m_volume; }
 	void SetVolume(int volume);
+	int GetTempo() { return m_tempo; }
+	void SetTempo(int tempo);
 	bool GetBackingPart() { return m_backingPart; }
 	void SetBackingPart(bool enable);
 	bool GetLeftPart() { return m_leftPart; }
@@ -78,8 +80,10 @@ private:
 	bool m_leftPart = false;
 	bool m_rightPart = false;
 	int m_volume = 0;
+	int m_tempo = 0;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
-	bool IsCspMessage(const MidiMessage& message, const char* messageHex);
+	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
+	static String WordToHex(int value);
 };

@@ -61,10 +61,20 @@ static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
 static const char* CSP_VOLUME = "0c 00 00 01 50 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01 50 01 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
+static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
+static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 00 01 00 00 02";
+static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
 
-void Sleep(int Milliseconds)
+void Sleep(int milliseconds)
 {
-	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + Milliseconds);
+	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
+}
+
+String PianoController::WordToHex(int value)
+{
+	String str = String::toHexString(value >> 7 & 0x7f).paddedLeft('0', 2) +
+		" " + String::toHexString(value & 0x7f).paddedLeft('0', 2);
+	return str;
 }
 
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
@@ -95,6 +105,8 @@ void PianoController::Connect()
   	SendCspMessage(CSP_STREAM_LIGHTS_SPEED_EVENTS, false);
 	//   volume info
 	SendCspMessage(CSP_VOLUME_EVENTS, false);
+	//   tempo info
+	SendCspMessage(CSP_TEMPO_EVENTS, false);
 
 	Stop();
 
@@ -161,6 +173,13 @@ bool PianoController::UploadSong(const File& file)
 	bool ok = socket.connect(m_remoteIp, 10504) &&
 		socket.write(message.getData(), (int)message.getSize());
 
+	if (ok)
+	{
+		Sleep(1000);
+		//SendCspMessage("01 00 08 00 00 01 01 01 00", false);
+		//SetDefaultTempo();
+	}
+
 	return ok;
 }
 
@@ -216,15 +235,18 @@ void PianoController::SetStreamLightsFast(bool fast)
 
 void PianoController::SetSongPosition(int position)
 {
-	String pos = String::toHexString(position >> 8 & 0x3f + position & 0x80).paddedLeft('0', 2) +
-		" " + String::toHexString(position & 0x7f).paddedLeft('0', 2);
-	SendCspMessage(String(CSP_POSITION) + pos + " 00 00");
+	SendCspMessage(String(CSP_POSITION) + WordToHex(position) + " 00 00");
 }
 
 void PianoController::SetVolume(int volume)
 {
 	String pos = String::toHexString(volume).paddedLeft('0', 2);
 	SendCspMessage(String(CSP_VOLUME) + pos);
+}
+
+void PianoController::SetTempo(int tempo)
+{
+	SendCspMessage(String(CSP_TEMPO) + WordToHex(tempo));
 }
 
 void PianoController::SetBackingPart(bool enable)
@@ -258,7 +280,7 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		if (IsCspMessage(message, CSP_POSITION_STATE))
 		{
 			m_songPosition = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
-		sendChangeMessage();
+			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_LENGTH_STATE))
 		{
@@ -303,6 +325,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (IsCspMessage(message, CSP_VOLUME_STATE))
 		{
 			m_volume = message.getSysExData()[17];
+			sendChangeMessage();
+		}
+		else if (IsCspMessage(message, CSP_TEMPO_STATE))
+		{
+			m_tempo = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))

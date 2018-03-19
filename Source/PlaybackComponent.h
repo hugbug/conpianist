@@ -89,6 +89,9 @@ private:
     ScopedPointer<Label> volumeTitleLabel;
     ScopedPointer<Slider> volumeSlider;
     ScopedPointer<Label> volumeLabel;
+    ScopedPointer<Label> tempoTitleLabel;
+    ScopedPointer<Slider> tempoSlider;
+    ScopedPointer<Label> tempoLabel;
 
 
     //==============================================================================
