@@ -64,6 +64,7 @@ static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
+static const char* CSP_TEMPO_RESET = "04 01 08 00 00 01 00 01 00";
 
 void Sleep(int milliseconds)
 {
@@ -123,9 +124,10 @@ void PianoController::Connect()
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
 	SetVolume(0);
-	SetVolume(100);
-	SetTempo(0);
-	SetTempo(140);
+	SetVolume(DefaultVolume);
+	SetTempo(5);
+	SetTempo(DefaultTempo);
+	ResetTempo();
 
 	sendChangeMessage();
 }
@@ -244,6 +246,11 @@ void PianoController::SetVolume(int volume)
 void PianoController::SetTempo(int tempo)
 {
 	SendCspMessage(String(CSP_TEMPO) + WordToHex(tempo));
+}
+
+void PianoController::ResetTempo()
+{
+	SendCspMessage(CSP_TEMPO_RESET, false);
 }
 
 void PianoController::SetBackingPart(bool enable)

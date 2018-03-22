@@ -54,6 +54,7 @@ public:
 	void SetVolume(int volume);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
+	void ResetTempo();
 	bool GetBackingPart() { return m_backingPart; }
 	void SetBackingPart(bool enable);
 	bool GetLeftPart() { return m_leftPart; }
@@ -62,6 +63,9 @@ public:
 	void SetRightPart(bool enable);
 
 	void IncomingMidiMessage(const MidiMessage& message);
+
+	static const int DefaultVolume = 100;
+	static const int DefaultTempo = 120;
 
 private:
 	MidiConnector* m_midiConnector;

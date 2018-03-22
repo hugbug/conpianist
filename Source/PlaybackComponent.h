@@ -53,6 +53,7 @@ public:
 	void updateSettingsState();
 	void updateEnabledControls();
 	void mouseUp(const MouseEvent& event) override;
+	void mouseDoubleClick (const MouseEvent& event) override;
 	void loopButtonClicked();
     //[/UserMethods]
 

@@ -255,6 +255,12 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     guideButton->getProperties().set("toggle", "yes");
     lightsButton->getProperties().set("toggle", "yes");
     loopButton->getProperties().set("toggle", "yes");
+    volumeTitleLabel->addMouseListener(this, false);
+    volumeLabel->addMouseListener(this, false);
+    volumeSlider->addMouseListener(this, false);
+    tempoTitleLabel->addMouseListener(this, false);
+    tempoLabel->addMouseListener(this, false);
+    tempoSlider->addMouseListener(this, false);
     //[/Constructor]
 }
 
@@ -540,6 +546,22 @@ void PlaybackComponent::mouseUp(const MouseEvent& event)
 	if (event.eventComponent == songLabel)
 	{
 		chooseSong();
+	}
+}
+
+void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
+{
+	if (event.eventComponent == volumeSlider ||
+		event.eventComponent == volumeTitleLabel ||
+		event.eventComponent == volumeLabel)
+	{
+		pianoController.SetVolume(PianoController::DefaultVolume);
+	}
+	else if (event.eventComponent == tempoSlider ||
+		event.eventComponent == tempoTitleLabel ||
+		event.eventComponent == tempoLabel)
+	{
+		pianoController.ResetTempo();
 	}
 }
 
