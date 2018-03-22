@@ -62,7 +62,7 @@ static const char* CSP_VOLUME = "0c 00 00 01 50 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01 50 01 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
-static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 00 01 00 00 02";
+static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
 
 void Sleep(int milliseconds)
@@ -123,7 +123,9 @@ void PianoController::Connect()
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
 	SetVolume(0);
-	SetVolume(0x64);
+	SetVolume(100);
+	SetTempo(0);
+	SetTempo(140);
 
 	sendChangeMessage();
 }
@@ -169,16 +171,11 @@ bool PianoController::UploadSong(const File& file)
 	Pause();
 	Sleep(10);   // this is not nice, we should wait for a confirmation message instead
 
+	char response[16];
 	StreamingSocket socket;
 	bool ok = socket.connect(m_remoteIp, 10504) &&
-		socket.write(message.getData(), (int)message.getSize());
-
-	if (ok)
-	{
-		Sleep(1000);
-		//SendCspMessage("01 00 08 00 00 01 01 01 00", false);
-		//SetDefaultTempo();
-	}
+		socket.write(message.getData(), (int)message.getSize()) &&
+		socket.read(response, 16, true);
 
 	return ok;
 }
