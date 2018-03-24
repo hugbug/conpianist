@@ -358,6 +358,11 @@ void PlaybackComponent::paint (Graphics& g)
     }
 
     //[UserPaint] Add your own custom painting code here..
+    {
+        int x = proportionOfWidth (0.5000f) - (2 / 2), y = transposeSlider->getY() + 4, width = 2, height = 4;
+        g.setColour (Colour (0xabf0ffff));
+        g.fillRect (x, y, width, height);
+    }
     //[/UserPaint]
 }
 
@@ -556,7 +561,8 @@ void PlaybackComponent::updateSongState()
 			tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
 			tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
 
-			transposeLabel->setText(String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
+			transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
+				String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
 			transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
 		});
 }
