@@ -65,17 +65,23 @@ static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
 static const char* CSP_TEMPO_RESET = "04 01 08 00 00 01 00 01 00";
+static const char* CSP_TRANSPOSE = "0a 00 00 01 02 01 00 00 01 ";
+static const char* CSP_TRANSPOSE_STATE = "00 00 0a 00 00 01 02 01 00 00 01";
+static const char* CSP_TRANSPOSE_EVENTS = "02 00 0a 00 00 01";
 
 void Sleep(int milliseconds)
 {
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
 }
 
+String PianoController::ByteToHex(int value)
+{
+	return String::toHexString(value).paddedLeft('0', 2);
+}
+
 String PianoController::WordToHex(int value)
 {
-	String str = String::toHexString(value >> 7 & 0x7f).paddedLeft('0', 2) +
-		" " + String::toHexString(value & 0x7f).paddedLeft('0', 2);
-	return str;
+	return ByteToHex(value >> 7 & 0x7f) + " " + ByteToHex(value & 0x7f);
 }
 
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
@@ -108,6 +114,8 @@ void PianoController::Connect()
 	SendCspMessage(CSP_VOLUME_EVENTS, false);
 	//   tempo info
 	SendCspMessage(CSP_TEMPO_EVENTS, false);
+	//   transpose info
+	SendCspMessage(CSP_TRANSPOSE_EVENTS, false);
 
 	Stop();
 
@@ -123,11 +131,13 @@ void PianoController::Connect()
 	SetGuide(false);
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
-	SetVolume(0);
+	SetVolume(MinVolume);
 	SetVolume(DefaultVolume);
-	SetTempo(5);
+	SetTempo(MinTempo);
 	SetTempo(DefaultTempo);
 	ResetTempo();
+	SetTranspose(MinTranspose);
+	SetTranspose(DefaultTranspose);
 
 	sendChangeMessage();
 }
@@ -239,8 +249,7 @@ void PianoController::SetSongPosition(int position)
 
 void PianoController::SetVolume(int volume)
 {
-	String pos = String::toHexString(volume).paddedLeft('0', 2);
-	SendCspMessage(String(CSP_VOLUME) + pos);
+	SendCspMessage(String(CSP_VOLUME) + ByteToHex(volume));
 }
 
 void PianoController::SetTempo(int tempo)
@@ -251,6 +260,11 @@ void PianoController::SetTempo(int tempo)
 void PianoController::ResetTempo()
 {
 	SendCspMessage(CSP_TEMPO_RESET, false);
+}
+
+void PianoController::SetTranspose(int transpose)
+{
+	SendCspMessage(String(CSP_TRANSPOSE) + ByteToHex(transpose + TransposeBase));
 }
 
 void PianoController::SetBackingPart(bool enable)
@@ -334,6 +348,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (IsCspMessage(message, CSP_TEMPO_STATE))
 		{
 			m_tempo = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
+			sendChangeMessage();
+		}
+		else if (IsCspMessage(message, CSP_TRANSPOSE_STATE))
+		{
+			m_transpose = (int)(message.getSysExData()[17]) - TransposeBase;
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))

@@ -234,6 +234,33 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     tempoLabel->setColour (TextEditor::textColourId, Colours::black);
     tempoLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
+    addAndMakeVisible (transposeTitleLabel = new Label ("Transpose Label",
+                                                        TRANS("Transpose")));
+    transposeTitleLabel->setTooltip (TRANS("Playback Transpose"));
+    transposeTitleLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    transposeTitleLabel->setJustificationType (Justification::centredLeft);
+    transposeTitleLabel->setEditable (false, false, false);
+    transposeTitleLabel->setColour (TextEditor::textColourId, Colours::black);
+    transposeTitleLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    transposeTitleLabel->setBounds (8, ((-8) + 70 - 8) + 298, 136, 24);
+
+    addAndMakeVisible (transposeSlider = new Slider ("Transpose Slider"));
+    transposeSlider->setTooltip (TRANS("Playback Transpose"));
+    transposeSlider->setRange (-12, 12, 1);
+    transposeSlider->setSliderStyle (Slider::LinearHorizontal);
+    transposeSlider->setTextBoxStyle (Slider::NoTextBox, true, 80, 20);
+    transposeSlider->addListener (this);
+
+    addAndMakeVisible (transposeLabel = new Label ("Transpose Label",
+                                                   TRANS("0")));
+    transposeLabel->setTooltip (TRANS("Playback Transpose"));
+    transposeLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    transposeLabel->setJustificationType (Justification::centredRight);
+    transposeLabel->setEditable (false, false, false);
+    transposeLabel->setColour (TextEditor::textColourId, Colours::black);
+    transposeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
 
     //[UserPreSize]
     playbackGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -242,7 +269,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     songGroup->setText("");
     //[/UserPreSize]
 
-    setSize (290, 360);
+    setSize (290, 410);
 
 
     //[Constructor] You can add your own custom stuff here..
@@ -261,6 +288,9 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     tempoTitleLabel->addMouseListener(this, false);
     tempoLabel->addMouseListener(this, false);
     tempoSlider->addMouseListener(this, false);
+    transposeTitleLabel->addMouseListener(this, false);
+    transposeLabel->addMouseListener(this, false);
+    transposeSlider->addMouseListener(this, false);
     //[/Constructor]
 }
 
@@ -292,6 +322,9 @@ PlaybackComponent::~PlaybackComponent()
     tempoTitleLabel = nullptr;
     tempoSlider = nullptr;
     tempoLabel = nullptr;
+    transposeTitleLabel = nullptr;
+    transposeSlider = nullptr;
+    transposeLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -335,7 +368,7 @@ void PlaybackComponent::resized()
 
     songGroup->setBounds (0, -8, getWidth() - 0, 70);
     songLabel->setBounds (0 + 12, (-8) + 16, (getWidth() - 0) - 59, 70 - 29);
-    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 306);
+    playbackGroup->setBounds (0, (-8) + 70 - 8, getWidth() - 0, 354);
     positionSlider->setBounds (0 + 48, ((-8) + 70 - 8) + 22, (getWidth() - 0) - 96, 24);
     lengthLabel->setBounds (0 + (getWidth() - 0) - 8 - 36, ((-8) + 70 - 8) + 24, 36, 20);
     chooseSongButton->setBounds (0 + (getWidth() - 0) - 20 - (20 / 2), (-8) + 25, 20, 24);
@@ -343,6 +376,8 @@ void PlaybackComponent::resized()
     volumeLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 186, 48, 24);
     tempoSlider->setBounds (0 + 8, ((-8) + 70 - 8) + 266, (getWidth() - 0) - 16, 24);
     tempoLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 242, 48, 24);
+    transposeSlider->setBounds (0 + 8, ((-8) + 70 - 8) + 322, (getWidth() - 0) - 16, 24);
+    transposeLabel->setBounds (getWidth() - 9 - 48, ((-8) + 70 - 8) + 298, 48, 24);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -369,6 +404,12 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
         //[UserSliderCode_tempoSlider] -- add your slider handling code here..
         pianoController.SetTempo(tempoSlider->getValue());
         //[/UserSliderCode_tempoSlider]
+    }
+    else if (sliderThatWasMoved == transposeSlider)
+    {
+        //[UserSliderCode_transposeSlider] -- add your slider handling code here..
+        pianoController.SetTranspose(transposeSlider->getValue());
+        //[/UserSliderCode_transposeSlider]
     }
 
     //[UsersliderValueChanged_Post]
@@ -514,6 +555,9 @@ void PlaybackComponent::updateSongState()
 
 			tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
 			tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
+
+			transposeLabel->setText(String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
+			transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
 		});
 }
 
@@ -563,6 +607,12 @@ void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
 	{
 		pianoController.ResetTempo();
 	}
+	else if (event.eventComponent == transposeSlider ||
+		event.eventComponent == transposeTitleLabel ||
+		event.eventComponent == transposeLabel)
+	{
+		pianoController.SetTranspose(PianoController::DefaultTranspose);
+	}
 }
 
 void PlaybackComponent::loopButtonClicked()
@@ -587,7 +637,7 @@ BEGIN_JUCER_METADATA
                  parentClasses="public Component, public ChangeListener" constructorParams="PianoController&amp; pianoController"
                  variableInitialisers="pianoController(pianoController)" snapPixels="8"
                  snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="290" initialHeight="360">
+                 initialWidth="290" initialHeight="410">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="0 0 0M 58" fill="solid: ff4e5b62" hasStroke="0"/>
     <RECT pos="-4 156 -8M 2" fill="solid: ff4e5b62" hasStroke="0"/>
@@ -603,7 +653,7 @@ BEGIN_JUCER_METADATA
          fontsize="23.69999999999999928946" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>
   <GROUPCOMPONENT name="Playback" id="c7b94b60aa96c6e2" memberName="playbackGroup"
-                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 306" posRelativeY="4e6df4a0ae6e851b"
+                  virtualName="" explicitFocusOrder="0" pos="0 8R 0M 354" posRelativeY="4e6df4a0ae6e851b"
                   title="Playback" textpos="36"/>
   <SLIDER name="Song Position slider" id="3f9d3a942dcf1d69" memberName="positionSlider"
           virtualName="" explicitFocusOrder="0" pos="48 22 96M 24" posRelativeX="c7b94b60aa96c6e2"
@@ -731,6 +781,25 @@ BEGIN_JUCER_METADATA
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="34"/>
+  <LABEL name="Transpose Label" id="f18234a2e2a92be" memberName="transposeTitleLabel"
+         virtualName="" explicitFocusOrder="0" pos="8 298 136 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Transpose" edTextCol="ff000000" edBkgCol="0"
+         labelText="Transpose" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
+         kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
+  <SLIDER name="Transpose Slider" id="b5af11eac08beef4" memberName="transposeSlider"
+          virtualName="" explicitFocusOrder="0" pos="8 322 16M 24" posRelativeX="c7b94b60aa96c6e2"
+          posRelativeY="c7b94b60aa96c6e2" posRelativeW="c7b94b60aa96c6e2"
+          tooltip="Playback Transpose" min="-12.00000000000000000000" max="12.00000000000000000000"
+          int="1.00000000000000000000" style="LinearHorizontal" textBoxPos="NoTextBox"
+          textBoxEditable="0" textBoxWidth="80" textBoxHeight="20" skewFactor="1.00000000000000000000"
+          needsCallback="1"/>
+  <LABEL name="Transpose Label" id="de60858318a22ee1" memberName="transposeLabel"
+         virtualName="" explicitFocusOrder="0" pos="9Rr 298 48 24" posRelativeY="c7b94b60aa96c6e2"
+         tooltip="Playback Transpose" edTextCol="ff000000" edBkgCol="0"
+         labelText="0" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
+         kerning="0.00000000000000000000" bold="0" italic="0" justification="34"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

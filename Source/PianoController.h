@@ -55,6 +55,8 @@ public:
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();
+	int GetTranspose() { return m_transpose; }
+	void SetTranspose(int transpose);
 	bool GetBackingPart() { return m_backingPart; }
 	void SetBackingPart(bool enable);
 	bool GetLeftPart() { return m_leftPart; }
@@ -64,8 +66,16 @@ public:
 
 	void IncomingMidiMessage(const MidiMessage& message);
 
+	static const int MinVolume = 0;
+	static const int MaxVolume = 127;
 	static const int DefaultVolume = 100;
+	static const int MinTempo = 5;
+	static const int MaxTempo = 280;
 	static const int DefaultTempo = 120;
+	static const int MinTranspose = -12;
+	static const int MaxTranspose = +12;
+	static const int DefaultTranspose = 0;
+	static const int TransposeBase = 0x40;
 
 private:
 	MidiConnector* m_midiConnector;
@@ -85,9 +95,11 @@ private:
 	bool m_rightPart = false;
 	int m_volume = 0;
 	int m_tempo = 0;
+	int m_transpose = 0;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
+	static String ByteToHex(int value);
 	static String WordToHex(int value);
 };

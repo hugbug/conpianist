@@ -93,6 +93,9 @@ private:
     ScopedPointer<Label> tempoTitleLabel;
     ScopedPointer<Slider> tempoSlider;
     ScopedPointer<Label> tempoLabel;
+    ScopedPointer<Label> transposeTitleLabel;
+    ScopedPointer<Slider> transposeSlider;
+    ScopedPointer<Label> transposeLabel;
 
 
     //==============================================================================
