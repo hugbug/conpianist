@@ -395,7 +395,7 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == positionSlider)
     {
         //[UserSliderCode_positionSlider] -- add your slider handling code here..
-        pianoController.SetSongPosition(positionSlider->getValue());
+        pianoController.SetPosition({(int)positionSlider->getValue(), 0});
         //[/UserSliderCode_positionSlider]
     }
     else if (sliderThatWasMoved == volumeSlider)
@@ -435,13 +435,13 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == rewindButton)
     {
         //[UserButtonCode_rewindButton] -- add your button handler code here..
-        pianoController.SetSongPosition(pianoController.GetSongPosition() - 1);
+        pianoController.SetPosition({pianoController.GetPosition().measure - 1, 0});
         //[/UserButtonCode_rewindButton]
     }
     else if (buttonThatWasClicked == forwardButton)
     {
         //[UserButtonCode_forwardButton] -- add your button handler code here..
-        pianoController.SetSongPosition(pianoController.GetSongPosition() + 1);
+        pianoController.SetPosition({pianoController.GetPosition().measure + 1, 0});
         //[/UserButtonCode_forwardButton]
     }
     else if (buttonThatWasClicked == chooseSongButton)
@@ -541,13 +541,13 @@ void PlaybackComponent::updateSongState()
 {
 	MessageManager::callAsync([=] ()
 		{
-			int songLength = pianoController.GetSongLength() > 0 ? pianoController.GetSongLength() : 999;
+			int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
 			lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
 
 			positionSlider->setRange(1, songLength, 1);
-			positionLabel->setText(String::formatted("%03d", pianoController.GetSongPosition()),
+			positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
 				NotificationType::dontSendNotification);
-			positionSlider->setValue(pianoController.GetSongPosition(), NotificationType::dontSendNotification);
+			positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
 
 			playButton->setImages(false, true, true, ImageCache::getFromMemory(
 					pianoController.GetPlaying() ? BinaryData::buttonpause_png : BinaryData::buttonplay_png,
@@ -564,6 +564,14 @@ void PlaybackComponent::updateSongState()
 			transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
 				String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
 			transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
+
+			bool loopSet = pianoController.GetLoop().begin.measure > 0;
+			bool loopHalf = loopStart.measure > 0;
+			loopButton->setImages(false, true, true, ImageCache::getFromMemory(
+				loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
+				loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
+				1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
+			loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
 		});
 }
 
@@ -623,8 +631,28 @@ void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
 
 void PlaybackComponent::loopButtonClicked()
 {
-	AlertWindow::showNativeDialogBox("Information",
-		"This function is not yet implemented.", false);
+	bool loopSet = pianoController.GetLoop().begin.measure > 0;
+	bool loopHalf = loopStart.measure > 0;
+
+	if (loopSet)
+	{
+		pianoController.ResetLoop();
+	}
+	else if (loopHalf && loopStart == pianoController.GetPosition())
+	{
+		loopStart = {0,0};
+		updateSongState();
+	}
+	else if (loopHalf)
+	{
+		pianoController.SetLoop({loopStart, pianoController.GetPosition()});
+		loopStart = {0,0};
+	}
+	else
+	{
+		loopStart = pianoController.GetPosition();
+		updateSongState();
+	}
 }
 
 //[/MiscUserCode]

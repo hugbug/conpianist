@@ -68,6 +68,10 @@ static const char* CSP_TEMPO_RESET = "04 01 08 00 00 01 00 01 00";
 static const char* CSP_TRANSPOSE = "0a 00 00 01 02 01 00 00 01 ";
 static const char* CSP_TRANSPOSE_STATE = "00 00 0a 00 00 01 02 01 00 00 01";
 static const char* CSP_TRANSPOSE_EVENTS = "02 00 0a 00 00 01";
+static const char* CSP_LOOP = "04 00 0d 01 00 01 00 00 09 01 ";
+static const char* CSP_LOOP_STATE = "00 00 04 00 0d 01 00 01 00 00 09";
+static const char* CSP_LOOP_EVENTS = "02 00 04 00 0d 01";
+static const char* CSP_LOOP_RESET = "04 00 0d 01 00 01 00 00 09 00 00 01 00 01 00 02 00 01";
 
 void Sleep(int milliseconds)
 {
@@ -116,6 +120,8 @@ void PianoController::Connect()
 	SendCspMessage(CSP_TEMPO_EVENTS, false);
 	//   transpose info
 	SendCspMessage(CSP_TRANSPOSE_EVENTS, false);
+	//   A->B loop info
+	SendCspMessage(CSP_LOOP_EVENTS, false);
 
 	Stop();
 
@@ -242,9 +248,9 @@ void PianoController::SetStreamLightsFast(bool fast)
 	SendCspMessage(fast ? CSP_STREAM_LIGHTS_FAST : CSP_STREAM_LIGHTS_SLOW);
 }
 
-void PianoController::SetSongPosition(int position)
+void PianoController::SetPosition(const Position position)
 {
-	SendCspMessage(String(CSP_POSITION) + WordToHex(position) + " 00 00");
+	SendCspMessage(String(CSP_POSITION) + WordToHex(position.measure) + " " + WordToHex(position.beat));
 }
 
 void PianoController::SetVolume(int volume)
@@ -282,6 +288,18 @@ void PianoController::SetRightPart(bool enable)
 	SendCspMessage(enable ? CSP_RIGHT_PART_ON : CSP_RIGHT_PART_OFF);
 }
 
+void PianoController::SetLoop(Loop loop)
+{
+	SendCspMessage(String(CSP_LOOP) +
+		WordToHex(loop.begin.measure) + " " + WordToHex(loop.begin.beat) + " " +
+		WordToHex(loop.end.measure) + " " + WordToHex(loop.end.beat));
+}
+
+void PianoController::ResetLoop()
+{
+	SendCspMessage(CSP_LOOP_RESET);
+}
+
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
 {
 	MemoryBlock sig;
@@ -297,12 +315,14 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 	{
 		if (IsCspMessage(message, CSP_POSITION_STATE))
 		{
-			m_songPosition = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
+			m_position = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
+				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_LENGTH_STATE))
 		{
-			m_songLength = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
+			m_length = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
+				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_PLAY_STATE))
@@ -353,6 +373,22 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (IsCspMessage(message, CSP_TRANSPOSE_STATE))
 		{
 			m_transpose = (int)(message.getSysExData()[17]) - TransposeBase;
+			sendChangeMessage();
+		}
+		else if (IsCspMessage(message, CSP_LOOP_STATE))
+		{
+			bool enabled = message.getSysExData()[17] == 1;
+			if (enabled)
+			{
+				m_loop = {{(message.getSysExData()[18] << 7) + message.getSysExData()[19],
+					(message.getSysExData()[20] << 7) + message.getSysExData()[21]},
+					{(message.getSysExData()[22] << 7) + message.getSysExData()[23],
+					(message.getSysExData()[24] << 7) + message.getSysExData()[25]}};
+			}
+			else
+			{
+				m_loop = {{0,0},{0,0}};
+			}
 			sendChangeMessage();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))

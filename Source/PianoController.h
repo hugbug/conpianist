@@ -26,6 +26,19 @@
 class PianoController : public MidiConnector::Listener, public ChangeBroadcaster
 {
 public:
+	struct Position
+	{
+		int measure;
+		int beat;
+		bool operator==(const Position& rhs) { return rhs.measure == measure && rhs.beat == beat; }
+	};
+
+	struct Loop
+	{
+		Position begin;
+		Position end;
+	};
+
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
@@ -47,9 +60,12 @@ public:
 	void SetStreamLights(bool enable);
 	bool GetStreamLightsFast() { return m_streamLightsFast; }
 	void SetStreamLightsFast(bool fast);
-	int GetSongLength() { return m_songLength; }
-	int GetSongPosition() { return m_songPosition; }
-	void SetSongPosition(int position);
+	Position GetLength() { return m_length; }
+	Position GetPosition() { return m_position; }
+	void SetPosition(const Position position);
+	Loop GetLoop() { return m_loop; }
+	void SetLoop(Loop loop);
+	void ResetLoop();
 	int GetVolume() { return m_volume; }
 	void SetVolume(int volume);
 	int GetTempo() { return m_tempo; }
@@ -88,14 +104,15 @@ private:
 	bool m_guide = false;
 	bool m_streamLights = false;
 	bool m_streamLightsFast = false;
-	int m_songLength = 0;
-	int m_songPosition = 1;
+	Position m_length{0,0};
+	Position m_position{0,0};
 	bool m_backingPart = false;
 	bool m_leftPart = false;
 	bool m_rightPart = false;
 	int m_volume = 0;
 	int m_tempo = 0;
 	int m_transpose = 0;
+	Loop m_loop{{0,0},{0,0}};
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);

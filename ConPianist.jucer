@@ -7,6 +7,8 @@
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
       <FILE id="dJQtiu" name="app-icon.svg" compile="0" resource="0" file="Graphics/app-icon.svg"/>
+      <FILE id="BqPmsM" name="button-abloop-half.png" compile="0" resource="1"
+            file="Graphics/button-abloop-half.png"/>
       <FILE id="LeY4n6" name="button-abloop.png" compile="0" resource="1"
             file="Graphics/button-abloop.png"/>
       <FILE id="PJo2ya" name="button-expand.png" compile="0" resource="1"
