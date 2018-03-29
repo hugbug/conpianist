@@ -39,6 +39,13 @@ public:
 		Position end;
 	};
 
+	enum VoiceSlot
+	{
+		vsMain = 0,
+		vsLayer = 1,
+		vsLeft = 2
+	};
+
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
@@ -79,6 +86,8 @@ public:
 	void SetLeftPart(bool enable);
 	bool GetRightPart() { return m_rightPart; }
 	void SetRightPart(bool enable);
+	const String& GetVoice(VoiceSlot slot) { return m_voice[slot]; }
+	void SetVoice(VoiceSlot slot, const String& voice);
 
 	void IncomingMidiMessage(const MidiMessage& message);
 
@@ -113,10 +122,12 @@ private:
 	int m_tempo = 0;
 	int m_transpose = 0;
 	Loop m_loop{{0,0},{0,0}};
+	String m_voice[3];
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
 	static String ByteToHex(int value);
 	static String WordToHex(int value);
+	void ProcessVoiceEvent(const MidiMessage& message);
 };

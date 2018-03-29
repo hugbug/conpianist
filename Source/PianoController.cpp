@@ -72,6 +72,10 @@ static const char* CSP_LOOP = "04 00 0d 01 00 01 00 00 09 01 ";
 static const char* CSP_LOOP_STATE = "00 00 04 00 0d 01 00 01 00 00 09";
 static const char* CSP_LOOP_EVENTS = "02 00 04 00 0d 01";
 static const char* CSP_LOOP_RESET = "04 00 0d 01 00 01 00 00 09 00 00 01 00 01 00 02 00 01";
+static const char* CSP_VOICE = "02 00 00 01 NN 01 00 ";
+static const char* CSP_VOICE_EVENTS = "02 00 02 00 00 01";
+static const char* CSP_VOICE_STATE = "00 00 02 00 00 01";
+static const char* CSP_VOICE_STATE2 = "00 01 02 00 00 01";
 
 void Sleep(int milliseconds)
 {
@@ -122,6 +126,8 @@ void PianoController::Connect()
 	SendCspMessage(CSP_TRANSPOSE_EVENTS, false);
 	//   A->B loop info
 	SendCspMessage(CSP_LOOP_EVENTS, false);
+	//   voice info
+	SendCspMessage(CSP_VOICE_EVENTS, false);
 
 	Stop();
 
@@ -144,6 +150,13 @@ void PianoController::Connect()
 	ResetTempo();
 	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
+
+	// By trying to set an invalid voice we cause the piano to fire
+	// event "CSP_VOICE_STATE2" containing info about current voice.
+	// That's how we know which voice is selected without changing it
+	SetVoice(vsMain, "");
+	SetVoice(vsLayer, "");
+	SetVoice(vsLeft, "");
 
 	sendChangeMessage();
 }
@@ -391,6 +404,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			}
 			sendChangeMessage();
 		}
+		else if (IsCspMessage(message, CSP_VOICE_STATE) ||
+			IsCspMessage(message, CSP_VOICE_STATE2))
+		{
+			ProcessVoiceEvent(message);
+			sendChangeMessage();
+		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))
 		{
 			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
@@ -412,4 +431,42 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			// if (m_listener) m_listener->SongLoaded();
 		}
 	}
+}
+
+void PianoController::SetVoice(VoiceSlot slot, const String& voice)
+{
+	String command = String(CSP_VOICE).replace("NN", ByteToHex(slot));
+	String encoded = "";
+	int len = voice.length();
+	for (int i = 0; i < voice.length(); i++)
+	{
+		if (i % 7 == 0)
+		{
+			encoded += " 00";
+			len++;
+		}
+		encoded += " " + ByteToHex(voice[i]);
+	}
+
+	command += WordToHex(len) + encoded;
+
+	SendCspMessage(command);
+}
+
+void PianoController::ProcessVoiceEvent(const MidiMessage& message)
+{
+	int off = message.getSysExData()[7] == 1 ? 17 : 15;
+	int payloadSize = (message.getSysExData()[off] << 7) + message.getSysExData()[off + 1];
+	String voice;
+	for (int i = 0; i < payloadSize; i++)
+	{
+		char ch = message.getSysExData()[off + 2 + i];
+		if (ch != 0)
+		{
+			voice += ch;
+		}
+	}
+
+	VoiceSlot slot = (VoiceSlot)message.getSysExData()[12];
+	m_voice[slot] = voice;
 }

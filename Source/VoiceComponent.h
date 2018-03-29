@@ -22,11 +22,6 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
-#include "PlaybackComponent.h"
-#include "VoiceComponent.h"
-#include "LocalMidiConnector.h"
-#include "RtpMidiConnector.h"
-#include "Settings.h"
 //[/Headers]
 
 
@@ -39,25 +34,20 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class SceneComponent  : public Component,
+class VoiceComponent  : public Component,
                         public ChangeListener,
-                        public Timer,
                         public Button::Listener
 {
 public:
     //==============================================================================
-    SceneComponent (Settings& settings);
-    ~SceneComponent();
+    VoiceComponent (PianoController& pianoController);
+    ~VoiceComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
-	void updateSettingsState();
-	void showConnectionDialog();
-	void timerCallback() override;
-	void applySettings();
-	void checkConnection();
-	void zoomUi(bool zoomIn);
+    void updateVoiceState();
+    String voiceName(String preset);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -68,31 +58,22 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
-    AudioDeviceManager audioDeviceManager;
-    PianoController pianoController;
-    PlaybackComponent playbackComponent;
-    VoiceComponent voiceComponent;
-	ScopedPointer<LocalMidiConnector> localMidiConnector;
-	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
-	MidiConnector* midiConnector = nullptr;
-	String currentPianoIp;
-	String currentMidiPort;
-	Settings& settings;
+    PianoController& pianoController;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> topbarPanel;
-    ScopedPointer<Component> playbackPanel;
-    ScopedPointer<Component> largeContentPanel;
-    ScopedPointer<ImageButton> muteButton;
-    ScopedPointer<Label> statusLabel;
-    ScopedPointer<ImageButton> connectionButton;
-    ScopedPointer<ImageButton> zoomInButton;
-    ScopedPointer<ImageButton> zoomOutButton;
+    ScopedPointer<GroupComponent> targetGroup;
+    ScopedPointer<Label> mainTitleLabel;
+    ScopedPointer<Label> leftTitlelabel;
+    ScopedPointer<Label> layerTitleLabel;
+    ScopedPointer<TreeView> voicesTree;
+    ScopedPointer<TextButton> leftVoiceButton;
+    ScopedPointer<TextButton> mainVoiceButton;
+    ScopedPointer<TextButton> layerVoiceButton;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SceneComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VoiceComponent)
 };
 
 //[EndFile] You can add extra defines here...

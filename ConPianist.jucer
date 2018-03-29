@@ -34,6 +34,10 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="WjBZkT" name="VoiceComponent.cpp" compile="1" resource="0"
+            file="Source/VoiceComponent.cpp"/>
+      <FILE id="nn6Eq1" name="VoiceComponent.h" compile="0" resource="0"
+            file="Source/VoiceComponent.h"/>
       <FILE id="LMd3D8" name="Settings.cpp" compile="1" resource="0" file="Source/Settings.cpp"/>
       <FILE id="euWCno" name="Settings.h" compile="0" resource="0" file="Source/Settings.h"/>
       <FILE id="xAI2R7" name="LocalMidiConnector.cpp" compile="1" resource="0"

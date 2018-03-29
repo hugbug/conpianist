@@ -29,7 +29,7 @@
 
 //==============================================================================
 SceneComponent::SceneComponent (Settings& settings)
-    : playbackComponent(pianoController), settings(settings)
+    : playbackComponent(pianoController), voiceComponent(pianoController), settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -103,6 +103,7 @@ SceneComponent::SceneComponent (Settings& settings)
 
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
+	largeContentPanel->addAndMakeVisible(voiceComponent);
 
     pianoController.addChangeListener(this);
     settings.addChangeListener(this);
@@ -169,6 +170,7 @@ void SceneComponent::resized()
     zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
     zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
+    voiceComponent.setBounds(2, 2, largeContentPanel->getWidth() - 2, largeContentPanel->getHeight() - 2);
     //[/UserResized]
 }
 
@@ -344,7 +346,7 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
                  parentClasses="public Component, public ChangeListener, public Timer"
-                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), settings(settings)"
+                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), settings(settings)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
