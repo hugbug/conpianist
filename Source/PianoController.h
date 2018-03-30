@@ -130,7 +130,5 @@ private:
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
-	static String ByteToHex(int value);
-	static String WordToHex(int value);
 	void ProcessVoiceEvent(const MidiMessage& message);
 };

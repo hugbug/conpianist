@@ -87,14 +87,90 @@ void Sleep(int milliseconds)
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
 }
 
-String PianoController::ByteToHex(int value)
+String ByteToHex(int value)
 {
-	return String::toHexString(value).paddedLeft('0', 2);
+	return String::toHexString(value & 0x7f).paddedLeft('0', 2);
 }
 
-String PianoController::WordToHex(int value)
+String WordToHex(int value)
 {
 	return ByteToHex(value >> 7 & 0x7f) + " " + ByteToHex(value & 0x7f);
+}
+
+String TextToHex(const String& text)
+{
+	String encoded = "";
+	int len = 0;
+	char highbits = 0;
+	String chunk = "";
+	for (int i = 0; i < text.length(); i++)
+	{
+		if (i % 7 == 0 && i > 0)
+		{
+			encoded += String(" ") + ByteToHex(highbits) + chunk;
+			len++;
+			chunk = "";
+			highbits = 0;
+		}
+		wchar_t ch = text[i];
+		highbits = (highbits << 1) + (ch > 0x7f ? 1 : 0);
+		chunk += " " + ByteToHex(ch);
+		len++;
+	}
+
+	if (!chunk.isEmpty())
+	{
+		encoded += String(" ") + ByteToHex(highbits) + chunk;
+		len++;
+	}
+
+	return WordToHex(len) + encoded;
+}
+
+String BytesToText(const uint8* buf, int size)
+{
+	if (size < 3)
+	{
+		return String::empty;
+	}
+
+	int textSize = (buf[0] << 7) + buf[1];
+	if (size < textSize + 2)
+	{
+		return String::empty;
+	}
+
+	String text;
+	buf += 2;
+	int highbits = 0;
+	int chunkSize = 0;
+	wchar_t chunk[7];
+
+	auto addChunk = [&]()
+		{
+			for (int a = 0; a < chunkSize; a++)
+			{
+				wchar_t ch = chunk[a];
+				ch += (highbits >> (chunkSize - a - 1) & 1) ? 0x80 : 0;
+				text += ch;
+			}
+		};
+
+	for (int i = 0; i < textSize; i++)
+	{
+		if (i % 8 == 0)
+		{
+			addChunk();
+			highbits = buf[i];
+			chunkSize = 0;
+			continue;
+		}
+
+		chunk[chunkSize++] = buf[i];
+	}
+	addChunk();
+
+	return text;
 }
 
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
@@ -454,39 +530,15 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 
 void PianoController::SetVoice(VoiceSlot slot, const String& voice)
 {
-	String command = String(CSP_VOICE_SELECT).replace("NN", ByteToHex(slot));
-	String encoded = "";
-	int len = voice.length();
-	for (int i = 0; i < voice.length(); i++)
-	{
-		if (i % 7 == 0)
-		{
-			encoded += " 00";
-			len++;
-		}
-		encoded += " " + ByteToHex(voice[i]);
-	}
-
-	command += WordToHex(len) + encoded;
-
+	String command = String(CSP_VOICE_SELECT).replace("NN", ByteToHex(slot)) + TextToHex(voice);
 	SendCspMessage(command);
 }
 
 void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 {
-	int off = message.getSysExData()[7] == 1 ? 17 : 15;
-	int payloadSize = (message.getSysExData()[off] << 7) + message.getSysExData()[off + 1];
-	String voice;
-	for (int i = 0; i < payloadSize; i++)
-	{
-		char ch = message.getSysExData()[off + 2 + i];
-		if (ch != 0)
-		{
-			voice += ch;
-		}
-	}
-
 	VoiceSlot slot = (VoiceSlot)message.getSysExData()[12];
+	int off = message.getSysExData()[7] == 1 ? 17 : 15;
+	String voice = BytesToText(message.getSysExData() + off, message.getSysExDataSize() - off);
 	m_voice[slot] = voice;
 }
 
