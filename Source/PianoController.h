@@ -88,6 +88,8 @@ public:
 	void SetRightPart(bool enable);
 	const String& GetVoice(VoiceSlot slot) { return m_voice[slot]; }
 	void SetVoice(VoiceSlot slot, const String& voice);
+	bool GetVoiceActive(VoiceSlot slot) { return m_voiceActive[slot]; }
+	void SetVoiceActive(VoiceSlot slot, bool active);
 
 	void IncomingMidiMessage(const MidiMessage& message);
 
@@ -123,6 +125,7 @@ private:
 	int m_transpose = 0;
 	Loop m_loop{{0,0},{0,0}};
 	String m_voice[3];
+	bool m_voiceActive[3]{true, false, false};
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);

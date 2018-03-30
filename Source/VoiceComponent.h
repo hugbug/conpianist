@@ -22,6 +22,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
+#include "Presets.h"
 //[/Headers]
 
 
@@ -47,7 +48,10 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
     void updateVoiceState();
-    String voiceName(String preset);
+    static String voiceTitle(String preset);
+    void buildVoiceTree();
+    void voiceItemClicked(Voice* voice);
+    void voiceButtonClicked(Button* button);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -59,6 +63,7 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     PianoController& pianoController;
+    TreeViewItem* rootItem;
     //[/UserVariables]
 
     //==============================================================================
@@ -70,6 +75,9 @@ private:
     ScopedPointer<TextButton> leftVoiceButton;
     ScopedPointer<TextButton> mainVoiceButton;
     ScopedPointer<TextButton> layerVoiceButton;
+    ScopedPointer<Label> leftIndicatorLabel;
+    ScopedPointer<Label> mainIndicatorLabel;
+    ScopedPointer<Label> layerIndicatorLabel;
 
 
     //==============================================================================
