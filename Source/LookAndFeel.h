@@ -24,10 +24,13 @@
 class LookAndFeel : public juce::LookAndFeel_V4
 {
 public:
-	void drawButtonBackground (Graphics&, Button&, const Colour& backgroundColour,
+	void drawButtonBackground(Graphics&, Button&, const Colour& backgroundColour,
 		bool isMouseOverButton, bool isButtonDown) override;
 
-	void drawImageButton (Graphics&, Image*,
+	void drawImageButton(Graphics&, Image*,
 		int imageX, int imageY, int imageW, int imageH,
 		const Colour& overlayColour, float imageOpacity, ImageButton&) override;
+
+    void drawTreeviewPlusMinusBox(Graphics&, const Rectangle<float>& area,
+		Colour backgroundColour, bool isOpen, bool isMouseOver) override;
 };

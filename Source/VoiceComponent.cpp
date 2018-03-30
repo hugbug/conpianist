@@ -44,8 +44,19 @@ public:
 
 	void paintItem(Graphics& g, int width, int height) override
 	{
+		int offset = 8;
+		if (m_voice)
+		{
+			g.setColour(isSelected() ? Colours::white : Colours::grey);
+			g.drawRoundedRectangle(offset, 6, 45, height - 12, 2, 1);
+			g.setFont(10);
+			g.drawText(m_voice->type, offset, 0, 45, height, Justification::centred);
+			offset += 55;
+		}
+
 		g.setColour(Colours::white);
-		g.drawText(m_title, 8, 0, width - 8, height, Justification::left);
+		g.setFont(16);
+		g.drawText(m_title, offset, 0, width - offset, height, Justification::left);
 	}
 
 	void itemClicked(const MouseEvent&) override
@@ -275,7 +286,7 @@ void VoiceComponent::updateVoiceState()
 String VoiceComponent::voiceTitle(String preset)
 {
 	int begin = preset.lastIndexOf("/");
-	int end = preset.indexOf(".");
+	int end = preset.indexOf(begin, ".");
 	if (begin > -1 && end > -1)
 	{
 		return preset.substring(begin + 1, end);
