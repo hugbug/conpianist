@@ -35,6 +35,7 @@ private:
 	unsigned long m_lastSensing = 0;
 	MidiConnector::Listener* m_listener = nullptr;
 	bool& m_connected;
+	std::vector<byte> m_buf;
 };
 
 void RtpMidi::OnActiveSensing(void* sender)
@@ -51,7 +52,20 @@ void RtpMidi::OnSysEx(void* sender, const byte* data, uint16_t size)
 		return;
 	}
 
-	m_listener->IncomingMidiMessage(MidiMessage::createSysExMessage(data + 1, size - 2));
+	if (data[0] == 0xf0 && data[size-1] == 0xf7)
+	{
+		m_listener->IncomingMidiMessage(MidiMessage::createSysExMessage(data + 1, size - 2));
+		m_buf.clear();
+		return;
+	}
+
+	m_buf.insert(m_buf.end(), data, data + size);
+
+	if (data[size-1] == 0xf7)
+	{
+		m_listener->IncomingMidiMessage(MidiMessage::createSysExMessage(m_buf.data() + 1, (int)m_buf.size() - 2));
+		m_buf.clear();
+	}
 }
 
 void RtpMidi::CheckConenction()
