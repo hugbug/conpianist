@@ -23,7 +23,7 @@ namespace
 {
 	using U = CharPointer_UTF8;
 
-	VoiceList voices {
+	Voice voicesArr[721] {
 		{"PRESET:/VOICE/Piano/Grand Piano/CFX Grand.T542.VRM", "VRM", "Piano", "Grand Piano"},
 		{U("PRESET:/VOICE/Piano/Grand Piano/Bösendorfer.T543.VRM"), "VRM", "Piano", "Grand Piano"},
 		{"PRESET:/VOICE/Piano/Grand Piano/Pop Grand.T228.VRM", "VRM", "Piano", "Grand Piano"},
@@ -746,6 +746,11 @@ namespace
 		{"PRESET:/VOICE/Synth/Synth Effects/Perc Sequence Hipa.T270.VCE", "Regular", "Synth", "Synth Effects"},
 		{"PRESET:/VOICE/Synth/Synth Effects/Pitch Fall.T270.VCE", "Regular", "Synth", "Synth Effects"},
 	};
+
+	// For whatever reason Xcode6 for iOS cannot initialize std::vector with an initializer list.
+	// As a workaround we initilize static array, then use it to initialize the vector.
+
+	VoiceList voices(voicesArr, voicesArr + sizeof(voicesArr) / sizeof(voicesArr[0]));
 }
 
 VoiceList& Presets::Voices()
