@@ -52,6 +52,7 @@ public:
     void buildVoiceTree();
     void voiceItemClicked(Voice* voice);
     void voiceButtonClicked(Button* button);
+    void scrollToVoice(const String& preset);
     //[/UserMethods]
 
     void paint (Graphics& g) override;

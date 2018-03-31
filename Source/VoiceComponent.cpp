@@ -348,6 +348,51 @@ void VoiceComponent::voiceButtonClicked(Button* button)
 	mainIndicatorLabel->setVisible(button == mainVoiceButton);
 	layerIndicatorLabel->setVisible(button == layerVoiceButton);
 	leftIndicatorLabel->setVisible(button == leftVoiceButton);
+
+	String voice = button == layerVoiceButton ?
+		pianoController.GetVoice(PianoController::vsLayer) :
+		button == leftVoiceButton ? pianoController.GetVoice(PianoController::vsLeft) :
+		pianoController.GetVoice(PianoController::vsMain);
+
+	scrollToVoice(voice);
+}
+
+void VoiceComponent::scrollToVoice(const String& preset)
+{
+	struct traversal // a trick to decalre local function
+	{
+		static VoiceTreeItem* find(TreeViewItem* item, const String& preset)
+		{
+			for (int i = 0; i < item->getNumSubItems(); i++)
+			{
+				VoiceTreeItem* sub = (VoiceTreeItem*)item->getSubItem(i);
+				if (sub->getNumSubItems() > 0)
+				{
+					VoiceTreeItem* ret = find(sub, preset);
+					if (ret)
+					{
+						return ret;
+					}
+				}
+				if (sub->m_voice && preset == sub->m_voice->path)
+				{
+					return sub;
+				}
+			}
+			return nullptr;
+		}
+	};
+
+	VoiceTreeItem* voiceItem = traversal::find(voicesTree->getRootItem(), preset);
+	if (voiceItem)
+	{
+		for (TreeViewItem* node = voiceItem; node; node = node->getParentItem())
+		{
+			node->setOpen(true);
+		}
+		voiceItem->setSelected(true, true);
+		voicesTree->scrollToKeepItemVisible(voiceItem);
+	}
 }
 
 //[/MiscUserCode]
