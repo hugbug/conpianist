@@ -164,8 +164,8 @@ void SceneComponent::resized()
     //[/UserPreResize]
 
     topbarPanel->setBounds (0, -8, getWidth() - 0, 52);
-    playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 42);
-    largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 42);
+    playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 44);
+    largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 44);
     muteButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
     zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
     zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
@@ -357,10 +357,10 @@ BEGIN_JUCER_METADATA
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 52" title="Top Bar"
                   textpos="36"/>
   <GENERICCOMPONENT name="Playback Panel" id="cf6dcbcdc3b17ace" memberName="playbackPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0 52 290 42M" posRelativeY="69305d91c2150486"
+                    virtualName="" explicitFocusOrder="0" pos="0 52 290 44M" posRelativeY="69305d91c2150486"
                     class="Component" params=""/>
   <GENERICCOMPONENT name="Large Content" id="5d00b51e97f2c31f" memberName="largeContentPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0R 52 290M 42M" posRelativeX="cf6dcbcdc3b17ace"
+                    virtualName="" explicitFocusOrder="0" pos="0R 52 290M 44M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
                virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"

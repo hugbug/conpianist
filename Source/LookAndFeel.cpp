@@ -24,7 +24,7 @@ void ::LookAndFeel::drawButtonBackground(Graphics& gr, Button& btn, const Colour
 {
 	bool toggle = btn.getProperties().contains("toggle");
 
-	Colour outline = Colour(toggle ? 0xFEEE6C0A : 0xffcccccc);
+	Colour outline = Colour(toggle ? 0xFEEE6C0A : 0xff4e5b62);
 	Colour fill = Colour(0x0);
 
 	if (((isMouseOverButton || isButtonDown) && !toggle) || (btn.getToggleState() && toggle))

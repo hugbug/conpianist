@@ -68,14 +68,14 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> targetGroup;
-    ScopedPointer<Label> mainTitleLabel;
-    ScopedPointer<Label> leftTitlelabel;
-    ScopedPointer<Label> layerTitleLabel;
     ScopedPointer<TreeView> voicesTree;
+    ScopedPointer<GroupComponent> targetGroup;
     ScopedPointer<TextButton> leftVoiceButton;
     ScopedPointer<TextButton> mainVoiceButton;
     ScopedPointer<TextButton> layerVoiceButton;
+    ScopedPointer<TextButton> mainTitleButton;
+    ScopedPointer<TextButton> leftTitleButton;
+    ScopedPointer<TextButton> layerTitleButton;
     ScopedPointer<Label> leftIndicatorLabel;
     ScopedPointer<Label> mainIndicatorLabel;
     ScopedPointer<Label> layerIndicatorLabel;
