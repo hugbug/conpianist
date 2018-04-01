@@ -53,6 +53,7 @@ public:
     void voiceItemClicked(Voice* voice);
     void voiceButtonClicked(Button* button);
     void scrollToVoice(const String& preset);
+	void updateEnabledControls();
     //[/UserMethods]
 
     void paint (Graphics& g) override;

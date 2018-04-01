@@ -47,16 +47,26 @@ public:
 		int offset = 8;
 		if (m_voice)
 		{
-			g.setColour(isSelected() ? Colours::white : Colours::grey);
+			g.setColour(isSelected() && getOwnerView()->isEnabled() ? Colours::white : Colours::grey);
 			g.drawRoundedRectangle(offset, 6, 45, height - 12, 2, 1);
 			g.setFont(10);
 			g.drawText(m_voice->type, offset, 0, 45, height, Justification::centred);
 			offset += 55;
 		}
 
-		g.setColour(Colours::white);
+		g.setColour(getOwnerView()->isEnabled() ? Colours::white : Colours::grey);
 		g.setFont(16);
 		g.drawText(m_title, offset, 0, width - offset, height, Justification::left);
+	}
+
+    void paintOpenCloseButton(Graphics& g, const Rectangle<float>& area,
+		Colour backgroundColour, bool isMouseOver) override
+	{
+		Path p;
+		p.addTriangle (0.0f, 0.0f, 1.0f, isOpen() ? 0.0f : 0.5f, isOpen() ? 0.5f : 0.0f, 1.0f);
+
+		g.setColour(getOwnerView()->isEnabled() ? Colour(0xFFB0B0B0) : Colours::grey);
+		g.fillPath(p, p.getTransformToScaleToFit(area.reduced (4, area.getHeight() / 4), true));
 	}
 
 	void itemClicked(const MouseEvent&) override
@@ -153,6 +163,7 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
 
 
     //[Constructor] You can add your own custom stuff here..
+	updateEnabledControls();
     buildVoiceTree();
     pianoController.addChangeListener(this);
 
@@ -287,6 +298,8 @@ void VoiceComponent::updateVoiceState()
 	mainTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsMain), NotificationType::dontSendNotification);
 	layerTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsLayer), NotificationType::dontSendNotification);
 	leftTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsLeft), NotificationType::dontSendNotification);
+
+	updateEnabledControls();
 }
 
 String VoiceComponent::voiceTitle(String preset)
@@ -403,6 +416,13 @@ void VoiceComponent::scrollToVoice(const String& preset)
 	}
 }
 
+void VoiceComponent::updateEnabledControls()
+{
+	for (Component* co : getChildren())
+	{
+		co->setEnabled(pianoController.IsConnected());
+	}
+}
 //[/MiscUserCode]
 
 

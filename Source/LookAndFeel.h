@@ -30,7 +30,4 @@ public:
 	void drawImageButton(Graphics&, Image*,
 		int imageX, int imageY, int imageW, int imageH,
 		const Colour& overlayColour, float imageOpacity, ImageButton&) override;
-
-    void drawTreeviewPlusMinusBox(Graphics&, const Rectangle<float>& area,
-		Colour backgroundColour, bool isOpen, bool isMouseOver) override;
 };

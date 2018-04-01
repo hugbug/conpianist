@@ -56,13 +56,3 @@ void ::LookAndFeel::drawImageButton(Graphics& gr, Image* im,
 
 	LookAndFeel_V4::drawImageButton(gr, im, imageX, imageY, imageW, imageH, overlayColour, imageOpacity, btn);
 }
-
-void ::LookAndFeel::drawTreeviewPlusMinusBox(Graphics& g, const Rectangle<float>& area,
-	Colour backgroundColour, bool isOpen, bool isMouseOver)
-{
-    Path p;
-    p.addTriangle (0.0f, 0.0f, 1.0f, isOpen ? 0.0f : 0.5f, isOpen ? 0.5f : 0.0f, 1.0f);
-
-    g.setColour(Colour(0xFFB0B0B0));
-    g.fillPath(p, p.getTransformToScaleToFit (area.reduced (4, area.getHeight() / 4), true));
-}
