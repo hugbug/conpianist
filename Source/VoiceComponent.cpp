@@ -165,7 +165,7 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     //[Constructor] You can add your own custom stuff here..
 	updateEnabledControls();
     buildVoiceTree();
-    pianoController.addChangeListener(this);
+    pianoController.AddListener(this);
 
     leftTitleButton->getProperties().set("toggle", "yes");
     mainTitleButton->getProperties().set("toggle", "yes");
@@ -281,14 +281,6 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void VoiceComponent::changeListenerCallback(ChangeBroadcaster* source)
-{
-	if (source == &pianoController)
-	{
-		updateVoiceState();
-	}
-}
-
 void VoiceComponent::updateVoiceState()
 {
 	mainVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::vsMain)));
@@ -436,10 +428,10 @@ void VoiceComponent::updateEnabledControls()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="VoiceComponent" componentName=""
-                 parentClasses="public Component, public ChangeListener" constructorParams="PianoController&amp; pianoController"
-                 variableInitialisers="pianoController(pianoController)" snapPixels="8"
-                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="600" initialHeight="400">
+                 parentClasses="public Component, public PianoController::Listener"
+                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="0" initialWidth="600" initialHeight="400">
   <BACKGROUND backgroundColour="ff323e44"/>
   <TREEVIEW name="Voices TreeView" id="5c337882807de41a" memberName="voicesTree"
             virtualName="" explicitFocusOrder="0" pos="8 0R 16M 98M" posRelativeY="56427593ca278ddd"

@@ -274,7 +274,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
 
     //[Constructor] You can add your own custom stuff here..
     updateEnabledControls();
-    pianoController.addChangeListener(this);
+    pianoController.AddListener(this);
     songLabel->addMouseListener(this, false);
     backingPartButton->getProperties().set("toggle", "yes");
     leftPartButton->getProperties().set("toggle", "yes");
@@ -349,7 +349,16 @@ void PlaybackComponent::paint (Graphics& g)
     }
 
     {
-        int x = -4, y = 156, width = getWidth() - -8, height = 2;
+        int x = -4, y = 156, width = getWidth() - -8, height = 1;
+        Colour fillColour = Colour (0xff4e5b62);
+        //[UserPaintCustomArguments] Customize the painting arguments here..
+        //[/UserPaintCustomArguments]
+        g.setColour (fillColour);
+        g.fillRect (x, y, width, height);
+    }
+
+    {
+        int x = getWidth() - 1, y = 0, width = 1, height = getHeight() - 0;
         Colour fillColour = Colour (0xff4e5b62);
         //[UserPaintCustomArguments] Customize the painting arguments here..
         //[/UserPaintCustomArguments]
@@ -528,67 +537,52 @@ void PlaybackComponent::loadSong(const File& file)
 	lengthLabel->setText("999", NotificationType::dontSendNotification);
 }
 
-void PlaybackComponent::changeListenerCallback(ChangeBroadcaster* source)
-{
-	if (source == &pianoController)
-	{
-		updateSongState();
-		updateSettingsState();
-	}
-}
-
 void PlaybackComponent::updateSongState()
 {
-	MessageManager::callAsync([=] ()
-		{
-			int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
-			lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
+	int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
+	lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
 
-			positionSlider->setRange(1, songLength, 1);
-			positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
-				NotificationType::dontSendNotification);
-			positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
+	positionSlider->setRange(1, songLength, 1);
+	positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
+		NotificationType::dontSendNotification);
+	positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
 
-			playButton->setImages(false, true, true, ImageCache::getFromMemory(
-					pianoController.GetPlaying() ? BinaryData::buttonpause_png : BinaryData::buttonplay_png,
-					pianoController.GetPlaying() ? BinaryData::buttonpause_pngSize : BinaryData::buttonplay_pngSize),
-					1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-			playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
+	playButton->setImages(false, true, true, ImageCache::getFromMemory(
+			pianoController.GetPlaying() ? BinaryData::buttonpause_png : BinaryData::buttonplay_png,
+			pianoController.GetPlaying() ? BinaryData::buttonpause_pngSize : BinaryData::buttonplay_pngSize),
+			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
+	playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
 
-			volumeLabel->setText(String(pianoController.GetVolume()), NotificationType::dontSendNotification);
-			volumeSlider->setValue(pianoController.GetVolume(), NotificationType::dontSendNotification);
+	volumeLabel->setText(String(pianoController.GetVolume()), NotificationType::dontSendNotification);
+	volumeSlider->setValue(pianoController.GetVolume(), NotificationType::dontSendNotification);
 
-			tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
-			tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
+	tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
+	tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
 
-			transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
-				String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
-			transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
+	transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
+		String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
+	transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
 
-			bool loopSet = pianoController.GetLoop().begin.measure > 0;
-			bool loopHalf = loopStart.measure > 0;
-			loopButton->setImages(false, true, true, ImageCache::getFromMemory(
-				loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
-				loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
-				1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-			loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
-		});
+	bool loopSet = pianoController.GetLoop().begin.measure > 0;
+	bool loopHalf = loopStart.measure > 0;
+	loopButton->setImages(false, true, true, ImageCache::getFromMemory(
+		loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
+		loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
+		1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
+	loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
 }
 
 void PlaybackComponent::updateSettingsState()
 {
-	MessageManager::callAsync([=] ()
-		{
-			guideButton->setToggleState(pianoController.GetGuide() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-			lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-			//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	guideButton->setToggleState(pianoController.GetGuide() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 
-			backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-			leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-			rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 
-			updateEnabledControls();
-		});
+	updateEnabledControls();
 }
 
 void PlaybackComponent::updateEnabledControls()
@@ -668,13 +662,14 @@ void PlaybackComponent::loopButtonClicked()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PlaybackComponent" componentName=""
-                 parentClasses="public Component, public ChangeListener" constructorParams="PianoController&amp; pianoController"
-                 variableInitialisers="pianoController(pianoController)" snapPixels="8"
-                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="290" initialHeight="410">
+                 parentClasses="public Component, public PianoController::Listener"
+                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="0" initialWidth="290" initialHeight="410">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="0 0 0M 58" fill="solid: ff4e5b62" hasStroke="0"/>
-    <RECT pos="-4 156 -8M 2" fill="solid: ff4e5b62" hasStroke="0"/>
+    <RECT pos="-4 156 -8M 1" fill="solid: ff4e5b62" hasStroke="0"/>
+    <RECT pos="1R 0 1 0M" fill="solid: ff4e5b62" hasStroke="0"/>
   </BACKGROUND>
   <GROUPCOMPONENT name="Song" id="4e6df4a0ae6e851b" memberName="songGroup" virtualName=""
                   explicitFocusOrder="0" pos="0 -8 0M 70" title="Song" textpos="36"/>

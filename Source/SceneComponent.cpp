@@ -29,7 +29,7 @@
 
 //==============================================================================
 SceneComponent::SceneComponent (Settings& settings)
-    : playbackComponent(pianoController), voiceComponent(pianoController), settings(settings)
+    : playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController), settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -92,6 +92,9 @@ SceneComponent::SceneComponent (Settings& settings)
                               ImageCache::getFromMemory (BinaryData::buttonzoomout_png, BinaryData::buttonzoomout_pngSize), 1.000f, Colour (0x00000000),
                               Image(), 0.750f, Colour (0x00000000),
                               Image(), 1.000f, Colour (0x00000000));
+    addAndMakeVisible (keyboardPanel = new Component());
+    keyboardPanel->setName ("Keyboard Panel");
+
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -104,8 +107,9 @@ SceneComponent::SceneComponent (Settings& settings)
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
 	largeContentPanel->addAndMakeVisible(voiceComponent);
+	keyboardPanel->addAndMakeVisible(keyboardComponent);
 
-    pianoController.addChangeListener(this);
+    pianoController.AddListener(this);
     settings.addChangeListener(this);
 	applySettings();
 
@@ -130,6 +134,7 @@ SceneComponent::~SceneComponent()
     connectionButton = nullptr;
     zoomInButton = nullptr;
     zoomOutButton = nullptr;
+    keyboardPanel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -145,13 +150,12 @@ void SceneComponent::paint (Graphics& g)
     g.fillAll (Colour (0xff323e44));
 
     {
-        int x = 290, y = 44, width = getWidth() - 288, height = getHeight() - 36;
-        Colour strokeColour = Colour (0xff4e5b62);
+        int x = 0, y = 43, width = getWidth() - 0, height = 1;
+        Colour fillColour = Colour (0xff4e5b62);
         //[UserPaintCustomArguments] Customize the painting arguments here..
         //[/UserPaintCustomArguments]
-        g.setColour (strokeColour);
-        g.drawRect (x, y, width, height, 2);
-
+        g.setColour (fillColour);
+        g.fillRect (x, y, width, height);
     }
 
     //[UserPaint] Add your own custom painting code here..
@@ -164,13 +168,16 @@ void SceneComponent::resized()
     //[/UserPreResize]
 
     topbarPanel->setBounds (0, -8, getWidth() - 0, 52);
-    playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 44);
-    largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 44);
+    playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 111);
+    largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 111);
     muteButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
     zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
     zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
+    keyboardPanel->setBounds (0, getHeight() - 67, getWidth() - 0, 67);
     //[UserResized] Add your own custom resize handling here..
-    voiceComponent.setBounds(2, 2, largeContentPanel->getWidth() - 2, largeContentPanel->getHeight() - 2);
+	playbackComponent.setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
+	voiceComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
+	keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
     //[/UserResized]
 }
 
@@ -213,11 +220,7 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void SceneComponent::changeListenerCallback(ChangeBroadcaster* source)
 {
-	if (source == &pianoController)
-	{
-		updateSettingsState();
-	}
-	else if (source == &settings)
+	if (source == &settings)
 	{
 		applySettings();
 	}
@@ -225,21 +228,18 @@ void SceneComponent::changeListenerCallback(ChangeBroadcaster* source)
 
 void SceneComponent::updateSettingsState()
 {
-	MessageManager::callAsync([=] ()
-		{
-			if (pianoController.IsConnected())
-			{
-				statusLabel->setText(String("Connected to ") + pianoController.GetModel() +
-					" (" + pianoController.GetVersion() + ")",
-					NotificationType::dontSendNotification);
-			}
+	if (pianoController.IsConnected())
+	{
+		statusLabel->setText(String("Connected to ") + pianoController.GetModel() +
+			" (" + pianoController.GetVersion() + ")",
+			NotificationType::dontSendNotification);
+	}
 
-			bool mute = !pianoController.GetLocalControl() && pianoController.IsConnected();
-			muteButton->setImages(false, true, true, ImageCache::getFromMemory(
-					mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
-					mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
-					1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-		});
+	bool mute = !pianoController.GetLocalControl() && pianoController.IsConnected();
+	muteButton->setImages(false, true, true, ImageCache::getFromMemory(
+			mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
+			mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
+			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 }
 
 void SceneComponent::showConnectionDialog()
@@ -345,22 +345,21 @@ void SceneComponent::zoomUi(bool zoomIn)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
-                 parentClasses="public Component, public ChangeListener, public Timer"
-                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), settings(settings)"
+                 parentClasses="public Component, public PianoController::Listener, public ChangeListener, public Timer"
+                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController), settings(settings)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
-    <RECT pos="290 44 288M 36M" fill="solid: f0ffff" hasStroke="1" stroke="2.1, mitered, butt"
-          strokeColour="solid: ff4e5b62"/>
+    <RECT pos="0 43 0M 1" fill="solid: ff4e5b62" hasStroke="0"/>
   </BACKGROUND>
   <GROUPCOMPONENT name="Top Bar" id="69305d91c2150486" memberName="topbarPanel"
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 52" title="Top Bar"
                   textpos="36"/>
   <GENERICCOMPONENT name="Playback Panel" id="cf6dcbcdc3b17ace" memberName="playbackPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0 52 290 44M" posRelativeY="69305d91c2150486"
+                    virtualName="" explicitFocusOrder="0" pos="0 52 290 111M" posRelativeY="69305d91c2150486"
                     class="Component" params=""/>
   <GENERICCOMPONENT name="Large Content" id="5d00b51e97f2c31f" memberName="largeContentPanel"
-                    virtualName="" explicitFocusOrder="0" pos="0R 52 290M 44M" posRelativeX="cf6dcbcdc3b17ace"
+                    virtualName="" explicitFocusOrder="0" pos="0R 52 290M 111M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
                virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
@@ -400,6 +399,9 @@ BEGIN_JUCER_METADATA
                colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
                colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
                colourDown="0"/>
+  <GENERICCOMPONENT name="Keyboard Panel" id="d578dbfb8bf47c83" memberName="keyboardPanel"
+                    virtualName="" explicitFocusOrder="0" pos="0 0Rr 0M 67" class="Component"
+                    params=""/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

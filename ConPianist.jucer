@@ -34,6 +34,10 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="L2k2nC" name="KeyboardComponent.cpp" compile="1" resource="0"
+            file="Source/KeyboardComponent.cpp"/>
+      <FILE id="y3QpUl" name="KeyboardComponent.h" compile="0" resource="0"
+            file="Source/KeyboardComponent.h"/>
       <FILE id="Vtq9ds" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
       <FILE id="Uj90i0" name="Presets.h" compile="0" resource="0" file="Source/Presets.h"/>
       <FILE id="WjBZkT" name="VoiceComponent.cpp" compile="1" resource="0"

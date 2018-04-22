@@ -23,7 +23,7 @@
 
 #include "MidiConnector.h"
 
-class PianoController : public MidiConnector::Listener, public ChangeBroadcaster
+class PianoController : public MidiConnector::Listener
 {
 public:
 	struct Position
@@ -46,7 +46,18 @@ public:
 		vsLeft = 2
 	};
 
+	class Listener
+	{
+	public:
+		virtual ~Listener() {}
+		virtual void PianoStateChanged() {}
+		virtual void PianoSongLoaded() {}
+		virtual void PianoNoteMessage(const MidiMessage& message) {}
+	};
+
 	void SetMidiConnector(MidiConnector* midiConnector);
+	void AddListener(Listener* listener);
+	void RemoveListener(Listener* listener);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
 	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
@@ -91,6 +102,7 @@ public:
 	bool GetVoiceActive(VoiceSlot slot) { return m_voiceActive[slot]; }
 	void SetVoiceActive(VoiceSlot slot, bool active);
 
+	void SendMidiMessage(const MidiMessage& message);
 	void IncomingMidiMessage(const MidiMessage& message);
 
 	static const int MinVolume = 0;
@@ -106,6 +118,7 @@ public:
 
 private:
 	MidiConnector* m_midiConnector;
+	std::vector<Listener*> m_listeners;
 	String m_remoteIp;
 	String m_model;
 	String m_version;
@@ -131,4 +144,7 @@ private:
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
 	void ProcessVoiceEvent(const MidiMessage& message);
+
+	void NotifyChanged();
+	void NotifySongLoaded();
 };

@@ -35,7 +35,7 @@
                                                                     //[/Comments]
 */
 class PlaybackComponent  : public Component,
-                           public ChangeListener,
+                           public PianoController::Listener,
                            public Slider::Listener,
                            public Button::Listener
 {
@@ -46,9 +46,9 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void changeListenerCallback(ChangeBroadcaster* source) override;
     void chooseSong();
     void loadSong(const File& file);
+    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSongState(); updateSettingsState();}); }
 	void updateSongState();
 	void updateSettingsState();
 	void updateEnabledControls();

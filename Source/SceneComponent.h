@@ -24,6 +24,7 @@
 #include "PianoController.h"
 #include "PlaybackComponent.h"
 #include "VoiceComponent.h"
+#include "KeyboardComponent.h"
 #include "LocalMidiConnector.h"
 #include "RtpMidiConnector.h"
 #include "Settings.h"
@@ -40,6 +41,7 @@
                                                                     //[/Comments]
 */
 class SceneComponent  : public Component,
+                        public PianoController::Listener,
                         public ChangeListener,
                         public Timer,
                         public Button::Listener
@@ -52,6 +54,7 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
+    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSettingsState();}); }
 	void updateSettingsState();
 	void showConnectionDialog();
 	void timerCallback() override;
@@ -72,6 +75,7 @@ private:
     PianoController pianoController;
     PlaybackComponent playbackComponent;
     VoiceComponent voiceComponent;
+	KeyboardComponent keyboardComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
 	MidiConnector* midiConnector = nullptr;
@@ -89,6 +93,7 @@ private:
     ScopedPointer<ImageButton> connectionButton;
     ScopedPointer<ImageButton> zoomInButton;
     ScopedPointer<ImageButton> zoomOutButton;
+    ScopedPointer<Component> keyboardPanel;
 
 
     //==============================================================================

@@ -22,7 +22,6 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
-#include "Presets.h"
 //[/Headers]
 
 
@@ -35,55 +34,39 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class VoiceComponent  : public Component,
-                        public PianoController::Listener,
-                        public Button::Listener
+class KeyboardComponent  : public Component,
+                           public MidiKeyboardStateListener,
+                           public PianoController::Listener
 {
 public:
     //==============================================================================
-    VoiceComponent (PianoController& pianoController);
-    ~VoiceComponent();
+    KeyboardComponent (PianoController& pianoController);
+    ~KeyboardComponent();
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateVoiceState();}); }
-    void updateVoiceState();
-    static String voiceTitle(String preset);
-    void buildVoiceTree();
-    void voiceItemClicked(Voice* voice);
-    void voiceButtonClicked(Button* button);
-    void scrollToVoice(const String& preset);
-	void updateEnabledControls();
+    void handleNoteOn(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
+    void handleNoteOff(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
+	void PianoNoteMessage(const MidiMessage& message) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void buttonClicked (Button* buttonThatWasClicked) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+	MidiKeyboardState keyState;
     PianoController& pianoController;
-    TreeViewItem* rootItem;
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TreeView> voicesTree;
-    ScopedPointer<GroupComponent> targetGroup;
-    ScopedPointer<TextButton> leftVoiceButton;
-    ScopedPointer<TextButton> mainVoiceButton;
-    ScopedPointer<TextButton> layerVoiceButton;
-    ScopedPointer<TextButton> mainTitleButton;
-    ScopedPointer<TextButton> leftTitleButton;
-    ScopedPointer<TextButton> layerTitleButton;
-    ScopedPointer<Label> leftIndicatorLabel;
-    ScopedPointer<Label> mainIndicatorLabel;
-    ScopedPointer<Label> layerIndicatorLabel;
+    ScopedPointer<MidiKeyboardComponent> midiKeyboardComponent;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (VoiceComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (KeyboardComponent)
 };
 
 //[EndFile] You can add extra defines here...
