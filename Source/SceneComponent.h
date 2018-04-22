@@ -61,6 +61,7 @@ public:
 	void applySettings();
 	void checkConnection();
 	void zoomUi(bool zoomIn);
+    void toggleKeyboard();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -94,6 +95,7 @@ private:
     ScopedPointer<ImageButton> zoomInButton;
     ScopedPointer<ImageButton> zoomOutButton;
     ScopedPointer<Component> keyboardPanel;
+    ScopedPointer<ImageButton> keyboardButton;
 
 
     //==============================================================================

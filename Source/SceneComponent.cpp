@@ -95,6 +95,15 @@ SceneComponent::SceneComponent (Settings& settings)
     addAndMakeVisible (keyboardPanel = new Component());
     keyboardPanel->setName ("Keyboard Panel");
 
+    addAndMakeVisible (keyboardButton = new ImageButton ("Virtual Keyboard Button"));
+    keyboardButton->setTooltip (TRANS("Virtual Keyboard"));
+    keyboardButton->setButtonText (TRANS("Virtual Keyboard"));
+    keyboardButton->addListener (this);
+
+    keyboardButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttonkeyboard_png, BinaryData::buttonkeyboard_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -135,6 +144,7 @@ SceneComponent::~SceneComponent()
     zoomInButton = nullptr;
     zoomOutButton = nullptr;
     keyboardPanel = nullptr;
+    keyboardButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -174,7 +184,12 @@ void SceneComponent::resized()
     zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
     zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
     keyboardPanel->setBounds (0, getHeight() - 67, getWidth() - 0, 67);
+    keyboardButton->setBounds (getWidth() - 129 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
+    playbackPanel->setBounds(playbackPanel->getX(), playbackPanel->getY(), playbackPanel->getWidth(),
+    	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
+    largeContentPanel->setBounds(largeContentPanel->getX(), largeContentPanel->getY(), largeContentPanel->getWidth(),
+        largeContentPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
 	playbackComponent.setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
 	voiceComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
 	keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
@@ -210,6 +225,12 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         zoomUi(false);
         //[/UserButtonCode_zoomOutButton]
     }
+    else if (buttonThatWasClicked == keyboardButton)
+    {
+        //[UserButtonCode_keyboardButton] -- add your button handler code here..
+        toggleKeyboard();
+        //[/UserButtonCode_keyboardButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -240,6 +261,7 @@ void SceneComponent::updateSettingsState()
 			mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
 			mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
+	//keyboardButton->setToggleState(settings.keyboard, NotificationType::dontSendNotification);
 }
 
 void SceneComponent::showConnectionDialog()
@@ -320,6 +342,12 @@ void SceneComponent::applySettings()
 	scale = std::min(std::max(scale, 0.25f), 4.0f);
 	scale = round(scale * 20) / 20;
 	Desktop::getInstance().setGlobalScaleFactor(scale);
+
+	if (keyboardPanel->isVisible() != settings.keyboard)
+	{
+		keyboardPanel->setVisible(settings.keyboard);
+		resized();
+    }
 }
 
 void SceneComponent::zoomUi(bool zoomIn)
@@ -330,6 +358,12 @@ void SceneComponent::zoomUi(bool zoomIn)
 	scale = round(scale * 20) / 20;
 	Desktop::getInstance().setGlobalScaleFactor(scale);
 	settings.zoomUi = scale;
+	settings.Save();
+}
+
+void SceneComponent::toggleKeyboard()
+{
+	settings.keyboard = !settings.keyboard;
 	settings.Save();
 }
 //[/MiscUserCode]
@@ -402,6 +436,14 @@ BEGIN_JUCER_METADATA
   <GENERICCOMPONENT name="Keyboard Panel" id="d578dbfb8bf47c83" memberName="keyboardPanel"
                     virtualName="" explicitFocusOrder="0" pos="0 0Rr 0M 67" class="Component"
                     params=""/>
+  <IMAGEBUTTON name="Virtual Keyboard Button" id="802f8ad4daaeee49" memberName="keyboardButton"
+               virtualName="" explicitFocusOrder="0" pos="129Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Virtual Keyboard" buttonText="Virtual Keyboard"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttonkeyboard_png" opacityNormal="1.00000000000000000000"
+               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
+               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
+               colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

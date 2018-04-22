@@ -31,4 +31,5 @@ public:
 	String midiPort;
 	float zoomUi = 1.0;
 	Rectangle<int> windowPos;
+	bool keyboard = false;
 };

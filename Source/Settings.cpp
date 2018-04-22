@@ -29,6 +29,7 @@ void Settings::Save()
 	state.createNewChildElement("Window.Y")->addTextElement(String(windowPos.getY()));
 	state.createNewChildElement("Window.Width")->addTextElement(String(windowPos.getWidth()));
 	state.createNewChildElement("Window.Height")->addTextElement(String(windowPos.getHeight()));
+	state.createNewChildElement("Keyboard")->addTextElement(keyboard ? "1" : "0");
 
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	state.writeToFile(stateFile, "");
@@ -85,5 +86,10 @@ void Settings::Load()
 	if ((el = savedState->getChildByName("Window.Height")))
 	{
 		windowPos.setHeight(el->getAllSubText().getIntValue());
+	}
+
+	if ((el = savedState->getChildByName("Keyboard")))
+	{
+		keyboard = el->getAllSubText().getIntValue() != 0;
 	}
 }

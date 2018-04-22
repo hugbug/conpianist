@@ -17,6 +17,8 @@
             file="Graphics/button-fastforward.png"/>
       <FILE id="ZnCh3Z" name="button-guide.png" compile="0" resource="1"
             file="Graphics/button-guide.png"/>
+      <FILE id="FSL39I" name="button-keyboard.png" compile="0" resource="1"
+            file="Graphics/button-keyboard.png"/>
       <FILE id="CQLPJd" name="button-lights.png" compile="0" resource="1"
             file="Graphics/button-lights.png"/>
       <FILE id="ZCgQlX" name="button-mute.png" compile="0" resource="1" file="Graphics/button-mute.png"/>
