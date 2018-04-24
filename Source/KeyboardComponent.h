@@ -22,6 +22,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
+#include "Settings.h"
 //[/Headers]
 
 
@@ -36,11 +37,13 @@
 */
 class KeyboardComponent  : public Component,
                            public MidiKeyboardStateListener,
-                           public PianoController::Listener
+                           public PianoController::Listener,
+                           public ChangeListener,
+                           public ComboBox::Listener
 {
 public:
     //==============================================================================
-    KeyboardComponent (PianoController& pianoController);
+    KeyboardComponent (PianoController& pianoController, Settings& settings);
     ~KeyboardComponent();
 
     //==============================================================================
@@ -48,10 +51,16 @@ public:
     void handleNoteOn(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
     void handleNoteOff(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
 	void PianoNoteMessage(const MidiMessage& message) override;
+    void changeListenerCallback(ChangeBroadcaster* source) override;
+	void applySettings();
+    void PianoStateChanged() override { MessageManager::callAsync([=](){updateKeyboardState();}); }
+    void updateKeyboardState();
+	void updateEnabledControls();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
 
 
@@ -59,10 +68,13 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	MidiKeyboardState keyState;
     PianoController& pianoController;
+    Settings& settings;
     //[/UserVariables]
 
     //==============================================================================
     ScopedPointer<MidiKeyboardComponent> midiKeyboardComponent;
+    ScopedPointer<ComboBox> channelComboBox;
+    ScopedPointer<Label> label;
 
 
     //==============================================================================

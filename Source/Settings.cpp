@@ -29,7 +29,8 @@ void Settings::Save()
 	state.createNewChildElement("Window.Y")->addTextElement(String(windowPos.getY()));
 	state.createNewChildElement("Window.Width")->addTextElement(String(windowPos.getWidth()));
 	state.createNewChildElement("Window.Height")->addTextElement(String(windowPos.getHeight()));
-	state.createNewChildElement("Keyboard")->addTextElement(keyboard ? "1" : "0");
+	state.createNewChildElement("Keyboard.Visible")->addTextElement(keyboardVisible ? "1" : "0");
+	state.createNewChildElement("Keyboard.Channel")->addTextElement(String(keyboardChannel));
 
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
 	state.writeToFile(stateFile, "");
@@ -88,8 +89,13 @@ void Settings::Load()
 		windowPos.setHeight(el->getAllSubText().getIntValue());
 	}
 
-	if ((el = savedState->getChildByName("Keyboard")))
+	if ((el = savedState->getChildByName("Keyboard.Visible")))
 	{
-		keyboard = el->getAllSubText().getIntValue() != 0;
+		keyboardVisible = el->getAllSubText().getIntValue() != 0;
+	}
+
+	if ((el = savedState->getChildByName("Keyboard.Channel")))
+	{
+		keyboardChannel = el->getAllSubText().getIntValue();
 	}
 }

@@ -29,7 +29,7 @@
 
 //==============================================================================
 SceneComponent::SceneComponent (Settings& settings)
-    : playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController), settings(settings)
+    : playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController, settings), settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -343,9 +343,9 @@ void SceneComponent::applySettings()
 	scale = round(scale * 20) / 20;
 	Desktop::getInstance().setGlobalScaleFactor(scale);
 
-	if (keyboardPanel->isVisible() != settings.keyboard)
+	if (keyboardPanel->isVisible() != settings.keyboardVisible)
 	{
-		keyboardPanel->setVisible(settings.keyboard);
+		keyboardPanel->setVisible(settings.keyboardVisible);
 		resized();
     }
 }
@@ -363,7 +363,7 @@ void SceneComponent::zoomUi(bool zoomIn)
 
 void SceneComponent::toggleKeyboard()
 {
-	settings.keyboard = !settings.keyboard;
+	settings.keyboardVisible = !settings.keyboardVisible;
 	settings.Save();
 }
 //[/MiscUserCode]
@@ -380,7 +380,7 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener, public ChangeListener, public Timer"
-                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController), settings(settings)"
+                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController, settings), settings(settings)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
