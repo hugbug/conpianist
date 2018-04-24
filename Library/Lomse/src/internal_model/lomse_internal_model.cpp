@@ -64,7 +64,7 @@ LUnits pt_to_LUnits(float pt)
 // static variables to convert from ImoObj type to name
 static map<int, string> m_TypeToName;
 static bool m_fNamesRegistered;
-static string m_unknown = "unknown";
+//static string m_unknown = "unknown";
 
 //---------------------------------------------------------------------------------------
 //values for default style

@@ -89,9 +89,9 @@ protected:
 
 };
 
-const bool k_in_same_line = false;
-const bool k_in_new_line = true;
-const int k_indent_step = 3;
+//const bool k_in_same_line = false;
+//const bool k_in_new_line = true;
+//const int k_indent_step = 3;
 
 //=======================================================================================
 // generators for specific elements
