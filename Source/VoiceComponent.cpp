@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.3.1
 
   ------------------------------------------------------------------------------
 
@@ -440,16 +440,16 @@ BEGIN_JUCER_METADATA
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 104" title="Target"
                   textpos="36"/>
   <TEXTBUTTON name="Left Voice Button" id="f4f376ddb622016f" memberName="leftVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="16 55 30.295% 28"
+              virtualName="" explicitFocusOrder="0" pos="16 55 30.229% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="None" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Main Voice Button" id="a44dda5da363325" memberName="mainVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="0Cc 55 30.295% 28"
+              virtualName="" explicitFocusOrder="0" pos="0Cc 55 30.229% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="Yamaha CFX Grand" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTBUTTON name="Layer Voice Button" id="e72441cfef2070c4" memberName="layerVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="16Rr 55 30.295% 28"
+              virtualName="" explicitFocusOrder="0" pos="16Rr 55 30.229% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="Strings" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Main Title Button" id="9fa4d9ce58b1b951" memberName="mainTitleButton"
@@ -465,21 +465,21 @@ BEGIN_JUCER_METADATA
               posRelativeY="56427593ca278ddd" buttonText="Layer" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <LABEL name="Left Indicator Label" id="6dca46264bc44c03" memberName="leftIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="16 90 30.295% 3" posRelativeX="56427593ca278ddd"
+         virtualName="" explicitFocusOrder="0" pos="16 90 30.229% 3" posRelativeX="56427593ca278ddd"
          posRelativeY="56427593ca278ddd" posRelativeW="56427593ca278ddd"
          bkgCol="feee6c0a" edTextCol="ff000000" edBkgCol="0" labelText=""
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
          fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
          bold="0" italic="0" justification="33"/>
   <LABEL name="Main Indicator Label" id="236984f4049a87bf" memberName="mainIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="0Cc 90 30.295% 3"
+         virtualName="" explicitFocusOrder="0" pos="0Cc 90 30.229% 3"
          posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
          posRelativeW="56427593ca278ddd" bkgCol="feee6c0a" edTextCol="ff000000"
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
          kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
   <LABEL name="Layer Indicator Label" id="66b7f4c6c601497b" memberName="layerIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="16Rr 90 30.295% 3"
+         virtualName="" explicitFocusOrder="0" pos="16Rr 90 30.229% 3"
          posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
          posRelativeW="56427593ca278ddd" bkgCol="feee6c0a" edTextCol="ff000000"
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"

@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.3.1
 
   ------------------------------------------------------------------------------
 
@@ -63,7 +63,8 @@ public:
 	void checkConnection();
 	void zoomUi(bool zoomIn);
     void toggleKeyboard();
-    //[/UserMethods]
+	void switchLargePanel(Button* button);
+	//[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
@@ -98,6 +99,8 @@ private:
     ScopedPointer<ImageButton> zoomOutButton;
     ScopedPointer<Component> keyboardPanel;
     ScopedPointer<ImageButton> keyboardButton;
+    ScopedPointer<TextButton> scoreButton;
+    ScopedPointer<TextButton> voiceButton;
 
 
     //==============================================================================

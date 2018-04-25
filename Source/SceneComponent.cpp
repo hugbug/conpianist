@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.3.1
 
   ------------------------------------------------------------------------------
 
@@ -104,6 +104,20 @@ SceneComponent::SceneComponent (Settings& settings)
                                ImageCache::getFromMemory (BinaryData::buttonkeyboard_png, BinaryData::buttonkeyboard_pngSize), 1.000f, Colour (0x00000000),
                                Image(), 0.750f, Colour (0x00000000),
                                Image(), 1.000f, Colour (0x00000000));
+    addAndMakeVisible (scoreButton = new TextButton ("Score Button"));
+    scoreButton->setTooltip (TRANS("Score View"));
+    scoreButton->setButtonText (TRANS("Score"));
+    scoreButton->addListener (this);
+
+    scoreButton->setBounds (0 + 296, (-8) + 16, 80, 28);
+
+    addAndMakeVisible (voiceButton = new TextButton ("Voice Button"));
+    voiceButton->setTooltip (TRANS("Voice Selection"));
+    voiceButton->setButtonText (TRANS("Voice"));
+    voiceButton->addListener (this);
+
+    voiceButton->setBounds (0 + 384, (-8) + 16, 80, 28);
+
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -115,9 +129,13 @@ SceneComponent::SceneComponent (Settings& settings)
 
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
-	//largeContentPanel->addAndMakeVisible(voiceComponent);
+	keyboardPanel->addAndMakeVisible(keyboardComponent);
+
+	largeContentPanel->addAndMakeVisible(voiceComponent);
     largeContentPanel->addAndMakeVisible(scoreComponent);
-    keyboardPanel->addAndMakeVisible(keyboardComponent);
+	voiceButton->getProperties().set("toggle", "yes");
+	scoreButton->getProperties().set("toggle", "yes");
+	switchLargePanel(scoreButton);
 
     pianoController.AddListener(this);
     settings.addChangeListener(this);
@@ -146,6 +164,8 @@ SceneComponent::~SceneComponent()
     zoomOutButton = nullptr;
     keyboardPanel = nullptr;
     keyboardButton = nullptr;
+    scoreButton = nullptr;
+    voiceButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -232,6 +252,18 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_keyboardButton] -- add your button handler code here..
         toggleKeyboard();
         //[/UserButtonCode_keyboardButton]
+    }
+    else if (buttonThatWasClicked == scoreButton)
+    {
+        //[UserButtonCode_scoreButton] -- add your button handler code here..
+		switchLargePanel(buttonThatWasClicked);
+        //[/UserButtonCode_scoreButton]
+    }
+    else if (buttonThatWasClicked == voiceButton)
+    {
+        //[UserButtonCode_voiceButton] -- add your button handler code here..
+		switchLargePanel(buttonThatWasClicked);
+		//[/UserButtonCode_voiceButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -368,6 +400,16 @@ void SceneComponent::toggleKeyboard()
 	settings.keyboardVisible = !settings.keyboardVisible;
 	settings.Save();
 }
+
+void SceneComponent::switchLargePanel(Button* button)
+{
+	voiceComponent.setVisible(button == voiceButton);
+	scoreComponent.setVisible(button == scoreButton);
+
+	voiceButton->setToggleState(button == voiceButton, NotificationType::dontSendNotification);
+	scoreButton->setToggleState(button == scoreButton, NotificationType::dontSendNotification);
+}
+
 //[/MiscUserCode]
 
 
@@ -446,6 +488,14 @@ BEGIN_JUCER_METADATA
                colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
                colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
                colourDown="0"/>
+  <TEXTBUTTON name="Score Button" id="470fdf4dc9f8f0cd" memberName="scoreButton"
+              virtualName="" explicitFocusOrder="0" pos="296 16 80 28" posRelativeX="69305d91c2150486"
+              posRelativeY="69305d91c2150486" tooltip="Score View" buttonText="Score"
+              connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <TEXTBUTTON name="Voice Button" id="f0432a7d7961584d" memberName="voiceButton"
+              virtualName="" explicitFocusOrder="0" pos="384 16 80 28" posRelativeX="69305d91c2150486"
+              posRelativeY="69305d91c2150486" tooltip="Voice Selection" buttonText="Voice"
+              connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
