@@ -38,17 +38,27 @@
 //---------------------------------------------------------------------------------------
 // paths, for test scores and for fonts
 //---------------------------------------------------------------------------------------
-#define TESTLIB_SCORES_PATH         "/Users/Prygunkov/dev/ConPianist/Lomse/lomse-fork/test-scores/"
-#define TESTLIB_FONTS_PATH          "/Users/Prygunkov/dev/ConPianist/Lomse/lomse-fork/fonts/"
+#define TESTLIB_SCORES_PATH         "/usr/local/share/lomse/test-scores/"
+#define TESTLIB_FONTS_PATH          "/usr/local/share/lomse/fonts/"
 #define LOMSE_FONTS_PATH            "/usr/local/share/lomse/fonts/"
 
 
 //---------------------------------------------------------------------------------------
 // platform and compiler
 //---------------------------------------------------------------------------------------
+#ifdef _WIN32
+#define LOMSE_PLATFORM_WIN32      1
+#define LOMSE_PLATFORM_UNIX       0
+#else
 #define LOMSE_PLATFORM_WIN32      0
 #define LOMSE_PLATFORM_UNIX       1
+#endif
+
+#ifdef _MSC_VER
+#define LOMSE_COMPILER_MSVC       1
+#else
 #define LOMSE_COMPILER_MSVC       0
+#endif
 
 
 //---------------------------------------------------------------------------------------
