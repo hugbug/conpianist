@@ -39,6 +39,13 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="dLawHg" name="ScoreRenderer.cpp" compile="1" resource="0"
+            file="Source/ScoreRenderer.cpp"/>
+      <FILE id="QJyfjb" name="ScoreRenderer.h" compile="0" resource="0" file="Source/ScoreRenderer.h"/>
+      <FILE id="myytNU" name="ScoreComponent.cpp" compile="1" resource="0"
+            file="Source/ScoreComponent.cpp"/>
+      <FILE id="mXObOJ" name="ScoreComponent.h" compile="0" resource="0"
+            file="Source/ScoreComponent.h"/>
       <FILE id="L2k2nC" name="KeyboardComponent.cpp" compile="1" resource="0"
             file="Source/KeyboardComponent.cpp"/>
       <FILE id="y3QpUl" name="KeyboardComponent.h" compile="0" resource="0"

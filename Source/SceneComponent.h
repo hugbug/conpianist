@@ -24,6 +24,7 @@
 #include "PianoController.h"
 #include "PlaybackComponent.h"
 #include "VoiceComponent.h"
+#include "ScoreComponent.h"
 #include "KeyboardComponent.h"
 #include "LocalMidiConnector.h"
 #include "RtpMidiConnector.h"
@@ -76,7 +77,8 @@ private:
     PianoController pianoController;
     PlaybackComponent playbackComponent;
     VoiceComponent voiceComponent;
-	KeyboardComponent keyboardComponent;
+    ScoreComponent scoreComponent;
+    KeyboardComponent keyboardComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
 	MidiConnector* midiConnector = nullptr;

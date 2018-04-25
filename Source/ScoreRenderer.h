@@ -21,17 +21,11 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class Settings : public ChangeBroadcaster
+class ScoreRender
 {
 public:
-	void Save();
-	void Load();
-	static String ResourcesPath();
-
-	String pianoIp = "192.168.1.3";
-	String midiPort;
-	float zoomUi = 1.0;
-	Rectangle<int> windowPos;
-	bool keyboardVisible = false;
-	int keyboardChannel = 1;
+	virtual ~ScoreRender() {};
+	virtual void LoadDocument(String filename) = 0;
+	virtual void Render(Image* image) = 0;
+	static ScoreRender* Create();
 };

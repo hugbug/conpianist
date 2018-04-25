@@ -19,6 +19,11 @@
 
 #include "Settings.h"
 
+String Settings::ResourcesPath()
+{
+	return File::getSpecialLocation(File::currentApplicationFile).getParentDirectory().getFullPathName() + "/Resources";
+}
+
 void Settings::Save()
 {
 	XmlElement state("ConPianistState");

@@ -115,8 +115,9 @@ SceneComponent::SceneComponent (Settings& settings)
 
     //[Constructor] You can add your own custom stuff here..
 	playbackPanel->addAndMakeVisible(playbackComponent);
-	largeContentPanel->addAndMakeVisible(voiceComponent);
-	keyboardPanel->addAndMakeVisible(keyboardComponent);
+	//largeContentPanel->addAndMakeVisible(voiceComponent);
+    largeContentPanel->addAndMakeVisible(scoreComponent);
+    keyboardPanel->addAndMakeVisible(keyboardComponent);
 
     pianoController.AddListener(this);
     settings.addChangeListener(this);
@@ -192,7 +193,8 @@ void SceneComponent::resized()
         largeContentPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
 	playbackComponent.setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
 	voiceComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
-	keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
+    scoreComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
+    keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
     //[/UserResized]
 }
 
