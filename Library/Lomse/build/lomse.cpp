@@ -1,6 +1,3 @@
-#include "../packages/minizip/ioapi.c"
-#include "../packages/minizip/unzip.c"
-#include "../packages/pugixml/pugixml.cpp"
 #include "../src/agg/src/agg_arc.cpp"
 #include "../src/agg/src/agg_bezier_arc.cpp"
 #include "../src/agg/src/agg_curves.cpp"
@@ -146,3 +143,9 @@
 #include "../src/score/lomse_score_iterator.cpp"
 #include "../src/sound/lomse_midi_table.cpp"
 #include "../src/sound/lomse_score_player.cpp"
+
+#include "../packages/pugixml/pugixml.cpp"
+#if (LOMSE_ENABLE_COMPRESSION == 1)
+	#include "../packages/minizip/ioapi.c"
+	#include "../packages/minizip/unzip.c"
+#endif
