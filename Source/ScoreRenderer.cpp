@@ -26,26 +26,19 @@
 #include "ScoreRenderer.h"
 #include "Settings.h"
 
+using namespace lomse;
+
 class LomseRenderer : public ScoreRender
 {
 public:
 	LomseRenderer();
-
 	void LoadDocument(String filename) override;
-	void Render(Image* image) override;
+	void Render(juce::Image* image) override;
 
-	// Global variables
-	// In this first example we are just going to display an score on the main window.
-	// Let's define the necessary variables:
-	//
-	lomse::LomseDoorway m_lomse;        //the Lomse library doorway
-	ScopedPointer<lomse::Presenter> m_pPresenter;
-
-	//the Lomse View renders its content on a bitmap. To manage it, Lomse
-	//associates the bitmap to a RenderingBuffer object.
-	//It is your responsibility to render the bitmap on a window.
-	//Here you define the rendering buffer and its associated bitmap
-	lomse::RenderingBuffer m_rbuf_window;
+private:
+	::LomseDoorway m_lomse;
+	ScopedPointer<Presenter> m_pPresenter;
+	RenderingBuffer m_rbuf_window;
 };
 
 ScoreRender* ScoreRender::Create()
@@ -63,11 +56,10 @@ LomseRenderer::LomseRenderer()
 	// using the Lomse library you MUST specify which bitmap formap to use.
 
 	//the pixel format
-	int pixel_format = lomse::k_pix_format_rgba32;
-	int bpp = 32;
+	int pixel_format = k_pix_format_rgba32;
 
-	//the desired resolution. For MS Windows use 96 pixels per inch
-	int resolution = 96 * 2;    //96 ppi
+	//the desired resolution.
+	const int resolution = 96 * Scale;
 
 	//Lomse default y axis direction is 0 coordinate at top and increases
 	//downwards. For JUCE the Lomse default behaviour is the right behaviour.
@@ -88,25 +80,42 @@ void LomseRenderer::LoadDocument(String filename)
 
 	//get the pointer to the interactor, set the rendering buffer and register for
 	//receiving desired events
-	if (lomse::SpInteractor spInteractor = m_pPresenter->get_interactor(0).lock())
-	{
-		//connect the View with the window buffer
-		spInteractor->set_rendering_buffer(&m_rbuf_window);
-	}
+	SpInteractor spInteractor = m_pPresenter->get_interactor(0).lock();
+	//connect the View with the window buffer
+	spInteractor->set_rendering_buffer(&m_rbuf_window);
+
+	//set page height
+	Document* pDoc = m_pPresenter->get_document_raw_ptr();
+	ImoDocument* pImoDoc = pDoc->get_im_root();
+	ImoPageInfo* pPageInfo = pImoDoc->get_page_info();
+	pPageInfo->set_page_height(2000000.0f);
 }
 
-void LomseRenderer::Render(Image* image)
+void LomseRenderer::Render(juce::Image* image)
 {
 	//creates a bitmap of specified size and associates it to the rendering
 	//buffer for the view. Any existing buffer is automatically deleted
-	Image::BitmapData bitmap(*image, Image::BitmapData::readWrite);
+	juce::Image::BitmapData bitmap(*image, juce::Image::BitmapData::readWrite);
 
 	m_rbuf_window.attach(bitmap.data, image->getWidth(), image->getHeight(), bitmap.lineStride);
 
-	if (lomse::SpInteractor spInteractor = m_pPresenter->get_interactor(0).lock())
-	{
-		spInteractor->force_redraw();
-	}
+	//adjust the number of measures to fit the area size
+	//adjust page size
+	//Lets's define an arbitrary factor conversion: DIN A4 width (21,0 mm) will be
+	//mapped to a window width of 1000px
+	SpInteractor spInteractor = m_pPresenter->get_interactor(0).lock();
+	Document* pDoc = m_pPresenter->get_document_raw_ptr();
+	ImoDocument* pImoDoc = pDoc->get_im_root();
+	ImoPageInfo* pPageInfo = pImoDoc->get_page_info();
+	pPageInfo->set_page_width(LUnits(image->getWidth() * 26.5f / Scale));
+	pPageInfo->set_top_margin(500);
+	pPageInfo->set_left_margin(200);
+	pPageInfo->set_right_margin(200);
+	pPageInfo->set_bottom_margin(500);
+	pPageInfo->set_binding_margin(0);
+	spInteractor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
+
+	spInteractor->force_redraw();
 
 	m_rbuf_window.attach(nullptr, 0, 0, 0);
 }

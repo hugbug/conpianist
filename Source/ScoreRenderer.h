@@ -26,6 +26,8 @@ class ScoreRender
 public:
 	virtual ~ScoreRender() {};
 	virtual void LoadDocument(String filename) = 0;
-	virtual void Render(Image* image) = 0;
+	virtual void Render(juce::Image* image) = 0;
 	static ScoreRender* Create();
+
+	const int Scale = 2;
 };

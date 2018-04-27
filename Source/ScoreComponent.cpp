@@ -91,7 +91,7 @@ void ScoreComponent::renderScore()
 		renderer->LoadDocument(Settings::ResourcesPath() + "/sample.musicxml");
 	}
 
-	scoreImage = new Image(Image::PixelFormat::ARGB, getWidth() * 2, getHeight() * 2, false);
+	scoreImage = new Image(Image::PixelFormat::ARGB, getWidth() * renderer->Scale, getHeight() * renderer->Scale, false);
 	renderer->Render(scoreImage);
 }
 //[/MiscUserCode]
