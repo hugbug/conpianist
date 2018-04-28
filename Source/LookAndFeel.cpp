@@ -23,22 +23,31 @@ void ::LookAndFeel::drawButtonBackground(Graphics& gr, Button& btn, const Colour
 	bool isMouseOverButton, bool isButtonDown)
 {
 	bool toggle = btn.getProperties().contains("toggle");
+	bool tab = btn.getProperties().contains("tab");
 
 	Colour outline = Colour(toggle ? 0xFEEE6C0A : 0xff4e5b62);
 	Colour fill = Colour(0x0);
 
-	if (((isMouseOverButton || isButtonDown) && !toggle) || (btn.getToggleState() && toggle))
+	if (((isMouseOverButton || isButtonDown) && !toggle) || (btn.getToggleState() && (toggle || tab)))
 	{
-		fill = Colour(toggle ? 0xFEEE6C0A : 0xff3D484E);
+		fill = Colour(toggle ? 0xFEEE6C0A : tab ? 0xff4e5b62 : 0xff3D484E);
 	}
 
 	Rectangle<int> r = btn.getLocalBounds();
 
 	gr.setColour(fill);
-	gr.fillRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5);
-
-	gr.setColour(outline);
-	gr.drawRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5, 2);
+	if (tab)
+	{
+		gr.fillRect(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+		gr.setColour(outline);
+		gr.drawRect(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+	}
+	else
+	{
+		gr.fillRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5);
+		gr.setColour(outline);
+		gr.drawRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5, 2);
+	}
 }
 
 void ::LookAndFeel::drawImageButton(Graphics& gr, Image* im,

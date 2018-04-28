@@ -109,14 +109,14 @@ SceneComponent::SceneComponent (Settings& settings)
     scoreButton->setButtonText (TRANS("Score"));
     scoreButton->addListener (this);
 
-    scoreButton->setBounds (0 + 296, (-8) + 16, 80, 28);
+    scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
 
     addAndMakeVisible (voiceButton = new TextButton ("Voice Button"));
     voiceButton->setTooltip (TRANS("Voice Selection"));
     voiceButton->setButtonText (TRANS("Voice"));
     voiceButton->addListener (this);
 
-    voiceButton->setBounds (0 + 384, (-8) + 16, 80, 28);
+    voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
 
 
     //[UserPreSize]
@@ -134,8 +134,8 @@ SceneComponent::SceneComponent (Settings& settings)
 	keyboardPanel->addAndMakeVisible(keyboardComponent);
 	largeContentPanel->addAndMakeVisible(voiceComponent);
     largeContentPanel->addAndMakeVisible(*scoreComponent);
-	voiceButton->getProperties().set("toggle", "yes");
-	scoreButton->getProperties().set("toggle", "yes");
+	voiceButton->getProperties().set("tab", "yes");
+	scoreButton->getProperties().set("tab", "yes");
 	switchLargePanel(scoreButton);
 
     pianoController.AddListener(this);
@@ -267,7 +267,7 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     {
         //[UserButtonCode_voiceButton] -- add your button handler code here..
 		switchLargePanel(buttonThatWasClicked);
-		//[/UserButtonCode_voiceButton]
+        //[/UserButtonCode_voiceButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -493,11 +493,11 @@ BEGIN_JUCER_METADATA
                colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
                colourDown="0"/>
   <TEXTBUTTON name="Score Button" id="470fdf4dc9f8f0cd" memberName="scoreButton"
-              virtualName="" explicitFocusOrder="0" pos="296 16 80 28" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="298 18 80 34" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" tooltip="Score View" buttonText="Score"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Voice Button" id="f0432a7d7961584d" memberName="voiceButton"
-              virtualName="" explicitFocusOrder="0" pos="384 16 80 28" posRelativeX="69305d91c2150486"
+              virtualName="" explicitFocusOrder="0" pos="378 18 80 34" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" tooltip="Voice Selection" buttonText="Voice"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>

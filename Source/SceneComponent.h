@@ -64,7 +64,7 @@ public:
 	void zoomUi(bool zoomIn);
     void toggleKeyboard();
 	void switchLargePanel(Button* button);
-	//[/UserMethods]
+    //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
