@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.3.0" bundleIdentifier="prygunkov.ConPianist"
+<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.3.1" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
               companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist"
               headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build">
@@ -39,9 +39,6 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
-      <FILE id="dLawHg" name="ScoreRenderer.cpp" compile="1" resource="0"
-            file="Source/ScoreRenderer.cpp"/>
-      <FILE id="QJyfjb" name="ScoreRenderer.h" compile="0" resource="0" file="Source/ScoreRenderer.h"/>
       <FILE id="myytNU" name="ScoreComponent.cpp" compile="1" resource="0"
             file="Source/ScoreComponent.cpp"/>
       <FILE id="mXObOJ" name="ScoreComponent.h" compile="0" resource="0"

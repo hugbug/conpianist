@@ -128,11 +128,12 @@ SceneComponent::SceneComponent (Settings& settings)
 
 
     //[Constructor] You can add your own custom stuff here..
+	scoreComponent = ScoreComponent::Create(settings);
+
 	playbackPanel->addAndMakeVisible(playbackComponent);
 	keyboardPanel->addAndMakeVisible(keyboardComponent);
-
 	largeContentPanel->addAndMakeVisible(voiceComponent);
-    largeContentPanel->addAndMakeVisible(scoreComponent);
+    largeContentPanel->addAndMakeVisible(*scoreComponent);
 	voiceButton->getProperties().set("toggle", "yes");
 	scoreButton->getProperties().set("toggle", "yes");
 	switchLargePanel(scoreButton);
@@ -213,7 +214,10 @@ void SceneComponent::resized()
         largeContentPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
 	playbackComponent.setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
 	voiceComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
-    scoreComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
+	if (scoreComponent)
+	{
+    	scoreComponent->setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
+	}
     keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
     //[/UserResized]
 }
@@ -404,7 +408,7 @@ void SceneComponent::toggleKeyboard()
 void SceneComponent::switchLargePanel(Button* button)
 {
 	voiceComponent.setVisible(button == voiceButton);
-	scoreComponent.setVisible(button == scoreButton);
+	scoreComponent->setVisible(button == scoreButton);
 
 	voiceButton->setToggleState(button == voiceButton, NotificationType::dontSendNotification);
 	scoreButton->setToggleState(button == scoreButton, NotificationType::dontSendNotification);

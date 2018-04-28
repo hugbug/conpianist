@@ -19,9 +19,9 @@
 
 #include "Settings.h"
 
-String Settings::ResourcesPath()
+Settings::Settings()
 {
-	return File::getSpecialLocation(File::currentApplicationFile).getParentDirectory().getFullPathName() + "/Resources";
+	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory().getFullPathName() + "/Resources";
 }
 
 void Settings::Save()

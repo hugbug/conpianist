@@ -24,9 +24,9 @@
 class Settings : public ChangeBroadcaster
 {
 public:
+	Settings();
 	void Save();
 	void Load();
-	static String ResourcesPath();
 
 	String pianoIp = "192.168.1.3";
 	String midiPort;
@@ -34,4 +34,5 @@ public:
 	Rectangle<int> windowPos;
 	bool keyboardVisible = false;
 	int keyboardChannel = 1;
+	String resourcesPath;
 };

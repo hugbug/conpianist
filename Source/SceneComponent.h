@@ -78,7 +78,7 @@ private:
     PianoController pianoController;
     PlaybackComponent playbackComponent;
     VoiceComponent voiceComponent;
-    ScoreComponent scoreComponent;
+    ScopedPointer<ScoreComponent> scoreComponent;
     KeyboardComponent keyboardComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
