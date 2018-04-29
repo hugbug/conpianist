@@ -83,7 +83,7 @@ LomseScoreComponent::LomseScoreComponent(Settings& settings) :
 void LomseScoreComponent::paint(Graphics& g)
 {
 	g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
-	//g.drawImageAt(*scoreImage, 0, 0);
+	//g.drawImageAt(*m_image, 0, 0);
 }
 
 void LomseScoreComponent::resized()

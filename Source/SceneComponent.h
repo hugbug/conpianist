@@ -76,10 +76,10 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
     PianoController pianoController;
-    PlaybackComponent playbackComponent;
-    VoiceComponent voiceComponent;
+    ScopedPointer<PlaybackComponent> playbackComponent;
+    ScopedPointer<VoiceComponent> voiceComponent;
     ScopedPointer<ScoreComponent> scoreComponent;
-    KeyboardComponent keyboardComponent;
+    ScopedPointer<KeyboardComponent> keyboardComponent;
 	ScopedPointer<LocalMidiConnector> localMidiConnector;
 	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
 	MidiConnector* midiConnector = nullptr;

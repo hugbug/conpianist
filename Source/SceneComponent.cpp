@@ -29,7 +29,7 @@
 
 //==============================================================================
 SceneComponent::SceneComponent (Settings& settings)
-    : playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController, settings), settings(settings)
+    : settings(settings)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -122,25 +122,30 @@ SceneComponent::SceneComponent (Settings& settings)
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
     topbarPanel->setText("");
-    //[/UserPreSize]
+
+	playbackComponent = new PlaybackComponent(pianoController);
+	playbackPanel->addAndMakeVisible(playbackComponent);
+
+	keyboardComponent = new KeyboardComponent(pianoController, settings);
+	keyboardPanel->addAndMakeVisible(keyboardComponent);
+
+	voiceComponent = new VoiceComponent(pianoController);
+	scoreComponent = ScoreComponent::Create(settings);
+	largeContentPanel->addChildComponent(voiceComponent);
+    largeContentPanel->addChildComponent(scoreComponent);
+	voiceButton->getProperties().set("tab", "yes");
+	scoreButton->getProperties().set("tab", "yes");
+	//[/UserPreSize]
 
     setSize (850, 550);
 
 
     //[Constructor] You can add your own custom stuff here..
-	scoreComponent = ScoreComponent::Create(settings);
-
-	playbackPanel->addAndMakeVisible(playbackComponent);
-	keyboardPanel->addAndMakeVisible(keyboardComponent);
-	largeContentPanel->addAndMakeVisible(voiceComponent);
-    largeContentPanel->addAndMakeVisible(*scoreComponent);
-	voiceButton->getProperties().set("tab", "yes");
-	scoreButton->getProperties().set("tab", "yes");
-	switchLargePanel(scoreButton);
-
     pianoController.AddListener(this);
     settings.addChangeListener(this);
 	applySettings();
+
+	switchLargePanel(scoreButton);
 
 	startTimer(250);
     //[/Constructor]
@@ -212,13 +217,17 @@ void SceneComponent::resized()
     	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
     largeContentPanel->setBounds(largeContentPanel->getX(), largeContentPanel->getY(), largeContentPanel->getWidth(),
         largeContentPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
-	playbackComponent.setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
-	voiceComponent.setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
-	if (scoreComponent)
+	playbackComponent->setBounds(0, 0, playbackPanel->getWidth(), playbackPanel->getHeight());
+    keyboardComponent->setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
+
+	if (voiceComponent->isVisible())
+	{
+		voiceComponent->setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
+	}
+	if (scoreComponent->isVisible())
 	{
     	scoreComponent->setBounds(0, 0, largeContentPanel->getWidth(), largeContentPanel->getHeight());
 	}
-    keyboardComponent.setBounds(0, 0, keyboardPanel->getWidth(), keyboardPanel->getHeight());
     //[/UserResized]
 }
 
@@ -407,11 +416,13 @@ void SceneComponent::toggleKeyboard()
 
 void SceneComponent::switchLargePanel(Button* button)
 {
-	voiceComponent.setVisible(button == voiceButton);
+	voiceComponent->setVisible(button == voiceButton);
 	scoreComponent->setVisible(button == scoreButton);
 
 	voiceButton->setToggleState(button == voiceButton, NotificationType::dontSendNotification);
 	scoreButton->setToggleState(button == scoreButton, NotificationType::dontSendNotification);
+
+	resized();
 }
 
 //[/MiscUserCode]
@@ -428,7 +439,7 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="SceneComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener, public ChangeListener, public Timer"
-                 constructorParams="Settings&amp; settings" variableInitialisers="playbackComponent(pianoController), voiceComponent(pianoController), keyboardComponent(pianoController, settings), settings(settings)"
+                 constructorParams="Settings&amp; settings" variableInitialisers="settings(settings)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="850" initialHeight="550">
   <BACKGROUND backgroundColour="ff323e44">
