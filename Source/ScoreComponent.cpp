@@ -22,6 +22,7 @@
 #include <lomse_graphic_view.h>
 #include <lomse_interactor.h>
 #include <lomse_presenter.h>
+#include <lomse_tasks.h>
 
 #include "ScoreComponent.h"
 
@@ -35,6 +36,10 @@ public:
     void RenderScore();
     void paint (Graphics& g) override;
     void resized() override;
+	void mouseDown(const MouseEvent& event) override;
+	void mouseUp(const MouseEvent& event) override;
+	void mouseDrag(const MouseEvent& event) override;
+	void mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details) override;
 
 private:
 	lomse::LomseDoorway m_lomse;
@@ -43,9 +48,16 @@ private:
     ScopedPointer<juce::Image> m_image;
     Settings& m_settings;
 	int m_resolution;
+	float m_scale = 1;
 
 	void LoadDocument(String filename);
-	void UpdateImage();
+	void PrepareImage();
+
+    void UpdateWindow(SpEventInfo event);
+    static void UpdateWindowWrapper(void* obj, SpEventInfo event)
+		{ static_cast<LomseScoreComponent*>(obj)->UpdateWindow(event); }
+
+	unsigned GetMouseFlags(const MouseEvent& event);
 };
 
 ScoreComponent* ScoreComponent::Create(Settings& settings)
@@ -56,7 +68,8 @@ ScoreComponent* ScoreComponent::Create(Settings& settings)
 LomseScoreComponent::LomseScoreComponent(Settings& settings) :
 	m_settings(settings)
 {
-	m_resolution = 96 * m_settings.zoomUi;
+	m_scale = m_settings.zoomUi;
+	m_resolution = 96 * m_scale;
 
 	lomse::logger.set_logging_mode(lomse::Logger::k_trace_mode);
 
@@ -80,17 +93,6 @@ LomseScoreComponent::LomseScoreComponent(Settings& settings) :
 	LoadDocument(m_settings.resourcesPath + "/sample.musicxml");
 }
 
-void LomseScoreComponent::paint(Graphics& g)
-{
-	g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
-	//g.drawImageAt(*m_image, 0, 0);
-}
-
-void LomseScoreComponent::resized()
-{
-	UpdateImage();
-}
-
 void LomseScoreComponent::LoadDocument(String filename)
 {
 	//first, we will create a 'presenter'. It takes care of creating and maintaining
@@ -100,9 +102,14 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 	//get the pointer to the interactor, set the rendering buffer and register for
 	//receiving desired events
-	SpInteractor spInteractor = m_presenter->get_interactor(0).lock();
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	//connect the View with the window buffer
-	spInteractor->set_rendering_buffer(&m_rbuf_window);
+	interactor->set_rendering_buffer(&m_rbuf_window);
+
+	//ask to receive desired events
+	interactor->add_event_handler(k_update_window_event, this, UpdateWindowWrapper);
+
+	interactor->switch_task(TaskFactory::k_task_drag_view);
 
 	//set page height
 	Document* pDoc = m_presenter->get_document_raw_ptr();
@@ -111,11 +118,9 @@ void LomseScoreComponent::LoadDocument(String filename)
 	pPageInfo->set_page_height(2000000.0f);
 }
 
-void LomseScoreComponent::UpdateImage()
+void LomseScoreComponent::PrepareImage()
 {
-	float scale = m_resolution / 96.0f;
-
-	m_image = new juce::Image(juce::Image::PixelFormat::ARGB, getWidth() * scale, getHeight() * scale, false);
+	m_image = new juce::Image(juce::Image::PixelFormat::ARGB, getWidth() * m_scale, getHeight() * m_scale, false, SoftwareImageType());
 
 	//creates a bitmap of specified size and associates it to the rendering
 	//buffer for the view. Any existing buffer is automatically deleted
@@ -125,20 +130,72 @@ void LomseScoreComponent::UpdateImage()
 
 	//adjust the number of measures to fit the area size
 	//adjust page size
-	SpInteractor spInteractor = m_presenter->get_interactor(0).lock();
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	Document* pDoc = m_presenter->get_document_raw_ptr();
 	ImoDocument* pImoDoc = pDoc->get_im_root();
 	ImoPageInfo* pPageInfo = pImoDoc->get_page_info();
-	pPageInfo->set_page_width(LUnits(m_image->getWidth()) * 26.5f / scale);
+	pPageInfo->set_page_width(LUnits(m_image->getWidth()) * 26.5f / m_scale);
 	pPageInfo->set_top_margin(500);
 	pPageInfo->set_left_margin(200);
 	pPageInfo->set_right_margin(200);
 	pPageInfo->set_bottom_margin(500);
 	pPageInfo->set_binding_margin(0);
-	spInteractor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
+	interactor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
 
-	spInteractor->force_redraw();
-
-	m_rbuf_window.attach(nullptr, 0, 0, 0);
+	interactor->redraw_bitmap();
 }
 
+void LomseScoreComponent::UpdateWindow(SpEventInfo event)
+{
+	repaint();
+}
+
+void LomseScoreComponent::resized()
+{
+	PrepareImage();
+}
+
+void LomseScoreComponent::paint(Graphics& g)
+{
+	g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
+}
+
+void LomseScoreComponent::mouseDown(const MouseEvent& event)
+{
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->on_mouse_button_down(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+}
+
+void LomseScoreComponent::mouseUp(const MouseEvent& event)
+{
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->on_mouse_button_up(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+}
+
+void LomseScoreComponent::mouseDrag(const MouseEvent& event)
+{
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->on_mouse_move(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+}
+
+void LomseScoreComponent::mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details)
+{
+	float scrollY = details.deltaY * 256;
+
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->on_mouse_button_down(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, k_mouse_left);
+	interactor->on_mouse_move(event.getMouseDownScreenX() * m_scale, (event.getScreenY() + scrollY) * m_scale, k_mouse_left);
+	interactor->on_mouse_button_up(event.getMouseDownScreenX() * m_scale, (event.getScreenY() + scrollY) * m_scale, k_mouse_left);
+}
+
+unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
+{
+	unsigned flags = 0;
+	if (event.mods.isLeftButtonDown()) flags |= k_mouse_left;
+	if (event.mods.isRightButtonDown()) flags |= k_mouse_right;
+	if (event.mods.isMiddleButtonDown()) flags |= k_mouse_middle;
+	if (event.mods.isShiftDown()) flags |= k_kbd_shift;
+	if (event.mods.isAltDown()) flags |= k_kbd_alt;
+	if (event.mods.isCtrlDown()) flags |= k_kbd_ctrl;
+	return flags;
+}
