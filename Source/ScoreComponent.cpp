@@ -33,11 +33,11 @@ class LomseScoreComponent : public ScoreComponent
 public:
 	LomseScoreComponent(Settings& settings);
 
-    void RenderScore();
     void paint (Graphics& g) override;
     void resized() override;
 	void mouseDown(const MouseEvent& event) override;
 	void mouseUp(const MouseEvent& event) override;
+	void mouseMove(const MouseEvent& event) override;
 	void mouseDrag(const MouseEvent& event) override;
 	void mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details) override;
 
@@ -52,6 +52,7 @@ private:
 
 	void LoadDocument(String filename);
 	void PrepareImage();
+	LUnits ScaledUnits(int pixels);
 
     void UpdateWindow(SpEventInfo event);
     static void UpdateWindowWrapper(void* obj, SpEventInfo event)
@@ -69,7 +70,7 @@ LomseScoreComponent::LomseScoreComponent(Settings& settings) :
 	m_settings(settings)
 {
 	m_scale = m_settings.zoomUi;
-	m_resolution = 96 * m_scale;
+	m_resolution = int(96 * m_scale);
 
 	lomse::logger.set_logging_mode(lomse::Logger::k_trace_mode);
 
@@ -106,21 +107,31 @@ void LomseScoreComponent::LoadDocument(String filename)
 	//connect the View with the window buffer
 	interactor->set_rendering_buffer(&m_rbuf_window);
 
+	interactor->set_view_background(Color(68,62,50)); // dark grey
+
 	//ask to receive desired events
 	interactor->add_event_handler(k_update_window_event, this, UpdateWindowWrapper);
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
-	//set page height
-	Document* pDoc = m_presenter->get_document_raw_ptr();
-	ImoDocument* pImoDoc = pDoc->get_im_root();
-	ImoPageInfo* pPageInfo = pImoDoc->get_page_info();
-	pPageInfo->set_page_height(2000000.0f);
+	//hide instrument names
+	Document* doc = m_presenter->get_document_raw_ptr();
+	ImoDocument* imoDoc = doc->get_im_root();
+	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
+	if (score)
+	{
+		for (int i = 0; i < score->get_num_instruments(); i++)
+		{
+			score->get_instrument(i)->set_name("");
+			score->get_instrument(i)->set_abbrev("");
+		}
+	}
 }
 
 void LomseScoreComponent::PrepareImage()
 {
-	m_image = new juce::Image(juce::Image::PixelFormat::ARGB, getWidth() * m_scale, getHeight() * m_scale, false, SoftwareImageType());
+	m_image = new juce::Image(juce::Image::PixelFormat::ARGB,
+		int(getWidth() * m_scale), int(getHeight() * m_scale), false, SoftwareImageType());
 
 	//creates a bitmap of specified size and associates it to the rendering
 	//buffer for the view. Any existing buffer is automatically deleted
@@ -131,18 +142,27 @@ void LomseScoreComponent::PrepareImage()
 	//adjust the number of measures to fit the area size
 	//adjust page size
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	Document* pDoc = m_presenter->get_document_raw_ptr();
-	ImoDocument* pImoDoc = pDoc->get_im_root();
-	ImoPageInfo* pPageInfo = pImoDoc->get_page_info();
-	pPageInfo->set_page_width(LUnits(m_image->getWidth()) * 26.5f / m_scale);
-	pPageInfo->set_top_margin(500);
-	pPageInfo->set_left_margin(200);
-	pPageInfo->set_right_margin(200);
-	pPageInfo->set_bottom_margin(500);
-	pPageInfo->set_binding_margin(0);
+	Document* doc = m_presenter->get_document_raw_ptr();
+	ImoDocument* imoDoc = doc->get_im_root();
+	ImoPageInfo* pageInfo = imoDoc->get_page_info();
+
+	pageInfo->set_page_width(ScaledUnits(m_image->getWidth()));
+	pageInfo->set_page_height(ScaledUnits(m_image->getHeight()));
+
+	pageInfo->set_top_margin(500);
+	pageInfo->set_left_margin(300);
+	pageInfo->set_right_margin(300);
+	pageInfo->set_bottom_margin(500);
+	pageInfo->set_binding_margin(0);
+
 	interactor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
 
 	interactor->redraw_bitmap();
+}
+
+LUnits LomseScoreComponent::ScaledUnits(int pixels)
+{
+	return LUnits(pixels) * 26.5f / m_scale;
 }
 
 void LomseScoreComponent::UpdateWindow(SpEventInfo event)
@@ -163,19 +183,27 @@ void LomseScoreComponent::paint(Graphics& g)
 void LomseScoreComponent::mouseDown(const MouseEvent& event)
 {
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	interactor->on_mouse_button_down(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+	interactor->on_mouse_button_down(int(event.getMouseDownScreenX() * m_scale),
+		int(event.getScreenY() * m_scale), GetMouseFlags(event));
 }
 
 void LomseScoreComponent::mouseUp(const MouseEvent& event)
 {
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	interactor->on_mouse_button_up(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+	interactor->on_mouse_button_up(int(event.getMouseDownScreenX() * m_scale),
+		int(event.getScreenY() * m_scale), GetMouseFlags(event));
+}
+
+void LomseScoreComponent::mouseMove(const MouseEvent& event)
+{
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->on_mouse_move(int(event.getMouseDownScreenX() * m_scale),
+		int(event.getScreenY() * m_scale), GetMouseFlags(event));
 }
 
 void LomseScoreComponent::mouseDrag(const MouseEvent& event)
 {
-	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	interactor->on_mouse_move(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, GetMouseFlags(event));
+	mouseMove(event);
 }
 
 void LomseScoreComponent::mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details)
@@ -183,19 +211,22 @@ void LomseScoreComponent::mouseWheelMove(const MouseEvent& event, const MouseWhe
 	float scrollY = details.deltaY * 256;
 
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	interactor->on_mouse_button_down(event.getMouseDownScreenX() * m_scale, event.getScreenY() * m_scale, k_mouse_left);
-	interactor->on_mouse_move(event.getMouseDownScreenX() * m_scale, (event.getScreenY() + scrollY) * m_scale, k_mouse_left);
-	interactor->on_mouse_button_up(event.getMouseDownScreenX() * m_scale, (event.getScreenY() + scrollY) * m_scale, k_mouse_left);
+	interactor->on_mouse_button_down(int(event.getMouseDownScreenX() * m_scale),
+		int(event.getScreenY() * m_scale), k_mouse_left);
+	interactor->on_mouse_move(int(event.getMouseDownScreenX() * m_scale),
+		int((event.getScreenY() + scrollY) * m_scale), k_mouse_left);
+	interactor->on_mouse_button_up(int(event.getMouseDownScreenX() * m_scale),
+		int((event.getScreenY() + scrollY) * m_scale), k_mouse_left);
 }
 
 unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
 {
-	unsigned flags = 0;
-	if (event.mods.isLeftButtonDown()) flags |= k_mouse_left;
-	if (event.mods.isRightButtonDown()) flags |= k_mouse_right;
-	if (event.mods.isMiddleButtonDown()) flags |= k_mouse_middle;
-	if (event.mods.isShiftDown()) flags |= k_kbd_shift;
-	if (event.mods.isAltDown()) flags |= k_kbd_alt;
-	if (event.mods.isCtrlDown()) flags |= k_kbd_ctrl;
-	return flags;
+	unsigned mouseFlags = 0;
+	if (event.mods.isLeftButtonDown()) mouseFlags |= k_mouse_left;
+	if (event.mods.isRightButtonDown()) mouseFlags |= k_mouse_right;
+	if (event.mods.isMiddleButtonDown()) mouseFlags |= k_mouse_middle;
+	if (event.mods.isShiftDown()) mouseFlags |= k_kbd_shift;
+	if (event.mods.isAltDown()) mouseFlags |= k_kbd_alt;
+	if (event.mods.isCtrlDown()) mouseFlags |= k_kbd_ctrl;
+	return mouseFlags;
 }
