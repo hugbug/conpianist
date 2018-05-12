@@ -130,7 +130,7 @@ SceneComponent::SceneComponent (Settings& settings)
 	keyboardPanel->addAndMakeVisible(keyboardComponent);
 
 	voiceComponent = new VoiceComponent(pianoController);
-	scoreComponent = ScoreComponent::Create(settings);
+	scoreComponent = ScoreComponent::Create(pianoController, settings);
 	largeContentPanel->addChildComponent(voiceComponent);
     largeContentPanel->addChildComponent(scoreComponent);
 	voiceButton->getProperties().set("tab", "yes");

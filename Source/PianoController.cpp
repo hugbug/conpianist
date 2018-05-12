@@ -58,6 +58,7 @@ static const char* CSP_RIGHT_PART_OFF = "04 00 0e 01 00 01 00 00 01 00";
 static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
 static const char* CSP_PART_EVENTS = "02 00 04 00 0e 01";
 static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
+static const char* CSP_SONG_NAME_EVENTS = "02 00 04 00 01 01";
 static const char* CSP_VOLUME = "0c 00 00 01 50 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01 50 01 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
@@ -211,6 +212,8 @@ void PianoController::Connect()
 	SendCspMessage(CSP_VOICE_SELECT_EVENTS, false);
 	//   voice slot enabled/disabled
 	SendCspMessage(CSP_VOICE_ENABLE_EVENTS, false);
+	//   song name info (after a song is loaded)
+	SendCspMessage(CSP_SONG_NAME_EVENTS, false);
 
 	Stop();
 
@@ -264,6 +267,8 @@ void PianoController::SetLocalControl(bool enabled)
 
 bool PianoController::UploadSong(const File& file)
 {
+	m_songFilename = file.getFullPathName();
+
 	String headerHex =
 		"01 00 00 06 00 00 00 01 00 00 00 00 00 00 00 01 "
 		"00 00 00 00 00 00 00 16 45 58 54 45 52 4e 41 4c "

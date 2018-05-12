@@ -20,10 +20,11 @@
 #pragma once
 
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "PianoController.h"
 #include "Settings.h"
 
 class ScoreComponent : public Component
 {
 public:
-	static ScoreComponent* Create(Settings& settings);
+	static ScoreComponent* Create(PianoController& pianoController, Settings& settings);
 };

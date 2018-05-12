@@ -28,10 +28,10 @@
 
 using namespace lomse;
 
-class LomseScoreComponent : public ScoreComponent
+class LomseScoreComponent : public ScoreComponent, public PianoController::Listener
 {
 public:
-	LomseScoreComponent(Settings& settings);
+	LomseScoreComponent(PianoController& pianoController, Settings& settings);
 
     void paint (Graphics& g) override;
     void resized() override;
@@ -41,33 +41,42 @@ public:
 	void mouseDrag(const MouseEvent& event) override;
 	void mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details) override;
 
+	void PianoStateChanged() override { MessageManager::callAsync([=](){UpdateSongState();}); }
+	void PianoSongLoaded() override { MessageManager::callAsync([=](){LoadSong();}); }
+
 private:
 	lomse::LomseDoorway m_lomse;
 	ScopedPointer<Presenter> m_presenter;
 	RenderingBuffer m_rbuf_window;
     ScopedPointer<juce::Image> m_image;
+	PianoController& m_pianoController;
     Settings& m_settings;
 	int m_resolution;
 	float m_scale = 1;
+	bool m_scoreLoaded = false;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
 	LUnits ScaledUnits(int pixels);
+	unsigned GetMouseFlags(const MouseEvent& event);
 
+	// Piano controller callbacks
+	void UpdateSongState();
+	void LoadSong();
+
+	// Lomse callbacks
     void UpdateWindow(SpEventInfo event);
     static void UpdateWindowWrapper(void* obj, SpEventInfo event)
 		{ static_cast<LomseScoreComponent*>(obj)->UpdateWindow(event); }
-
-	unsigned GetMouseFlags(const MouseEvent& event);
 };
 
-ScoreComponent* ScoreComponent::Create(Settings& settings)
+ScoreComponent* ScoreComponent::Create(PianoController& pianoController, Settings& settings)
 {
-	return new LomseScoreComponent(settings);
+	return new LomseScoreComponent(pianoController, settings);
 }
 
-LomseScoreComponent::LomseScoreComponent(Settings& settings) :
-	m_settings(settings)
+LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Settings& settings) :
+	m_pianoController(pianoController), m_settings(settings)
 {
 	m_scale = m_settings.zoomUi;
 	m_resolution = int(96 * m_scale);
@@ -91,7 +100,9 @@ LomseScoreComponent::LomseScoreComponent(Settings& settings) :
 
 	m_lomse.set_default_fonts_path((m_settings.resourcesPath + "/fonts/").toStdString());
 
-	LoadDocument(m_settings.resourcesPath + "/sample.musicxml");
+	pianoController.AddListener(this);
+
+	LoadDocument("");
 }
 
 void LomseScoreComponent::LoadDocument(String filename)
@@ -99,7 +110,16 @@ void LomseScoreComponent::LoadDocument(String filename)
 	//first, we will create a 'presenter'. It takes care of creating and maintaining
 	//all objects and relationships between the document, its views and the interactors
 	//to interact with the view
-	m_presenter = m_lomse.open_document(lomse::k_view_vertical_book, filename.toStdString());
+	if (filename.isNotEmpty())
+	{
+		// load from file
+		m_presenter = m_lomse.open_document(lomse::k_view_vertical_book, filename.toStdString());
+	}
+	else
+	{
+		// empty document
+		m_presenter = m_lomse.new_document(lomse::k_view_vertical_book);
+	}
 
 	//get the pointer to the interactor, set the rendering buffer and register for
 	//receiving desired events
@@ -172,12 +192,30 @@ void LomseScoreComponent::UpdateWindow(SpEventInfo event)
 
 void LomseScoreComponent::resized()
 {
-	PrepareImage();
+	if (m_scoreLoaded)
+	{
+		PrepareImage();
+	}
 }
 
 void LomseScoreComponent::paint(Graphics& g)
 {
-	g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
+	if (m_scoreLoaded)
+	{
+		g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
+	}
+	else
+	{
+		String text = //"No score-file found for " +
+			//File(m_settings.songFilename).getFileNameWithoutExtension().toStdString() + ". "
+			"To display score for a song put the score-file in MusicXML format near MIDI-file. "
+			"The score-file should have the same name as MIDI-file and extension .musicxml or .xml.";
+		g.setColour(Colour(167,172,176));
+		g.setFont(16);
+		juce::Rectangle<int> rec = getBounds();
+		rec.reduce(20, 20);
+		g.drawFittedText(text, rec, Justification::centredTop, 100, 1);
+	}
 }
 
 void LomseScoreComponent::mouseDown(const MouseEvent& event)
@@ -229,4 +267,33 @@ unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
 	if (event.mods.isAltDown()) mouseFlags |= k_kbd_alt;
 	if (event.mods.isCtrlDown()) mouseFlags |= k_kbd_ctrl;
 	return mouseFlags;
+}
+
+void LomseScoreComponent::UpdateSongState()
+{
+	//TODO: highlight playback position
+}
+
+void LomseScoreComponent::LoadSong()
+{
+	m_presenter = nullptr;
+
+	File scoreFilename = File(m_pianoController.GetSongFilename()).withFileExtension(".musicxml");
+	if (scoreFilename.existsAsFile())
+	{
+		LoadDocument(scoreFilename.getFullPathName());
+		m_scoreLoaded = true;
+	}
+	else
+	{
+		scoreFilename = File(m_pianoController.GetSongFilename()).withFileExtension(".xml");
+		if (scoreFilename.existsAsFile())
+		{
+			LoadDocument(scoreFilename.getFullPathName());
+			m_scoreLoaded = true;
+		}
+	}
+
+	resized();
+	repaint();
 }
