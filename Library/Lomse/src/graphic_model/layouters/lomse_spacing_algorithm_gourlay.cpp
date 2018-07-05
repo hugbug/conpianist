@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2017. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -48,8 +48,6 @@ using namespace std;
 namespace lomse
 {
 
-#define LOMSE_NO_DURATION   100000000000000.0f  //any too high value for a note duration
-#define LOMSE_NO_TIME       100000000000000.0   //any impossible high value for a timepos
 #define LOMSE_NO_POSITION   100000000000000.0f  //any impossible high value
 #define LOMSE_MAX_FORCE     100000000000000.0f  //any impossible high value
 
@@ -188,7 +186,7 @@ void SpAlgGourlay::include_object(ColStaffObjsEntry* pCurEntry, int iCol, int UN
     //determine if a new slice should be created
     TimeUnits curTime = pCurEntry->time();
     bool fCreateNewSlice = false;
-    if (curType != m_prevType || !is_equal(m_prevTime, curTime) )
+    if (curType != m_prevType || !is_equal_time(m_prevTime, curTime) )
         fCreateNewSlice = true;
 
     //avoid re-using current prolog slice if object is not clef, key or time
@@ -205,7 +203,7 @@ void SpAlgGourlay::include_object(ColStaffObjsEntry* pCurEntry, int iCol, int UN
     //avoid starting a new prolog slice when non-timed after prolog
     if (fCreateNewSlice && curType == TimeSlice::k_prolog)
     {
-        if (is_equal(m_lastPrologTime, curTime) && m_prevType == TimeSlice::k_non_timed)
+        if (is_equal_time(m_lastPrologTime, curTime) && m_prevType == TimeSlice::k_non_timed)
         {
             fCreateNewSlice = !m_pCurSlice;
             curType = TimeSlice::k_non_timed;
@@ -405,7 +403,7 @@ void SpAlgGourlay::determine_spacing_parameters()
         m_Fopt = m_pScoreMeter->get_spacing_Fopt();
         m_alpha = m_pScoreMeter->get_spacing_alpha();
         if (m_pScoreMeter->get_render_spacing_opts() & k_render_opt_dmin_global)
-            m_dmin = m_pScore->get_staffobjs_table()->min_note_duration();
+            m_dmin = float(m_pScore->get_staffobjs_table()->min_note_duration());
         else //k_render_opt_dmin_fixed
             m_dmin = m_pScoreMeter->get_spacing_dmin();
         m_uSmin = m_pScoreMeter->get_spacing_smin();
@@ -667,8 +665,8 @@ float SpAlgGourlay::determine_penalty_for_line(int iSystem, int iFirstCol, int i
     //    line_width   is the desired width of for the line
     //    fopt  is a constant value set by the user (and dependent on personal taste).
 
-    bool fTrace = m_libraryScope.get_trace_level_for_lines_breaker()
-                  & k_trace_breaks_penalties;
+    bool fTrace = (m_libraryScope.get_trace_level_for_lines_breaker()
+                       & k_trace_breaks_penalties) != 0;
 
     //force break when so required
     if (m_pScoreLyt->column_has_system_break(iLastCol))
@@ -880,7 +878,7 @@ void TimeSlice::compute_spring_constant(LUnits uSmin, float alpha, float log2dmi
             space_ds = spacing_function(uSmin, alpha, log2dmin, dmin);
         else
             space_ds = dsFixed;
-        m_ci = (m_di/m_ds) * ( 1.0f / space_ds );
+        m_ci = float(m_di/m_ds) * ( 1.0f / space_ds );
     }
     else
         m_ci = 0.0f;
@@ -924,7 +922,7 @@ LUnits TimeSlice::spacing_function(LUnits uSmin, float alpha, float log2dmin,
 	// log2(d/dmin) is always > 0 as it has been checked that d > dmin.
 	// log(2) = 0.3010299956640f
 
-    return uSmin * (1.0f + alpha * (log(m_ds) / 0.3010299956640f - log2dmin));
+    return uSmin * (1.0f + alpha * (log(float(m_ds)) / 0.3010299956640f - log2dmin));
 }
 
 //---------------------------------------------------------------------------------------

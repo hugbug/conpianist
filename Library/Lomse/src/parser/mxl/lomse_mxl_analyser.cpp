@@ -1150,7 +1150,7 @@ float MxlElementAnalyser::get_attribute_as_float(const string& name, float rDefa
         rNumber = std::stof(number, &sz);
         fError = (number.size() != sz);
     }
-    catch (const std::invalid_argument& ia)
+    catch (...)
     {
         fError = true;
     }
@@ -1236,7 +1236,7 @@ bool MxlElementAnalyser::get_mandatory(const string& tag)
     if (!more_children_to_analyse())
     {
         error_missing_element(tag);
-        return nullptr;
+        return false;
     }
 
     m_childToAnalyse = get_child_to_analyse();
@@ -1289,7 +1289,9 @@ bool MxlElementAnalyser::analyse_optional(const string& name, ImoObj* pAnchor)
 string MxlElementAnalyser::analyze_mandatory_child_pcdata(const string& name)
 {
     if (get_mandatory(name))
+    {
         return m_childToAnalyse.value();
+    }
 
 	return "";
 }
@@ -1299,7 +1301,9 @@ string MxlElementAnalyser::analyze_optional_child_pcdata(const string& name,
                                                          const string& sDefault)
 {
     if (get_optional(name))
+    {
         return m_childToAnalyse.value();
+    }
 
 	return sDefault;
 }
@@ -1364,7 +1368,7 @@ float MxlElementAnalyser::get_child_pcdata_float(const string& name,
 {
     bool fError = false;
     string number = m_childToAnalyse.value();
-    long rNumber;
+    float rNumber;
     std::istringstream iss(number);
     if ((iss >> rNumber).fail())
         fError = true;
@@ -3720,11 +3724,13 @@ public:
 
         // pan?     -180 and 180, with decimal values
         if (get_optional("pan"))
-            pMidi->set_midi_pan( get_child_pcdata_float("pan", -180.0f, 180.0f, 0.0f) );
+            pMidi->set_midi_pan(
+                        int(get_child_pcdata_float("pan", -180.0f, 180.0f, 0.0f)) );
 
         // elevation?   -90 and 90, with decimal values
         if (get_optional("elevation"))
-            pMidi->set_midi_elevation( get_child_pcdata_float("elevation", -90.0f, 90.0f, 0.0f) );
+            pMidi->set_midi_elevation(
+                        int(get_child_pcdata_float("elevation", -90.0f, 90.0f, 0.0f)) );
 
         error_if_more_elements();
 

@@ -64,6 +64,7 @@ class DraggedImage;
 class SelectionRectangle;
 class PlaybackHighlight;
 class TimeGrid;
+class TempoLine;
 class Handler;
 class SelectionHighlight;
 class SelectionSet;
@@ -175,10 +176,8 @@ protected:
     TimeGrid*           m_pTimeGrid;
     list<Handler*>      m_handlers;
     SelectionHighlight* m_pSelObjects;
-//    TempoLine* m_pTempoLine;
-    //line to highlight tempo when playing back a score
-    bool                m_fTempoLineVisible;
-    Rectangle<Pixels>   m_tempoLine;
+    TempoLine*          m_pTempoLine;
+    int                 m_trackingEffect;
 
     //bounds for each displayed page
     std::list<URect> m_pageBounds;
@@ -216,9 +215,10 @@ public:
     ///@{
     VRect get_damaged_rectangle();
     UPoint get_page_origin_for(GmoObj* pGmo);
+    UPoint get_page_origin_for(int iPage);
     void draw_all_visual_effects();
     void draw_selection_rectangle();
-    void draw_playback_highlight();
+    void draw_visual_tracking();
     void draw_caret();
     void draw_dragged_image();
     void draw_selected_objects();
@@ -231,7 +231,16 @@ public:
     /// @name Scrolling support
     ///@{
     virtual void get_view_size(Pixels* xWidth, Pixels* yHeight) = 0;
+
+    /** For auto-scroll during playback. Change the viewport to ensure that the note/rest
+        whose ID is @c ImoId is visible on the screen.
+    */
     virtual void change_viewport_if_necessary(ImoId id);
+    virtual void change_viewport_if_necessary(ImoId scoreId, TimeUnits timepos);
+
+    /** Force to scroll to specified timepos.
+    */
+    virtual void change_viewport_to(ImoId scoreId, TimeUnits timepos);
 
     ///@}    //Scrolling support
 
@@ -245,22 +254,47 @@ public:
     ///@}    //Selection rectangle
 
 
-    /// @name Tempo line
+    /// @name Visual effects for tracking during playback
     ///@{
-    void show_tempo_line(Pixels x1, Pixels y1, Pixels x2, Pixels y2);
-    void hide_tempo_line();
-    void update_tempo_line(Pixels x2, Pixels y2);
 
-    ///@}    //Tempo line
+    /** Move the tempo line to the given note/rest.
+        @param pSO The tempo line will be placed at this note or rest.
+    */
+    virtual void move_tempo_line(ImoStaffObj* pSO);
+    virtual void move_tempo_line(ImoId scoreId, TimeUnits timepos);
 
+    /** For performance and for sharing common code, this method combines the operation
+        of moving the tempo line to the given time position and the operation of
+        changing the viewport, if necessary, to ensure that the tempo line is visible.
+        @param scoreId  Id. of the score to which the operation refers.
+        @param timepos The time position to move the tempo line to.
+    */
+    virtual void move_tempo_line_and_change_viewport(ImoId scoreId, TimeUnits timepos);
 
-    /// @name Highlighting notes and rests
-    ///@{
-    void highlight_object(ImoStaffObj* pSO);
-    void remove_highlight_from_object(ImoStaffObj* pSO);
-    void remove_all_highlight();
+    /** @param pSO This note or rest will be highlighted
+        @todo Document Interactor::highlight_object    */
+    virtual void highlight_object(ImoStaffObj* pSO);
 
-    ///@}    //Highlighting notes and rests
+    /** @param pSO Highlight will be removed from this note or rest.
+        @todo Document Interactor::remove_highlight_from_object    */
+    virtual void remove_highlight_from_object(ImoStaffObj* pSO);
+
+    /// Remove all visual tracking visual effects.
+    virtual void remove_all_visual_tracking();
+
+    /** Select the visual effect to use for visual tracking during playback.
+        By default, if this method is not invoked, k_tracking_highlight_notes is used.
+        @param mode It is a value from enum EVisualTrackingMode. Several visual effects
+        can be en effect simultaneously by combining values
+        with the OR ('|') operator. Example:
+
+        @code
+        set_visual_tracking_mode(k_tracking_tempo_line | k_tracking_highlight_notes);
+        @endcode
+    */
+	inline void set_visual_tracking_mode(int mode) { m_trackingEffect = mode; }
+
+    ///@}    //Visual effects for tracking during playback
 
 
     /** The View is requested to re-paint itself onto the window */
@@ -367,7 +401,6 @@ protected:
 
     void draw_all();
     void draw_graphic_model();
-    void draw_tempo_line();
     void draw_time_grid();
     void generate_paths();
     virtual void collect_page_bounds() = 0;
@@ -392,6 +425,41 @@ protected:
     void delete_all_handlers();
     void add_handler(int iHandler, GmoObj* pOwnerGmo);
     void do_change_viewport(Pixels x, Pixels y);
+
+    //scrolling and tempo line
+
+    void determine_scroll_position_for(ImoId scoreId, TimeUnits timepos);
+
+    //results computed by methods:
+    //  determine_page_system_and_position_for(ImoId scoreId, TimeUnits timepos)
+    //  change_viewport_if_necessary(ImoId id)
+    //and used by do_xxx methods:
+    //  do_change_viewport_if_necessary()
+    //  do_determine_if_scroll_needed()
+    int m_iScrollPage;
+    GmoBoxSystem* m_pScrollSystem;
+    LUnits m_xScrollLeft, m_xScrollRight;
+
+    bool determine_page_system_and_position_for(ImoId scoreId, TimeUnits timepos);
+    virtual void do_change_viewport_if_necessary();
+    virtual bool do_determine_if_scroll_needed();
+
+    //results computed by method:
+    //  do_determine_new_scroll_position()
+    //and used by do_xxx methods:
+    //  do_change_viewport();
+    Pixels k_scrollLeftMargin;
+    Pixels m_vxLast, m_vyLast;
+    Pixels m_vxNew, m_vyNew;
+    Pixels m_vxScrollLeft, m_vxScrollRight;
+    Pixels m_vySysTop, m_vySysBottom;
+
+    void do_determine_new_scroll_position();
+    void do_change_viewport();
+
+
+    void do_move_tempo_line_and_change_viewport(ImoId scoreId, TimeUnits timepos,
+                                                bool fTempoLine, bool fViewport);
 
 };
 

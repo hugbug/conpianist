@@ -355,7 +355,7 @@ void TableSectionLayouter::create_cell_layouters()
         for (itCell = pWrapper->begin(); itCell != pWrapper->end(); ++itCell, ++iCell, ++iCol)
         {
             while( iCell < numCells && !freeCell[iCell])
-                ++iCell, ++iCol;
+               { ++iCell; ++iCol; }
 
             ImoTableCell* pCell = static_cast<ImoTableCell*>( *itCell );
             iLastCell = iCell;

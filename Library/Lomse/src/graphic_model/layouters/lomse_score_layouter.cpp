@@ -76,8 +76,6 @@
 namespace lomse
 {
 
-#define LOMSE_NO_TIME       100000000000000.0   //any impossible high value for a timepos
-
 
 //=======================================================================================
 // ScoreLayouter implementation
@@ -224,6 +222,7 @@ void ScoreLayouter::initialice_score_layouter()
                                             m_pShapesCreator, m_pPartsEngraver);
 
     get_score_renderization_options();
+    create_stub();
 
     //For debugging:
     //ColStaffObjs* pCol = m_pScore->get_staffobjs_table();
@@ -411,11 +410,11 @@ void ScoreLayouter::decide_line_breaks()
     {
         bool fUseSimple;
         if (m_libraryScope.use_debug_values())
-            fUseSimple = m_libraryScope.get_render_spacing_opts()
-                         & k_render_opt_breaker_simple;
+            fUseSimple = (m_libraryScope.get_render_spacing_opts()
+                              & k_render_opt_breaker_simple) != 0;
         else
-            fUseSimple = m_pScoreMeter->get_render_spacing_opts()
-                         & k_render_opt_breaker_simple;
+            fUseSimple = (m_pScoreMeter->get_render_spacing_opts()
+                              & k_render_opt_breaker_simple) != 0;
 
         if (fUseSimple)
         {
@@ -436,7 +435,6 @@ void ScoreLayouter::create_main_box(GmoBox* pParentBox, UPoint pos, LUnits width
 {
     m_pItemMainBox = LOMSE_NEW GmoBoxScorePage(m_pScore);
     pParentBox->add_child_box(m_pItemMainBox);
-    create_stub();
     m_pStub->add_page( static_cast<GmoBoxScorePage*>(m_pItemMainBox) );
 
     m_pItemMainBox->set_origin(pos);
@@ -730,8 +728,8 @@ void ScoreLayouter::add_error_message(const string& msg)
 {
     ImoStyle* pStyle = m_pScore->get_default_style();
     TextEngraver engrv(m_libraryScope, m_pScoreMeter, msg, "en", pStyle);
-    LUnits x = m_pageCursor.x + 400.0;
-    LUnits y = m_pageCursor.y + 800.0;
+    LUnits x = m_pageCursor.x + 400.0f;
+    LUnits y = m_pageCursor.y + 800.0f;
     GmoShape* pText = engrv.create_shape(nullptr, x, y);
     m_pItemMainBox->add_shape(pText, GmoShape::k_layer_top);
     m_pageCursor.y += pText->get_height();
@@ -871,16 +869,16 @@ bool ColumnBreaker::is_suitable_note_rest(ImoStaffObj* pSO, TimeUnits rTime)
         //not suitable if breaks a beam or a tie
         for (int i=0; i < m_numLines; ++i)
         {
-            fBreak &= ~m_beamed[i];
-            fBreak &= ~m_tied[i];
+            fBreak &= !m_beamed[i];
+            fBreak &= !m_tied[i];
         }
 
         //not suitable if is tied to prev note
         if (pSO->is_note())
-            fBreak &= ~static_cast<ImoNote*>(pSO)->is_tied_prev();
+            fBreak &= !static_cast<ImoNote*>(pSO)->is_tied_prev();
 
         //not suitable if next note is within a previous voice duration
-        fBreak &= ~is_lower_time(rTime, m_targetBreakTime);
+        fBreak &= !is_lower_time(rTime, m_targetBreakTime);
 
         return fBreak;
     }
@@ -1459,8 +1457,8 @@ void LinesBreakerOptimal::initialize_entries_table()
 //---------------------------------------------------------------------------------------
 void LinesBreakerOptimal::compute_optimal_break_sequence()
 {
-    bool fTrace = m_libraryScope.get_trace_level_for_lines_breaker()
-                  & k_trace_breaks_computation;
+    bool fTrace = (m_libraryScope.get_trace_level_for_lines_breaker()
+                       & k_trace_breaks_computation) != 0;
 
     for (int i=0; i < m_numCols; ++i)
     {
@@ -1540,8 +1538,8 @@ void LinesBreakerOptimal::compute_optimal_break_sequence()
 //---------------------------------------------------------------------------------------
 void LinesBreakerOptimal::retrieve_breaks_sequence()
 {
-    bool fTrace = m_libraryScope.get_trace_level_for_lines_breaker()
-                  & k_trace_breaks_table;
+    bool fTrace = (m_libraryScope.get_trace_level_for_lines_breaker()
+                       & k_trace_breaks_table) != 0;
     if (fTrace)
     {
         dbgLogger << "Breaks computed. Entries: ************************************" << endl;

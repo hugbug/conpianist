@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
+// Lomse is copyrighted work (c) 2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -27,7 +27,7 @@
 // the project at cecilios@users.sourceforge.net
 //---------------------------------------------------------------------------------------
 
-#include "lomse_time_grid.h"
+#include "lomse_tempo_line.h"
 
 #include "lomse_screen_drawer.h"
 #include "lomse_graphic_view.h"
@@ -40,59 +40,73 @@ namespace lomse
 {
 
 //=======================================================================================
-// TimeGrid implementation
+// TempoLine implementation
 //=======================================================================================
-TimeGrid::TimeGrid(GraphicView* view, LibraryScope& libraryScope)
+TempoLine::TempoLine(GraphicView* view, LibraryScope& libraryScope)
     : VisualEffect(view, libraryScope)
-    , m_color( Color(192,192,192) )     //light grey  //TODO: user option
+    , m_color( Color(0, 255, 0) )       // solid green
+    , m_width(100.0)                    // 1.00 mm
     , m_pBoxSystem(nullptr)
 {
 }
 
 //---------------------------------------------------------------------------------------
-void TimeGrid::on_draw(ScreenDrawer* pDrawer)
+void TempoLine::move_to(GmoShape* pShape, GmoBoxSystem* pBoxSystem)
 {
-    m_bounds = URect(0.0, 0.0, 0.0, 0.0);
+    m_pBoxSystem = pBoxSystem;
+    m_bounds = pShape->get_bounds();
+}
+
+//---------------------------------------------------------------------------------------
+void TempoLine::move_to(LUnits xPos, GmoBoxSystem* pBoxSystem, int iPage)
+{
+    m_pBoxSystem = pBoxSystem;
+    m_bounds.left(xPos);
+    m_iPage = iPage;
+}
+
+//---------------------------------------------------------------------------------------
+void TempoLine::on_draw(ScreenDrawer* pDrawer)
+{
     if (!m_pBoxSystem)
         return;
-
-    TimeGridTable* pGridTable = m_pBoxSystem->get_time_grid_table();
 
     //determine system top/bottom limits
     double yTop = double(m_pBoxSystem->get_top());
     double yBottom = double(m_pBoxSystem->get_bottom());
+    double xLeft = m_bounds.get_x();
     ImoStyle* pStyle = m_pBoxSystem->get_style();
     if (pStyle)
     {
         yTop -= double(pStyle->margin_top());
         yBottom -= double(pStyle->margin_bottom());
+        xLeft += double(pStyle->margin_left());
     }
+    m_bounds.top(float(yTop));
+    m_bounds.bottom(float(yBottom));
+    m_bounds.width = m_width;
 
-    //draw the grid lines
+    //draw the tempo line
     pDrawer->begin_path();
     pDrawer->fill(m_color);
     pDrawer->stroke(m_color);
-    pDrawer->stroke_width(15.0);    //0.15 mm
-    int iMax = pGridTable->get_size();
-    for (int i=0; i < iMax; ++i)
-    {
-        double xLeft = double( pGridTable->get_x_pos(i));
-        pDrawer->move_to(xLeft, yTop);
-        pDrawer->vline_to(yBottom);
-    }
-    pDrawer->end_path();
+    pDrawer->stroke_width(m_bounds.width);
 
-    if (m_pBoxSystem)
-    {
-        UPoint org = m_pView->get_page_origin_for(m_pBoxSystem);
-        pDrawer->set_shift(-org.x, -org.y);
-    }
+    UPoint org = m_pView->get_page_origin_for(m_iPage);
+    pDrawer->set_shift(-org.x, -org.y);
+
+    pDrawer->move_to(xLeft, yTop);
+    pDrawer->vline_to(yBottom);
+
+    pDrawer->end_path();
     pDrawer->render();
     pDrawer->remove_shift();
+}
 
-    if (iMax > 0)
-        m_bounds = URect(UPoint(pGridTable->get_x_pos(0)-8, Tenths(yTop)),
-                         UPoint(pGridTable->get_x_pos(iMax-1)+8, Tenths(yBottom)) );
+//---------------------------------------------------------------------------------------
+void TempoLine::remove_tempo_line()
+{
+    m_pBoxSystem = nullptr;
 }
 
 

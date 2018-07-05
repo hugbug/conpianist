@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2016. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -286,27 +286,54 @@ GmoShapeStaff* GraphicModel::get_shape_for_first_staff_in_first_system(ImoId sco
 }
 
 //---------------------------------------------------------------------------------------
-int GraphicModel::get_system_for(ImoId UNUSED(scoreId), int UNUSED(instr),
-                                 int UNUSED(measure), TimeUnits UNUSED(time))
+GmoBoxSystem* GraphicModel::get_system_for(ImoId scoreId, TimeUnits timepos, int* iPage)
 {
-    //if not found returns -1
+    //if not found returns nullptr
 
-//    ScoreStub* pStub = get_stub_for(scoreId);
-//    vector<GmoBoxScorePage*>& pages = pStub->get_pages();
+    ScoreStub* pStub = get_stub_for(scoreId);
+    GmoBoxScorePage* pPage = pStub->get_page_for(timepos);
+    if (pPage)
+    {
+        if (iPage)
+            *iPage = pPage->get_page_number();
 
-//    //find page with end time greater or equal than requested time
-//    int maxPage = int(pages.size());
-//    for (int i=0; i < maxPage; ++i)
-//    {
-//        GmoBoxScorePage* pPage = pages[i];
-//        if (!is_lower_time(pPage->end_time(), time)
-//            break;
-//    }
+        //find system in this page
+        GmoBoxSystem* pSystem;
+        int i = pPage->get_num_first_system();
+        int maxSystem = pPage->get_num_systems() + i;
+        LOMSE_LOG_DEBUG(Logger::k_events, "get_system_for(%f), i=%d, maxSystem=%d",
+                        timepos, i, maxSystem);
+        for (; i < maxSystem; ++i)
+        {
+            pSystem = pPage->get_system(i);
+            LOMSE_LOG_DEBUG(Logger::k_events, "system %d. End time = %f",
+                            i, pSystem->end_time());
+            if (is_lower_time(timepos, pSystem->end_time()))
+                break;
+            else if(is_equal_time(timepos, pSystem->end_time()))
+            {
+                //look in next system
+                int iNext = i + 1;
+                if (iNext < maxSystem)
+                {
+                    GmoBoxSystem* pNextSystem = pPage->get_system(iNext);
+                    if (is_equal_time(timepos, pNextSystem->start_time()))
+                    {
+                        i = iNext;
+                        pSystem = pNextSystem;
+                    }
+                }
+                break;
+            }
+        }
 
-    //find system in this page
-    //TODO
+        if (i < maxSystem)
+            return pSystem;
+    }
 
-    return -1;
+    if (iPage)
+        *iPage = -1;
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------------------

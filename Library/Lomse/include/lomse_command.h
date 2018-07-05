@@ -49,6 +49,7 @@ namespace lomse
 class Document;
 class SelectionSet;
 class DocCommandExecuter;
+class OverlappedNoteRest;
 
 //---------------------------------------------------------------------------------------
 //edition modes
@@ -164,7 +165,7 @@ public:
         reversible commands are recordable by nature, as this is required for supporting
         redo. See is_reversible().
     */
-    inline bool is_recordable() { return m_flags &  k_recordable; }
+    inline bool is_recordable() { return (m_flags &  k_recordable) != 0; }
 
     /** Returns an error message with the error explanation. This method should be
         invoked after executing a command that fails. Otherwise it will return an
@@ -178,8 +179,12 @@ public:
 //excluded from public API. Only for internal use.
 ///@cond INTERNALS
 public:
-    inline bool is_target_set_in_constructor() { return m_flags &  k_target_set_in_constructor; }
-    inline bool is_included_in_composite_cmd() { return m_flags &  k_included_in_composite_cmd; }
+    inline bool is_target_set_in_constructor() {
+        return (m_flags &  k_target_set_in_constructor) != 0;
+    }
+    inline bool is_included_in_composite_cmd() {
+        return (m_flags &  k_included_in_composite_cmd) != 0;
+    }
 
     virtual void update_selection(SelectionSet* UNUSED(pSelection)) {}
     inline void set_final_cursor_pos(ImoId id) { m_idRefresh = id; }
@@ -248,19 +253,21 @@ public:
     void add_child_command(DocCommand* pCmd);
 
     //overrides
-    int get_cursor_update_policy() { return k_do_nothing; }
-    int get_undo_policy() { return m_undoPolicy; }
-    int get_selection_update_policy() { return k_sel_do_nothing; }
-    bool is_composite() { return true; }
+    int get_cursor_update_policy() override { return k_do_nothing; }
+    int get_undo_policy() override { return m_undoPolicy; }
+    int get_selection_update_policy() override { return k_sel_do_nothing; }
+    bool is_composite() override { return true; }
 
     ///@cond INTERNALS
     //mandatory interface implementation
-    int set_target(Document* pDoc, DocCursor* pCursor, SelectionSet* pSelection);
-    int perform_action(Document* pDoc, DocCursor* pCursor);
-    void undo_action(Document* pDoc, DocCursor* pCursor);
+    int set_target(Document* pDoc, DocCursor* pCursor, SelectionSet* pSelection) override;
+    int perform_action(Document* pDoc, DocCursor* pCursor) override;
+    void undo_action(Document* pDoc, DocCursor* pCursor) override;
 
     //operations delegated by DocCommandExecuter
     void update_cursor(DocCursor* pCursor, DocCommandExecuter* pExecuter);
+    using DocCommand::update_selection; //tell the compiler that we want both, the
+                                        //update_selection() from DocCommand and next one
     void update_selection(SelectionSet* pSelection, DocCommandExecuter* pExecuter);
     ///@endcond
 

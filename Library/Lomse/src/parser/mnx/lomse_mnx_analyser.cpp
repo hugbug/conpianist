@@ -648,7 +648,7 @@ bool MnxElementAnalyser::get_mandatory(const string& tag)
     if (!more_children_to_analyse())
     {
         error_missing_element(tag);
-        return nullptr;
+        return false;
     }
 
     m_childToAnalyse = get_child_to_analyse();
@@ -714,7 +714,7 @@ string MnxElementAnalyser::analyze_mandatory_child_pcdata(const string& name)
     if (get_mandatory(name))
         return m_childToAnalyse.value();
 
-	return "";
+    return "";
 }
 
 //---------------------------------------------------------------------------------------
@@ -724,7 +724,7 @@ string MnxElementAnalyser::analyze_optional_child_pcdata(const string& name,
     if (get_optional(name))
         return m_childToAnalyse.value();
 
-	return sDefault;
+    return sDefault;
 }
 
 //---------------------------------------------------------------------------------------
@@ -774,7 +774,7 @@ float MnxElementAnalyser::analyze_optional_child_pcdata_float(const string& name
     {
         bool fError = false;
         string number = m_childToAnalyse.value();
-        long rNumber;
+        float rNumber;
         std::istringstream iss(number);
         if ((iss >> rNumber).fail())
             fError = true;
@@ -1629,7 +1629,7 @@ protected:
 //@Content Model:
 //@    Metadata content.
 //@    Stylesheet definitions.
-//@    Exactly one global element - measure content that is common to all parts within the score
+//@    One or more global elements - measure content shared by sets of parts within the score
 //@    One or more part elements - description and measure content of each part in the score.
 //@Attributes:
 //@    profile — profile describing constraints on the contents of this score
@@ -1652,8 +1652,9 @@ public:
             return false;
         }
 
-        // global
+        // global*
         analyse_mandatory("global");
+        while (analyse_optional("global")) mark_score_as_polymetric_polytonal();
 
         // part*
         analyse_mandatory("part", m_pAnchor);
@@ -1661,6 +1662,13 @@ public:
 
         set_result(nullptr);
         return true;    //success
+    }
+
+protected:
+
+    void mark_score_as_polymetric_polytonal()
+    {
+        //TODO: mark the score
     }
 };
 
@@ -2055,7 +2063,7 @@ public:
 //@Content Model:
 //@    Measure content, which must not include any sequence content
 //@Attributes:
-//@    None
+//@    parts - an optional set of IDs of parts to which this global applies
 //
 class GlobalMnxAnalyser : public MnxElementAnalyser
 {
@@ -2069,6 +2077,9 @@ public:
 
     bool do_analysis()
     {
+        // attrib: parts
+        string parts = get_optional_string_attribute("parts", "");
+
 		//TODO: implement Analyser
         set_result(nullptr);
         return true;    //success
@@ -2077,16 +2088,13 @@ public:
 
 //@--------------------------------------------------------------------------------------
 //@ <head>
-//@ <!ELEMENT head (identification?, style?
-//@     (sequence)* ) >
-//@ <!ATTLIST head
-//@>
-
 //@Contexts:
 //@    Any.
 //@Content Model:
-//@    Metadata content.
-//@    Stylesheet definitions.
+//@    Metadata content:
+//@     <title> <subtitle> <creator>+ <rights>
+//@    Stylesheet definitions:
+//@     (style-class | style-selector)+
 //@Attributes:
 //@    None.
 //
@@ -2475,7 +2483,7 @@ public:
         // attrib: pitch
         string pitch = get_mandatory_string_attribute("pitch", "", "note");
         if (pitch == "")
-            return nullptr;
+            return false;
 
         // attrib: staff
         int defStaff = m_pAnalyser->get_current_staff() + 1;
@@ -3912,7 +3920,7 @@ bool MnxAnalyser::pitch_to_components(const string& pitch, int *step, int* octav
                 if (i+sz != iMax)
                     return true;   //error
             }
-            catch (const std::invalid_argument& ia)
+            catch (...)
             {
                 return true;   //error
             }
