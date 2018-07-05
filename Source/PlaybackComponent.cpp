@@ -404,7 +404,7 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == positionSlider)
     {
         //[UserSliderCode_positionSlider] -- add your slider handling code here..
-        pianoController.SetPosition({(int)positionSlider->getValue(), 0});
+        pianoController.SetPosition({(int)positionSlider->getValue(), 1});
         //[/UserSliderCode_positionSlider]
     }
     else if (sliderThatWasMoved == volumeSlider)
@@ -444,13 +444,14 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == rewindButton)
     {
         //[UserButtonCode_rewindButton] -- add your button handler code here..
-        pianoController.SetPosition({pianoController.GetPosition().measure - 1, 0});
+        pianoController.SetPosition({pianoController.GetPosition().measure - 1, 1});
         //[/UserButtonCode_rewindButton]
     }
     else if (buttonThatWasClicked == forwardButton)
     {
         //[UserButtonCode_forwardButton] -- add your button handler code here..
-        pianoController.SetPosition({pianoController.GetPosition().measure + 1, 0});
+		forwardButton->keys
+        pianoController.SetPosition({pianoController.GetPosition().measure + 1, 1});
         //[/UserButtonCode_forwardButton]
     }
     else if (buttonThatWasClicked == chooseSongButton)

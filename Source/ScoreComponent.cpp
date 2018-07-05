@@ -53,7 +53,7 @@ private:
     Settings& m_settings;
 	int m_resolution;
 	float m_scale = 1;
-	bool m_scoreLoaded = false;
+	int m_scoreId = 0;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -101,8 +101,6 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	m_lomse.set_default_fonts_path((m_settings.resourcesPath + "/fonts/").toStdString());
 
 	pianoController.AddListener(this);
-
-	LoadDocument("");
 }
 
 void LomseScoreComponent::LoadDocument(String filename)
@@ -132,6 +130,8 @@ void LomseScoreComponent::LoadDocument(String filename)
 	//ask to receive desired events
 	interactor->add_event_handler(k_update_window_event, this, UpdateWindowWrapper);
 
+	interactor->set_visual_tracking_mode(k_tracking_tempo_line);
+
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
 	//hide instrument names
@@ -140,6 +140,7 @@ void LomseScoreComponent::LoadDocument(String filename)
 	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
 	if (score)
 	{
+		m_scoreId = score->get_id();
 		for (int i = 0; i < score->get_num_instruments(); i++)
 		{
 			score->get_instrument(i)->set_name("");
@@ -192,7 +193,7 @@ void LomseScoreComponent::UpdateWindow(SpEventInfo event)
 
 void LomseScoreComponent::resized()
 {
-	if (m_scoreLoaded)
+	if (m_presenter)
 	{
 		PrepareImage();
 	}
@@ -200,7 +201,7 @@ void LomseScoreComponent::resized()
 
 void LomseScoreComponent::paint(Graphics& g)
 {
-	if (m_scoreLoaded)
+	if (m_presenter)
 	{
 		g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
 	}
@@ -220,6 +221,8 @@ void LomseScoreComponent::paint(Graphics& g)
 
 void LomseScoreComponent::mouseDown(const MouseEvent& event)
 {
+	if (!m_presenter) return;
+
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_button_down(int(event.getMouseDownScreenX() * m_scale),
 		int(event.getScreenY() * m_scale), GetMouseFlags(event));
@@ -227,6 +230,8 @@ void LomseScoreComponent::mouseDown(const MouseEvent& event)
 
 void LomseScoreComponent::mouseUp(const MouseEvent& event)
 {
+	if (!m_presenter) return;
+
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_button_up(int(event.getMouseDownScreenX() * m_scale),
 		int(event.getScreenY() * m_scale), GetMouseFlags(event));
@@ -234,6 +239,8 @@ void LomseScoreComponent::mouseUp(const MouseEvent& event)
 
 void LomseScoreComponent::mouseMove(const MouseEvent& event)
 {
+	if (!m_presenter) return;
+
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_move(int(event.getMouseDownScreenX() * m_scale),
 		int(event.getScreenY() * m_scale), GetMouseFlags(event));
@@ -246,6 +253,8 @@ void LomseScoreComponent::mouseDrag(const MouseEvent& event)
 
 void LomseScoreComponent::mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details)
 {
+	if (!m_presenter) return;
+
 	float scrollY = details.deltaY * 256;
 
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
@@ -271,7 +280,13 @@ unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
 
 void LomseScoreComponent::UpdateSongState()
 {
-	//TODO: highlight playback position
+	if (!m_presenter) return;
+
+	// highlight playback position
+	PianoController::Position songPosition = m_pianoController.GetPosition();
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	interactor->move_tempo_line_and_scroll_if_necessary(m_scoreId,
+		songPosition.measure - 1, songPosition.beat - 1);
 }
 
 void LomseScoreComponent::LoadSong()
@@ -282,7 +297,6 @@ void LomseScoreComponent::LoadSong()
 	if (scoreFilename.existsAsFile())
 	{
 		LoadDocument(scoreFilename.getFullPathName());
-		m_scoreLoaded = true;
 	}
 	else
 	{
@@ -290,7 +304,6 @@ void LomseScoreComponent::LoadSong()
 		if (scoreFilename.existsAsFile())
 		{
 			LoadDocument(scoreFilename.getFullPathName());
-			m_scoreLoaded = true;
 		}
 	}
 
