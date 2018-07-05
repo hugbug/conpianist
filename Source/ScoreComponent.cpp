@@ -23,6 +23,7 @@
 #include <lomse_interactor.h>
 #include <lomse_presenter.h>
 #include <lomse_tasks.h>
+#include <lomse_tempo_line.h>
 
 #include "ScoreComponent.h"
 
@@ -68,6 +69,12 @@ private:
     void UpdateWindow(SpEventInfo event);
     static void UpdateWindowWrapper(void* obj, SpEventInfo event)
 		{ static_cast<LomseScoreComponent*>(obj)->UpdateWindow(event); }
+};
+
+// class to access protected members of GraphicView
+class MyGraphicView : public GraphicView
+{
+	friend class LomseScoreComponent;
 };
 
 ScoreComponent* ScoreComponent::Create(PianoController& pianoController, Settings& settings)
@@ -131,6 +138,7 @@ void LomseScoreComponent::LoadDocument(String filename)
 	interactor->add_event_handler(k_update_window_event, this, UpdateWindowWrapper);
 
 	interactor->set_visual_tracking_mode(k_tracking_tempo_line);
+	((MyGraphicView*)interactor->get_view())->m_pTempoLine->set_color(Color(152, 201, 254));
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
