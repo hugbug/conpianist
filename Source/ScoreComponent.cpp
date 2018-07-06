@@ -66,9 +66,12 @@ private:
 	void LoadSong();
 
 	// Lomse callbacks
-    void UpdateWindow(SpEventInfo event);
-    static void UpdateWindowWrapper(void* obj, SpEventInfo event)
+	void UpdateWindow(SpEventInfo event);
+	void LomseEvent(SpEventInfo event);
+	static void UpdateWindowWrapper(void* obj, SpEventInfo event)
 		{ static_cast<LomseScoreComponent*>(obj)->UpdateWindow(event); }
+	static void LomseEventWrapper(void* obj, SpEventInfo event)
+		{ static_cast<LomseScoreComponent*>(obj)->LomseEvent(event); }
 };
 
 // class to access protected members of GraphicView
@@ -106,6 +109,9 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	m_lomse.init_library(pixel_format, m_resolution, reverse_y_axis);
 
 	m_lomse.set_default_fonts_path((m_settings.resourcesPath + "/fonts/").toStdString());
+
+    //set required callbacks
+    m_lomse.set_notify_callback(this, LomseEventWrapper);
 
 	pianoController.AddListener(this);
 }
@@ -197,6 +203,18 @@ LUnits LomseScoreComponent::ScaledUnits(int pixels)
 void LomseScoreComponent::UpdateWindow(SpEventInfo event)
 {
 	repaint();
+}
+
+void LomseScoreComponent::LomseEvent(SpEventInfo event)
+{
+    if (event->get_event_type() == k_update_viewport_event)
+	{
+		SpEventUpdateViewport viewportEvent(static_pointer_cast<EventUpdateViewport>(event));
+		SpInteractor interactor = m_presenter->get_interactor(0).lock();
+		const int OFFSET_CORRECTION = 19; // empirical value
+		int yPos = std::max(viewportEvent->get_new_viewport_y() - OFFSET_CORRECTION, 0);
+		interactor->new_viewport(0, yPos);
+	}
 }
 
 void LomseScoreComponent::resized()
