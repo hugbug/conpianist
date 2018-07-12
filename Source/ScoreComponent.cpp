@@ -74,11 +74,6 @@ private:
 		{ static_cast<LomseScoreComponent*>(obj)->LomseEvent(event); }
 };
 
-// class to access protected members of GraphicView
-class MyGraphicView : public GraphicView
-{
-	friend class LomseScoreComponent;
-};
 
 ScoreComponent* ScoreComponent::Create(PianoController& pianoController, Settings& settings)
 {
@@ -137,14 +132,18 @@ void LomseScoreComponent::LoadDocument(String filename)
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	//connect the View with the window buffer
 	interactor->set_rendering_buffer(&m_rbuf_window);
-
-	interactor->set_view_background(Color(68,62,50)); // dark grey
-
 	//ask to receive desired events
 	interactor->add_event_handler(k_update_window_event, this, UpdateWindowWrapper);
 
+	// beat definition for yamaha
+	interactor->define_beat(k_beat_bottom_ts);
+
+	// visuals
+	interactor->set_view_background(Color(68,62,50)); // dark grey
 	interactor->set_visual_tracking_mode(k_tracking_tempo_line);
-	((MyGraphicView*)interactor->get_view())->m_pTempoLine->set_color(Color(152, 201, 254));
+
+	TempoLine* tempoLine = static_cast<TempoLine*>(interactor->get_tracking_effect(k_tracking_tempo_line));
+	tempoLine->set_color(Color(152, 201, 254));   // light orange
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
