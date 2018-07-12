@@ -130,6 +130,13 @@ void Interactor::switch_task(int taskType)
 }
 
 //---------------------------------------------------------------------------------------
+void Interactor::define_beat(int beatType, TimeUnits duration)
+{
+    if (SpDocument spDoc = m_wpDoc.lock())
+        spDoc->define_beat(beatType, duration);
+}
+
+//---------------------------------------------------------------------------------------
 GraphicModel* Interactor::get_graphic_model()
 {
     if (!m_pGraphicModel)
@@ -1081,6 +1088,16 @@ void Interactor::set_visual_tracking_mode(int mode)
     GraphicView* pGView = dynamic_cast<GraphicView*>(m_pView);
     if (pGView)
         pGView->set_visual_tracking_mode(mode);
+}
+
+//---------------------------------------------------------------------------------------
+VisualEffect* Interactor::get_tracking_effect(int effect)
+{
+    GraphicView* pGView = dynamic_cast<GraphicView*>(m_pView);
+    if (pGView)
+        return pGView->get_tracking_effect(effect);
+    else
+        return nullptr;
 }
 
 //---------------------------------------------------------------------------------------

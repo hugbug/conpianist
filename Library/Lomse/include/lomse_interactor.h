@@ -55,11 +55,12 @@ class DocCursor;
 class GmoObj;
 class GmoBox;
 class GraphicModel;
+class Handler;
 class ImoScore;
 class ImoStaffObj;
 class PlayerGui;
 class Task;
-class Handler;
+class VisualEffect;
 
 class Document;
 typedef std::shared_ptr<Document>     SpDocument;
@@ -329,6 +330,19 @@ public:
         @endcode
     */
     void switch_task(int taskType);
+
+    /** Define the duration for one beat, for metronome and for methods that use
+        measure/beat parameters to define a location. This value is shared by all
+        scores contained in the document and can be changed at any time.
+        Changes while the score is being played back are ignored until playback finishes.
+        @param beatType A value from enum #EBeatDuration.
+        @param duration The duration (in Lomse Time Units) for one beat. You can use
+            a value from enum ENoteDuration casted to double. This parameter is
+            required only when value for parameter `beatType` is `k_beat_specified`.
+            For all other values, if a non-zero value is specified, the value
+            will be used for the beat duration in scores without time signature.
+    */
+    void define_beat(int beatType, TimeUnits duration=0.0);
 
     //@}    //operating modes
 
@@ -861,6 +875,23 @@ public:
         @endcode
     */
 	virtual void set_visual_tracking_mode(int mode);
+
+    /** Returns the specified visual tracking effect (derived from VisualEffect).
+        @param effect It is a value from enum EVisualTrackingMode. If `k_tracking_none`
+			is specified it will return @nullptr.
+
+		Example:
+        @code
+        VisualEffect* pVE = spInteractor->get_tracking_effect(k_tracking_tempo_line);
+		if (pVE)
+		{
+			TempoLine* pTL = static_cast<TempoLine*>(pVE);
+			pTL->set_color(Color(255,0,0,128));     //transparent red
+			pTL->set_width(200);		            //logical units: 2 mm
+		}
+        @endcode
+    */
+	virtual VisualEffect* get_tracking_effect(int effect);
 
     /** Move the tempo line to the given note/rest.
         @param pSO The tempo line will be placed at this note or rest.
