@@ -444,14 +444,17 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == rewindButton)
     {
         //[UserButtonCode_rewindButton] -- add your button handler code here..
-        pianoController.SetPosition({pianoController.GetPosition().measure - 1, 1});
+        pianoController.SetPosition({pianoController.GetPosition().measure -
+        	(ModifierKeys::getCurrentModifiers().isShiftDown() ? 0 : 1),
+        	(ModifierKeys::getCurrentModifiers().isShiftDown() ? pianoController.GetPosition().beat - 1 : 1)});
         //[/UserButtonCode_rewindButton]
     }
     else if (buttonThatWasClicked == forwardButton)
     {
         //[UserButtonCode_forwardButton] -- add your button handler code here..
-		forwardButton->keys
-        pianoController.SetPosition({pianoController.GetPosition().measure + 1, 1});
+        pianoController.SetPosition({pianoController.GetPosition().measure +
+        	(ModifierKeys::getCurrentModifiers().isShiftDown() ? 0 : 1),
+        	(ModifierKeys::getCurrentModifiers().isShiftDown() ? pianoController.GetPosition().beat + 1 : 1)});
         //[/UserButtonCode_forwardButton]
     }
     else if (buttonThatWasClicked == chooseSongButton)
