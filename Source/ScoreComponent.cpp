@@ -147,7 +147,7 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
-	//hide instrument names
+	//configure instruments
 	Document* doc = m_presenter->get_document_raw_ptr();
 	ImoDocument* imoDoc = doc->get_im_root();
 	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
@@ -156,8 +156,12 @@ void LomseScoreComponent::LoadDocument(String filename)
 		m_scoreId = score->get_id();
 		for (int i = 0; i < score->get_num_instruments(); i++)
 		{
+			//hide instrument names
 			score->get_instrument(i)->set_name("");
 			score->get_instrument(i)->set_abbrev("");
+
+			//show measure numbers
+			score->get_instrument(i)->set_measures_numbering(ImoInstrument::k_system);
 		}
 	}
 }
