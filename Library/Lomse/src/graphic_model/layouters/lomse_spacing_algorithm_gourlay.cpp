@@ -83,6 +83,12 @@ SpAlgGourlay::SpAlgGourlay(LibraryScope& libraryScope,
     //
     , m_maxNoteDur(0.0f)
     , m_minNoteDur(LOMSE_NO_DURATION)
+    //
+	, m_uSmin(0.0f)
+    , m_alpha(0.0f)
+    , m_dmin(0.0f)
+    , m_log2dmin(0.0f)
+    , m_Fopt(0.0f)
 {
 //    m_columns.reserve(pScoreLyt->get_num_columns());
     m_data.reserve(pScore->get_staffobjs_table()->num_entries());
@@ -158,7 +164,6 @@ void SpAlgGourlay::include_object(ColStaffObjsEntry* pCurEntry, int iCol, int UN
             case k_imo_clef:
             case k_imo_key_signature:
             case k_imo_time_signature:
-            case k_imo_spacer:
             case k_imo_direction:
             case k_imo_metronome_mark:
             case k_imo_go_back_fwd:
@@ -221,7 +226,7 @@ void SpAlgGourlay::include_object(ColStaffObjsEntry* pCurEntry, int iCol, int UN
         finish_slice(m_pLastEntry, m_numEntries);
 
         //and start a new slice
-        new_slice(pCurEntry, curType, iCol, int(m_data.size())-1, fInProlog);
+        new_slice(pCurEntry, curType, iCol, int(m_data.size())-1);
 
         //save data from object to include
         if (pSO->is_note_rest())
@@ -264,20 +269,29 @@ void SpAlgGourlay::include_object(ColStaffObjsEntry* pCurEntry, int iCol, int UN
 
 //---------------------------------------------------------------------------------------
 void SpAlgGourlay::new_slice(ColStaffObjsEntry* pEntry, int entryType, int iColumn,
-                             int iData, bool UNUSED(fInProlog))
+                             int iData)
 {
     //create the slice object
     TimeSlice* pSlice;
     switch(entryType)
     {
         case TimeSlice::k_prolog:
-            pSlice = LOMSE_NEW TimeSliceProlog(pEntry, entryType, iColumn, iData);
+            pSlice = LOMSE_NEW TimeSliceProlog(pEntry, iColumn, iData);
             break;
         case TimeSlice::k_non_timed:
-            pSlice = LOMSE_NEW TimeSliceNonTimed(pEntry, entryType, iColumn, iData);
+            pSlice = LOMSE_NEW TimeSliceNonTimed(pEntry, iColumn, iData);
+            break;
+        case TimeSlice::k_barline:
+            pSlice = LOMSE_NEW TimeSliceBarline(pEntry, iColumn, iData);
+            break;
+        case TimeSlice::k_noterest:
+            pSlice = LOMSE_NEW TimeSliceNoterest(pEntry, iColumn, iData);
             break;
         default:
-            pSlice = LOMSE_NEW TimeSlice(pEntry, entryType, iColumn, iData);
+            stringstream ss;
+            ss << "Error in code/logic. Invalid TimeSlice type " << entryType;
+            LOMSE_LOG_ERROR(ss.str());
+            throw std::runtime_error(ss.str());
     }
 
     //link slices, creating a list
@@ -342,7 +356,8 @@ void SpAlgGourlay::finish_slice(ColStaffObjsEntry* pLastEntry, int numEntries)
 {
     if (m_pCurSlice)
     {
-        m_pCurSlice->set_final_data(pLastEntry, numEntries, m_maxNoteDur, m_minNoteDur);
+        m_pCurSlice->set_final_data(pLastEntry, numEntries, m_maxNoteDur, m_minNoteDur,
+                                    m_pScoreMeter);
     }
 }
 
@@ -402,10 +417,7 @@ void SpAlgGourlay::determine_spacing_parameters()
     {
         m_Fopt = m_pScoreMeter->get_spacing_Fopt();
         m_alpha = m_pScoreMeter->get_spacing_alpha();
-        if (m_pScoreMeter->get_render_spacing_opts() & k_render_opt_dmin_global)
-            m_dmin = float(m_pScore->get_staffobjs_table()->min_note_duration());
-        else //k_render_opt_dmin_fixed
-            m_dmin = m_pScoreMeter->get_spacing_dmin();
+        m_dmin = m_pScoreMeter->get_spacing_dmin();
         m_uSmin = m_pScoreMeter->get_spacing_smin();
     }
 
@@ -574,20 +586,60 @@ void SpAlgGourlay::justify_system(int iFirstCol, int iLastCol, LUnits uSpaceIncr
     //succesive approximations is started.
 
     LUnits uError = required - achieved;
-    float Fprev = m_Fopt;
+    float Fprev1 = m_Fopt;
     int round=0;
-    while (abs(uError) > 10.0f && round < 8)     //10.0f = one tenth of a millimeter
+    float Fmin = 0.0f;              //F must be >= than Fmin
+    float Fmax = LOMSE_MAX_FORCE;   //F must be < Fmax
+
+    while (abs(uError) > 10.0f && round < 12)     //10.0f = one tenth of a millimeter
     {
-//        dbgLogger << "Error = " << uError << ". Iter. "
-//                  << round;
+//        dbgLogger << "Iter. " << round << ", Error = " << uError
+//            << ", space incr= " << uSpaceIncrement;
+
         ++round;
 
-        //compute an increment for F
-        float deltaF = F - Fprev;
-        Fprev = F;
+        float deltaF = F - Fprev1;
         LUnits deltaS = uSpaceIncrement - uError;
+        float Fsave = F;
+
+        if (uError > 0.0f)
+        {
+            //F is not enough. More stretch needed
+            Fmin = max (Fmin, F);
+            if (abs(deltaS) < 1.0f)
+            {
+                //Previous force did nothing. Much more stretch needed
+                F *= 2.0f;
+//                dbgLogger << ", case=1";
+            }
+            else
+            {
+                F += (uError/deltaS) * deltaF;
+//                dbgLogger << ", case=2";
+            }
+            if (F > Fmax)
+                F = (Fprev1 + Fmax) / 2.0f;
+        }
+        else
+        {
+            //F is excessive. Less stretch needed
+            Fmax = min(Fmax, F);
+            if (abs(deltaS) < 1.0f)
+            {
+                //Previous force did nothing. Much less stretch needed
+                F *= 0.5f;
+//                dbgLogger << ", case=3";
+            }
+            else
+            {
+                F += (uError/deltaS) * deltaF;
+//                dbgLogger << ", case=4";
+            }
+            if (F < Fmin)
+                F = Fprev1 + (Fprev1 + Fmin) / 2.0f;
+        }
         uSpaceIncrement = uError;
-        F += (uError/deltaS) * deltaF;
+        Fprev1 = Fsave;
 
         //apply then new force to columns
         LUnits achieved = 0.0f;
@@ -604,6 +656,10 @@ void SpAlgGourlay::justify_system(int iFirstCol, int iLastCol, LUnits uSpaceIncr
 //                  << ", new F= " << setprecision(6) << F
 //                  << ", achieved= " << setprecision(2) << achieved
 //                  << ", error= " << uError
+//                  << ", Fprev2= " << Fprev2
+//                  << ", Fprev1= " << Fprev1
+//                  << ", Fmin= " << Fmin
+//                  << ", Fmax= " << Fmax
 //                  << endl;
     }
 }
@@ -787,16 +843,16 @@ TimeSlice::TimeSlice(ColStaffObjsEntry* pEntry, int entryType, int column, int i
     , m_ci(0.0f)
     , m_width(0.0f)
     , m_xLeft(0.0f)
-    , m_ds(0.0f)
-    , m_di(0.0f)
-    , m_minNote(0.0f)
+    , m_ds(0.0)
+    , m_di(0.0)
+    , m_minNote(0.0)
+    , m_minNoteNext(0.0)
 {
 }
 
 //---------------------------------------------------------------------------------------
 TimeSlice::~TimeSlice()
 {
-    m_lyrics.clear();
 }
 
 //---------------------------------------------------------------------------------------
@@ -807,7 +863,8 @@ TimeUnits TimeSlice::get_timepos()
 
 //---------------------------------------------------------------------------------------
 void TimeSlice::set_final_data(ColStaffObjsEntry* pLastEntry, int numEntries,
-                                      TimeUnits maxNextTime, TimeUnits minNote)
+                               TimeUnits maxNextTime, TimeUnits minNote,
+                               ScoreMeter* pMeter)
 {
     m_lastEntry = pLastEntry;
     m_numEntries = numEntries;
@@ -815,7 +872,8 @@ void TimeSlice::set_final_data(ColStaffObjsEntry* pLastEntry, int numEntries,
     m_minNote = minNote;
     m_width = get_xi() + m_xLeft;
 
-    add_lyrics();
+    if (m_type == TimeSlice::k_noterest)
+        static_cast<TimeSliceNoterest*>(this)->add_lyrics(pMeter);
 }
 
 //---------------------------------------------------------------------------------------
@@ -926,141 +984,6 @@ LUnits TimeSlice::spacing_function(LUnits uSmin, float alpha, float log2dmin,
 }
 
 //---------------------------------------------------------------------------------------
-void TimeSlice::assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
-                                      TextMeter& textMeter)
-{
-	//assign fixed space at start of this slice and compute pre-stretching
-	//extend (left and right rods)
-
-    LUnits xPrev = 0.0f;
-    m_xLi = 0.0f;
-    m_xRi = 0.0f;
-
-    LUnits k_EXCEPTIONAL_MIN_SPACE = pMeter->tenths_to_logical_max(LOMSE_EXCEPTIONAL_MIN_SPACE);
-
-
-    //assign fixed space at start of this slice
-    m_xLeft = 0.0f;
-    switch (get_type())
-    {
-        case TimeSlice::k_barline:
-            m_xLeft = k_EXCEPTIONAL_MIN_SPACE;
-            xPrev -= pMeter->tenths_to_logical_max(LOMSE_MIN_SPACE_BEFORE_BARLINE);
-            break;
-
-        case TimeSlice::k_noterest:
-            m_xLeft = k_EXCEPTIONAL_MIN_SPACE;
-            break;
-
-        default:
-            stringstream ss;
-            ss << "Investigate: un-expected TimeSlice type. Type= " << get_type();
-            LOMSE_LOG_ERROR(ss.str());
-    }
-
-    //[SP001] if this is the first slice (scores without prolog) add some space at start
-    //test 00046: some space between start of score and first note
-    if (m_iFirstData == 0)
-        m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_BEFORE_PROLOG);
-
-    //[SP002] if prev slice is a barline slice, add some extra space at start
-    //test 00136: some space after barline and 1st note in 2nd measure
-    if (m_prev && m_prev->get_type() == TimeSlice::k_barline)
-        m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_BARLINE / 2.0f);
-
-    //loop for computing rods
-    int iMax = m_iFirstData + m_numEntries;
-    for (int i=m_iFirstData; i < iMax; ++i)
-    {
-        GmoShape* pShape = data[i]->get_shape();
-        if (pShape)
-        {
-            LUnits xAnchor = pShape->get_anchor_offset();
-            m_xLi = max(m_xLi, pShape->get_width() + xAnchor);
-            if (xAnchor < 0.0f)
-                xPrev = min(xPrev, xAnchor);
-        }
-    }
-
-//    //for barlines, nothing else to do
-//    if (get_type() == TimeSlice::k_barline)
-//        return;
-
-    //for notes/rests take lyrics into account
-    vector<ImoLyric*>::iterator it;
-    for (it=m_lyrics.begin(); it != m_lyrics.end(); ++it)
-    {
-        LUnits width = measure_lyric(*it, pMeter, textMeter) / 2.0f;
-        m_xLi = max(m_xLi, width);
-        xPrev = min(xPrev, -width);
-        //TODO: the split must not include the hyphenation
-    }
-
-
-    //transfer space at start (accidentals and other space at start) to the previous
-    //note (timed slice) as right rod space. This is necessary for timepos vertical
-    //alignment. Otherwise, accidentals will shift the note to right and will not be
-    //vertically aligned. There are some exceptions to this rule.
-
-
-    //[SP041] test 01a
-    //if previous slice is barline, space must not be transferred to it
-    //because if it is transferred and justification decides to place a new system
-    //after the barline, the barline will not be right justified (there will be some
-    //space after it). Therefore, if previous slice is barline, the space
-    //should be accounted as fixed space at start of this slice
-    if (!m_prev || m_prev->get_type() == TimeSlice::k_barline)
-        m_xLeft -= xPrev;
-    else
-    {
-        //[SP??] test 00138 (first staff) - intermediate clef must go near next note
-        //       test 50036 - no space between note and direction (dynamics)
-        //there must not be extra space between previous non-timed slice and this
-        //one. Therefore, transfer of accidentals and other space at start must skip
-        //any previous non-timed (i.e. clef, directions), and the space must be only
-        //transferred to previous one if it is not a barline. Otherwise, the space
-        //must be transferred to the non-timed as left-rod space.
-        if (m_prev->get_type() == TimeSlice::k_non_timed)
-        {
-            TimeSlice* prev = m_prev->m_prev;   //must always exist. Error in code/logic if not!
-            if (prev == nullptr)
-            {
-                //TODO: check this is true. Score without prolog starting with (space)
-                LOMSE_LOG_ERROR("Error in code/logic. No previous slice exists for non-timed slice!");
-                m_xLeft -= xPrev;
-            }
-            else
-            {
-                if (prev->get_type() != TimeSlice::k_barline)
-                {
-                    //[SP???] test ??????
-                    //transfer accidentals and other space at start to previous noterest
-                    prev->m_xRi -= xPrev;
-                }
-                else if (prev->get_type() == TimeSlice::k_non_timed)
-                {
-                    //[SP???] test ??????
-                    //add space as left-rod in the previous non-timed slice
-                    //except if prolog slice.
-                    prev->m_xLi += xPrev;
-                }
-                else
-                {
-                    //If it is prolog do nothing for now. Lets assume that after prolog
-                    //space will be enough
-                    //test: 22a first system second page)
-                }
-            }
-        }
-        else
-            //[SP040] test 00134, 00050
-            //default case: transfer accidentals and other space at start to previous
-            //non-timed slice
-            m_prev->m_xRi -= xPrev;
-    }
-}
-
-//---------------------------------------------------------------------------------------
 int TimeSlice::collect_barlines_information(int numInstruments)
 {
     int info = 0;
@@ -1104,79 +1027,6 @@ int TimeSlice::collect_barlines_information(int numInstruments)
 }
 
 //---------------------------------------------------------------------------------------
-void TimeSlice::add_lyrics()
-{
-    if (m_type != TimeSlice::k_noterest)
-        return;
-
-    ColStaffObjsEntry* pEntry = m_firstEntry;
-    for (int i=0; i < m_numEntries; ++i, pEntry = pEntry->get_next())
-    {
-        ImoStaffObj* pSO = pEntry->imo_object();
-
-        if (pSO->is_note() && pSO->get_num_attachments() > 0)
-        {
-            ImoAttachments* pAuxObjs = pSO->get_attachments();
-            int size = pAuxObjs->get_num_items();
-            for (int i=0; i < size; ++i)
-            {
-                ImoAuxObj* pAO = static_cast<ImoAuxObj*>( pAuxObjs->get_item(i) );
-                if (pAO->is_lyric())
-                {
-                    ImoLyric* pLyric = static_cast<ImoLyric*>(pAO);
-                    m_lyrics.push_back(pLyric);
-                }
-            }
-        }
-    }
-}
-
-//---------------------------------------------------------------------------------------
-LUnits TimeSlice::measure_lyric(ImoLyric* pLyric, ScoreMeter* pMeter,
-                                TextMeter& textMeter)
-{
-    //TODO: Move this method to another object. TimeSlice shoul not have knowledge
-    //about the lyrics GM structure. Move perhaps to engraver?
-
-    //TODO tenths to logical: must use instrument & staff for pSO
-
-    LUnits totalWidth = 0;
-    ImoStyle* pStyle = nullptr;
-    int numSyllables = pLyric->get_num_text_items();
-    for (int i=0; i < numSyllables; ++i)
-    {
-        //get text for syllable
-        ImoLyricsTextInfo* pText = pLyric->get_text_item(i);
-        const string& text = pText->get_syllable_text();
-        const string& language = pText->get_syllable_language();
-        pStyle = pText->get_syllable_style();
-        if (pStyle == nullptr)
-            pStyle = pMeter->get_style_info("Lyrics");
-
-        //measure this syllable
-        totalWidth += measure_text(text, pStyle, language, textMeter);
-
-        //elision symbol
-        if (pText->has_elision())
-        {
-            const string& elision = pText->get_elision_text();
-            totalWidth += measure_text(elision, pStyle, "en", textMeter)
-                          + pMeter->tenths_to_logical_max(2.0);
-        }
-    }
-    totalWidth += pMeter->tenths_to_logical_max(10.0);
-
-    //hyphenation, if needed
-    if (pLyric->has_hyphenation() && !pLyric->has_melisma())
-    {
-        totalWidth += measure_text("-", pStyle, "en", textMeter)
-                      + pMeter->tenths_to_logical_max(10.0);
-    }
-
-    return totalWidth;
-}
-
-//---------------------------------------------------------------------------------------
 LUnits TimeSlice::measure_text(const string& text, ImoStyle* pStyle,
                                const string& language, TextMeter& meter)
 {
@@ -1198,6 +1048,8 @@ void TimeSlice::dump_header(ostream& ss)
 //---------------------------------------------------------------------------------------
 void TimeSlice::dump(ostream& ss)
 {
+    std::ios_base::fmtflags f( ss.flags() );  //save formating options
+
     ss << "  " << m_type << "   "
        << fixed << setprecision(2) << setfill(' ')
        << setw(9) << get_timepos()
@@ -1224,6 +1076,8 @@ void TimeSlice::dump(ostream& ss)
     ss << setw(9) << m_iFirstData;
 
     ss << endl;
+
+    ss.flags( f );  //restore formating options
 }
 
 //---------------------------------------------------------------------------------------
@@ -1285,9 +1139,8 @@ void TimeSlice::move_shapes_to_final_positions(vector<StaffObjData*>& data, LUni
 // This slice contains only clef, key signature and time signature objects, for all
 // intruments/staves at score prolog
 //=====================================================================================
-TimeSliceProlog::TimeSliceProlog(ColStaffObjsEntry* pEntry, int entryType, int column,
-                                 int iData)
-    : TimeSlice(pEntry, entryType, column, iData)
+TimeSliceProlog::TimeSliceProlog(ColStaffObjsEntry* pEntry, int column, int iData)
+    : TimeSlice(pEntry, k_prolog, column, iData)
     , m_clefsWidth(0.0f)
     , m_timesWidth(0.0f)
     , m_keysWidth(0.0f)
@@ -1399,6 +1252,13 @@ void TimeSliceProlog::remove_after_space_if_not_full(ScoreMeter* pMeter, int SOt
     }
 }
 
+//---------------------------------------------------------------------------------------
+void TimeSliceProlog::remove_after_space(ScoreMeter* pMeter)
+{
+    m_xLeft -= pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_PROLOG);
+    m_xLeft -= pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_SMALL_CLEF);
+}
+
 
 //=====================================================================================
 //TimeSliceNonTimed implementation
@@ -1409,9 +1269,12 @@ void TimeSliceProlog::remove_after_space_if_not_full(ScoreMeter* pMeter, int SOt
 //   - real width of this slice must be transferred to previous slice as m_xRi rod
 //- Objects are organized by lines
 //=====================================================================================
-TimeSliceNonTimed::TimeSliceNonTimed(ColStaffObjsEntry* pEntry, int entryType,
-                                     int column, int iData)
-    : TimeSlice(pEntry, entryType, column, iData)
+TimeSliceNonTimed::TimeSliceNonTimed(ColStaffObjsEntry* pEntry, int column, int iData)
+    : TimeSlice(pEntry, k_non_timed, column, iData)
+    , m_numStaves(0)
+    , m_interSpace(0.0f)
+    , m_fHasWidth(false)
+    , m_fSomeVisible(false)
 {
 
 }
@@ -1440,64 +1303,83 @@ void TimeSliceNonTimed::assign_spacing_values(vector<StaffObjData*>& data,
     int numStaves = pMeter->num_staves();
     m_numStaves = numStaves;
     m_widths.assign(numStaves, 0.0f);
+    m_fHasObjects.assign(numStaves, false);
 
     //loop for computing widths
-    bool fHasWidth = false;            //true if at least one shape has width
+    m_fHasWidth = false;            //true if at least one shape has width
+    m_fSomeVisible = false;         //true if at least one shape is visible
     LUnits maxWidth = 0.0f;
     ColStaffObjsEntry* pEntry = m_firstEntry;
     int iMax = m_iFirstData + m_numEntries;
     for (int i=m_iFirstData; i < iMax; ++i, pEntry = pEntry->get_next())
     {
         GmoShape* pShape = data[i]->get_shape();
-        if (pShape)
+        m_fSomeVisible |= !pShape->is_shape_invisible();
+        int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
+        m_fHasObjects[iStaff] = true;
+        LUnits width = pShape->get_width();
+        if (width > 0.0f)
         {
-            int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
-            LUnits width = pShape->get_width();
-            if (width > 0.0f)
-            {
-                m_widths[iStaff] += m_interSpace + width;
-                fHasWidth = true;
-            }
-            maxWidth = max(maxWidth, m_widths[iStaff]);
+            m_widths[iStaff] += width;
+            m_fHasWidth = true;
+            //[NT2] test 00607. CHECK: some space between clef change and note.
+            //                        Blue line on note, at center.
+            if (!pShape->is_shape_invisible())
+                m_widths[iStaff] += m_interSpace;
         }
+        maxWidth = max(maxWidth, m_widths[iStaff]);
     }
 
-    //[SP???] Do not add extra space for zero with slices
-    if (fHasWidth)
-        maxWidth += m_interSpace;   //add space before next slice symbol
+    //Add some space before this slice, for separation from previous object.
+    //Do not add this extra space for zero width slices or if all shapes are invisible
+    //[NT1]
+    //  test 00603. CHECK: some space between end of prolog and next clef
+    //  test 00621. CHECK: no space added before the 'spacer' shape (invisible) - 1st note
+    //                in measures 2 & 3 must be at the same distance from previous barline
+    if (m_fHasWidth && m_fSomeVisible)
+        maxWidth += m_interSpace;   //add space after previous slice
 
 
-    //transfer width to previous timed slice
-    //For timepos vertical alignment, all extra space before notes must be
-    //transferred to previous timed object as right rod space.
+    //joining with previous slices
 
-    //[SP061] test 12a
-    //if previous slice is barline, space must not be transferred to it (as right rod
-    //space) because if it is transferred and justification
-	//decides to place a new system after the barline, the barline will
-	//not be right justified. Therefore, if previous slice is barline, the space
-	//should be accounted as fixed space at start of this slice
-    if (!m_prev || m_prev->get_type() == TimeSlice::k_barline)
+
+    //Non-timed after prolog: remove after prolog space when width > 0
+    //[NT3]
+    //  test 00602. CHECK: (draw anchor objects) spacer width is the separation between
+    //                  the TS and the 1st note, no more.
+    //  test 00613. CHECK: clefs must be equally spaced
+    //  test 00617. CHECK: small space after prolog and clef change
+    //  test 00618. CHECK: metronome does not take space <-- Fails. Metronome should be 0 width
+    if (maxWidth > 0.0f && m_prev && m_prev->get_type() == TimeSlice::k_prolog)
     {
-        m_realWidth = 0.0f;
+        TimeSliceProlog* pSlice = static_cast<TimeSliceProlog*>(m_prev);
+        pSlice->remove_after_space(pMeter);
+    }
+
+
+    //General rule: transfer space to previous slice
+    //Gourlay's spacing algorithm is only for determining the position for timed
+    //objects. As non-timed objects are not part of the model, its space will be
+    //added *after* the space assigned to the previous note. Therefore, as non-timed
+    //slices must not introduce unnecessary extra space, the space needed by non-timed
+    //must be transferred to previous noterest slice as right rod so that spacing
+    //algorithms substract it from the space it	is going to add after the note.
+    if (!m_prev || m_prev->get_type() != TimeSlice::k_noterest)
+    {
+        //[NT4c] barlines and prolog: space accounted as fixed space at start
+        //  test 00608. CHECK: (draw anchor objects) spacer width is the separation
+        //                  between barline and 1st note after it, no less.
+        //  test 00602. CHECK: (draw anchor objects) spacer width is the separation
+        //                  between TS and 1st note, no less.
         m_xLeft = maxWidth;
-
-        //[SP???] test 50035: distance from barline to 1st note in 2nd measure
-        //                    must be equal to that in 3rd measure
-        //if null width add some extra space for separation from barline
-        if (maxWidth == 0.0f)
-            m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_BARLINE / 2.0f);
     }
-    else
+    else    //prev is noterest
     {
-        m_realWidth = maxWidth;
-
-        //[SP011] test 00136 (intermediate G clef should not take extra space)
         //Space for non-timed should not be added as a full rod
         //in previous slice when there are no objects for the staves in which these
         //non-timed are placed. Instead, transfer only the minimum required for
-        //ensuring that previous xRi rod is at least equal to the required space
-        //for this slice.
+        //ensuring that previous timed object rods (left+right) is at least equal to the
+        //required space for this slice.
         bool fNoOverlap = true;
         ColStaffObjsEntry* pEntry = m_prev->m_firstEntry;
         int iMax = m_prev->m_numEntries;
@@ -1508,32 +1390,19 @@ void TimeSliceNonTimed::assign_spacing_values(vector<StaffObjData*>& data,
         }
 
         if (fNoOverlap)
-            m_prev->set_minimum_xi(maxWidth - m_interSpace);
-        else
-            //[SP060] test
-            //default case: transfer width to previous slice
-            m_prev->increment_xRi(maxWidth);
-    }
-
-    //Fix for snippet scores (i.e. 00100)
-    //The score has only one staff and starts with non-timed after prolog.
-    //If this initial non-timed is clef, key or time signature and the
-    //the prolog is missing any (clef, key or time) remove afterspace in the prolog.
-    if (numStaves == 1 && m_prev && m_prev->get_type() == TimeSlice::k_prolog)
-    {
-        ImoStaffObj* pSO = m_firstEntry->imo_object();
-        int type = pSO->get_obj_type();
-        switch(type)
         {
-            case k_imo_clef:
-            case k_imo_key_signature:
-            case k_imo_time_signature:
-            {
-                TimeSliceProlog* pSlice = static_cast<TimeSliceProlog*>(m_prev);
-                pSlice->remove_after_space_if_not_full(pMeter, type);
-            }
-            default:
-                break;    //break?  what!!!
+            //transfer only the minimum required, for not introducing extra space in
+            //lines not affected
+            //[NT4b] test 00615. CHECK: intermediate G clef does not add extra space in
+            //                         second staff
+            m_prev->merge_with_xRi(maxWidth - m_interSpace - m_prev->get_left_rod());
+        }
+        else
+        {
+            //[NT4a]- default case: transfer all space to previous slice
+            //  test 00600. CHECK: intermediate clef occupy just the minimum necessary.
+            //  test 00612. CHECK: intermediate clefs occupy just the minimum necessary.
+            m_prev->merge_with_xRi(maxWidth);
         }
     }
 }
@@ -1568,12 +1437,404 @@ void TimeSliceNonTimed::move_shapes_to_final_positions(vector<StaffObjData*>& da
             pShape->set_origin_and_notify_observers(xLeft + pData->m_xUserShift,
                                                     yPos + pData->m_yUserShift);
 
-            positions[iStaff] += pShape->get_width() + m_interSpace;
+            positions[iStaff] += pShape->get_width();
+            if (!pShape->is_shape_invisible())
+                positions[iStaff] += m_interSpace;
 
             //update system vertical limits
             *yMax = max(*yMax, pShape->get_bottom());
             *yMin = min(*yMin, pShape->get_top());
         }
+    }
+}
+
+
+//=====================================================================================
+//TimeSliceBarline implementation
+//=====================================================================================
+TimeSliceBarline::TimeSliceBarline(ColStaffObjsEntry* pEntry, int column, int iData)
+    : TimeSlice(pEntry, k_barline, column, iData)
+{
+
+}
+
+//---------------------------------------------------------------------------------------
+TimeSliceBarline::~TimeSliceBarline()
+{
+
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceBarline::assign_spacing_values(vector<StaffObjData*>& data,
+                                            ScoreMeter* pMeter,
+                                            TextMeter& UNUSED(textMeter))
+{
+	//assign fixed space at start of this slice and compute pre-stretching
+	//extend (left and right rods)
+
+    m_xLi = 0.0f;
+    m_xRi = 0.0f;
+    //assign some space before the barline for separation from very small notes
+    //and directions
+    //[BL2] test 00619. CHECK: some space between both barlines. It is this minimum space
+    m_xLeft = pMeter->tenths_to_logical_max(LOMSE_EXCEPTIONAL_MIN_SPACE
+                                            + LOMSE_MIN_SPACE_BEFORE_BARLINE);
+
+    //loop for computing rods
+    int iMax = m_iFirstData + m_numEntries;
+    for (int i=m_iFirstData; i < iMax; ++i)
+    {
+        GmoShape* pShape = data[i]->get_shape();
+        if (pShape)
+        {
+            LUnits xAnchor = pShape->get_anchor_offset();
+            m_xLi = max(m_xLi, pShape->get_width() + xAnchor);
+        }
+    }
+
+
+    //Fixed space at start (space before the barline) must be transferred as right rod
+    //to previous noterest slice so that spacing algorithm substract it from the space
+    //it is going to add after the note. By doing this, we avoid to add extra space to
+    //normal notes spacing.
+    if (m_prev && m_prev->get_type() == TimeSlice::k_noterest)
+    {
+        //[BL4] test 00604. CHECK: all notes quasi-equally spaced. Barline affects very little.
+        m_prev->merge_with_xRi(m_xLeft);    //xRi is only lyrics. Merge
+        m_xLeft = 0.0f;
+    }
+
+    //if previous slice is non-timed and is visible, transfer the space to the
+    //previous note so that non-timed is just before the barline (i.e. an intermediate
+    //clef). But if non-timed i, suppress barline previous space.
+    else if (m_prev && m_prev->get_type() == TimeSlice::k_non_timed)
+    {
+        if (!static_cast<TimeSliceNonTimed*>(m_prev)->has_width())
+        {
+            //transfer the space
+            //[BL5a] test 00616. CHECK: intermediate clef: more space before the note than
+            //                      before the barline
+            TimeSlice* prev = m_prev->m_prev;
+            if (prev && prev->get_type() == TimeSlice::k_noterest)
+            {
+                //prev->increment_xRi(m_xLeft);
+                prev->merge_with_xRi(m_xLeft);    //xRi is already merged. Merge
+                m_xLeft = 0.0f;
+            }
+        }
+        else
+        {
+            //suppress space
+            //[BL5b] test 00620. CHECK: no space between first note and line
+            m_xLeft = 0.0f;
+        }
+    }
+
+}
+
+
+//=====================================================================================
+//TimeSliceNoterest implementation
+//=====================================================================================
+TimeSliceNoterest::TimeSliceNoterest(ColStaffObjsEntry* pEntry, int column, int iData)
+    : TimeSlice(pEntry, k_noterest, column, iData)
+    , m_xRiLyrics(0.0f)
+    , m_xRiMerged(0.0f)
+{
+
+}
+
+//---------------------------------------------------------------------------------------
+TimeSliceNoterest::~TimeSliceNoterest()
+{
+    m_lyrics.clear();
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceNoterest::assign_spacing_values(vector<StaffObjData*>& data,
+                                              ScoreMeter* pMeter,
+                                              TextMeter& textMeter)
+{
+	//assign fixed space at start of this slice and compute pre-stretching
+	//extend (left and right rods)
+
+    vector<LUnits> xAcc;        //space required by accidentals, by staff
+    xAcc.assign(pMeter->num_staves(), 0.0f);
+    LUnits xPrev = 0.0f;        //space required by accidentals, merged
+    m_xLi = 0.0f;
+    m_xRi = 0.0f;
+    m_xRiLyrics = 0.0f;
+    m_xRiMerged = 0.0f;
+
+    //assign some minimal space before this slice for ensuring some minimal separation
+    //between notes
+    //[NR1] test 00601. CHECK: some space between the two final notes
+    LUnits k_min_space = pMeter->tenths_to_logical_max(LOMSE_EXCEPTIONAL_MIN_SPACE);
+    m_xLeft = k_min_space;
+
+    //if this is the first slice (scores without prolog) add some space at start
+    //[NR2a] test 00609. CHECK: there is some space at start of score before the note.
+    //      Spacing must be similar to that of first note in second measure
+    if (m_iFirstData == 0)
+        m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_BEFORE_PROLOG);
+
+    //if prev slice is a barline slice, add some extra space at start
+    if (m_prev && m_prev->get_type() == TimeSlice::k_barline)
+    {
+        //[NR2b]
+        //  test 00615. CHECK: enough space after barline and 1st note in 2nd measure
+        m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_BARLINE / 2.0f);
+    }
+    else if (m_prev && m_prev->get_type() == TimeSlice::k_non_timed
+             && m_prev->get_width() == 0.0f)
+    {
+        //Add some extra space when null width non-timed previous to barline
+        //[NR2c] test 00611. CHECK: measures 2 and 3 have identical spacings.
+        TimeSlice* prev = m_prev->m_prev;
+        if (prev && prev->get_type() == TimeSlice::k_barline)
+            m_xLeft += pMeter->tenths_to_logical_max(LOMSE_SPACE_AFTER_BARLINE / 2.0f);
+    }
+
+    //loop for computing rods. Data is saved by staves
+    ColStaffObjsEntry* pEntry = m_firstEntry;
+    int iMax = m_iFirstData + m_numEntries;
+    for (int i=m_iFirstData; i < iMax; ++i, pEntry = pEntry->get_next())
+    {
+        GmoShape* pShape = data[i]->get_shape();
+        if (pShape)
+        {
+            int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
+            LUnits xAnchor = pShape->get_anchor_offset();
+            m_xLi = max(m_xLi, pShape->get_width() + xAnchor);
+            if (xAnchor < 0.0f)
+            {
+                xAcc[iStaff] = min(xAcc[iStaff], xAnchor);
+                xPrev = min(xPrev, xAnchor);
+            }
+        }
+    }
+
+    //take lyrics into account
+    LUnits xLyrics = 0.0f;      //space required by lyrics
+    vector< pair<ImoLyric*, int> >::iterator it;
+    for (it=m_lyrics.begin(); it != m_lyrics.end(); ++it)
+    {
+        LUnits width = measure_lyric((*it).first, pMeter, textMeter) / 2.0f;
+        //lyric is centered: half as right rod and half as prev space.
+        xLyrics = max(xLyrics, width);
+        //TODO: the split must not include the hyphenation
+    }
+    if (xLyrics > 0.0f)
+    {
+        //set half of lyrics width as lyrics rod
+        increment_xRi(xLyrics);
+        //the other half, before the note, is going to be transferred. Discount fixed space
+        xLyrics = max(0.0f, xLyrics - m_xLeft);
+    }
+
+
+    //transfer space at start (accidentals and lyrics)
+    if (m_prev && m_prev->get_type() == TimeSlice::k_noterest)
+    {
+        //transfer all space to previous noterest slice
+        //[NR3] test 00614. CHECK: enough space for accidental in 2nd note
+        if (xLyrics > 0.0f)
+            m_prev->increment_xRi(xLyrics + k_min_space);   //increment lyrics
+
+        m_prev->merge_with_xRi(-xPrev);     //merge accidentals
+    }
+    else if (m_prev && m_prev->get_type() == TimeSlice::k_non_timed)
+    {
+        TimeSlice* pPrevPrev = m_prev->m_prev;
+        if (pPrevPrev && pPrevPrev->get_type() == TimeSlice::k_noterest)
+        {
+            //space for lyrics can always be transferred
+			//[NR4a] test 00625. CHECK: lyrics moved before spacer and clef
+            if (xLyrics > 0.0f)
+                pPrevPrev->increment_xRi(xLyrics + k_min_space);
+
+            //Space for accidentals can be transferred only by staves
+            TimeSliceNonTimed* pNonTimed = static_cast<TimeSliceNonTimed*>(m_prev);
+            LUnits xTransfer = 0.0f;
+
+            ColStaffObjsEntry* pEntry = m_firstEntry;
+            int iMax = m_numEntries;
+            for (int i=0; i < iMax; ++i, pEntry = pEntry->get_next())
+            {
+                int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
+                if (xAcc[iStaff] < 0.0f && pNonTimed->is_empty_staff(iStaff))
+                {
+                    //transfer space for accidentals in this staff
+                    xTransfer = min(xTransfer, xAcc[iStaff]);   //AWARE xAcc is negative
+                    xAcc[iStaff] = 0.0f;
+                }
+            }
+
+            if (xTransfer < 0.0f)
+            {
+                //[NR4b] test 00622. CHECK: accidental in second staff do not interfere
+                //                      in clef change spacing.
+				// test 00623. CHECK: lyrics in first note do not interfere in clef
+				//                      change spacing.
+		        // test 00624. CHECK: lyrics and accidentals do not interfere in clef spacing.
+                pPrevPrev->merge_with_xRi(-xTransfer);     //xRi is merged. Merge accidentals
+
+                //re-compute remaining xPrev and account it as fixed space in this slice
+                xPrev = 0.0f;
+                ColStaffObjsEntry* pEntry = m_firstEntry;
+                int iMax = m_numEntries;
+                for (int i=0; i < iMax; ++i, pEntry = pEntry->get_next())
+                {
+                    int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
+                    xPrev = min(xPrev, xAcc[iStaff]);
+                }
+                m_xLeft -= xPrev;   //AWARE: xPrev is always negative
+            }
+            else
+            {
+                //do not transfer space for accidental (lyrics already transferred).
+                //[NR4c] test 00605. CHECK:enough space for accidental and red line
+                //                      before it
+                m_xLeft -= xPrev;   //AWARE: xPrev is always negative
+            }
+        }
+        else if (pPrevPrev)
+        {
+            //slice before non-timed is barline or prolog. Transfer lyrics to it
+            if (xLyrics > 0.0f)
+            {
+                LUnits prevRi = pPrevPrev->get_right_rod();
+                LUnits discount = (prevRi == 0.0f ? pPrevPrev->get_left_rod() : 0.0f);
+                xLyrics = max(0.0f, xLyrics-discount);
+                pPrevPrev->increment_xRi(xLyrics + k_min_space);
+            }
+            //account accidentals as fixed space in this noterest
+            m_xLeft -= xPrev;   //AWARE: xPrev is always negative
+        }
+        else
+        {
+            //pPrevPrev does not exist. Do not transfer space
+            xPrev = min(xPrev, -xLyrics);
+            m_xLeft -= xPrev;   //AWARE: xPrev is always negative
+        }
+    }
+    else if (m_prev)
+    {
+        //prev is barline or prolog. Lyrics space can always be transferred to them
+        //but accidentals cannot.
+
+        //transfer lyrics:
+        //[] test 13b-KeySignatures-ChurchModes
+        if (xLyrics > 0.0f)
+        {
+            LUnits prevRi = m_prev->get_right_rod();
+            LUnits discount = (prevRi == 0.0f ? m_prev->get_left_rod() : 0.0f);
+            xLyrics = max(0.0f, xLyrics-discount);
+            m_prev->increment_xRi(xLyrics + k_min_space);
+        }
+
+        //do not transfer accidentals:
+        //[NR5a] test 00610. CHECK: enough space between barline and next note accidentals
+        //      test 00611. CHECK: enough space for accidental after barline in last measure
+        //[NR5b] test 00606. CHECK: equal space between prolog and noteheads in all staves.
+        //                  Accidentals do not alter noteheads alignment.
+        m_xLeft -= xPrev;   //AWARE: xPrev is always negative
+    }
+}
+
+//---------------------------------------------------------------------------------------
+LUnits TimeSliceNoterest::measure_lyric(ImoLyric* pLyric, ScoreMeter* pMeter,
+                                        TextMeter& textMeter)
+{
+    //TODO: Move this method to another object. TimeSliceNoterest shoul not have
+    //knowledge about the lyrics GM structure. Move perhaps to engraver?
+
+    //TODO tenths to logical: must use instrument & staff for pSO
+
+    LUnits totalWidth = 0;
+    ImoStyle* pStyle = nullptr;
+    int numSyllables = pLyric->get_num_text_items();
+    for (int i=0; i < numSyllables; ++i)
+    {
+        //get text for syllable
+        ImoLyricsTextInfo* pText = pLyric->get_text_item(i);
+        const string& text = pText->get_syllable_text();
+        const string& language = pText->get_syllable_language();
+        pStyle = pText->get_syllable_style();
+        if (pStyle == nullptr)
+            pStyle = pMeter->get_style_info("Lyrics");
+
+        //measure this syllable
+        totalWidth += measure_text(text, pStyle, language, textMeter);
+
+        //elision symbol
+        if (pText->has_elision())
+        {
+            const string& elision = pText->get_elision_text();
+            totalWidth += measure_text(elision, pStyle, "en", textMeter)
+                          + pMeter->tenths_to_logical_max(2.0);
+        }
+    }
+    totalWidth += pMeter->tenths_to_logical_max(10.0);
+
+    //hyphenation, if needed
+    if (pLyric->has_hyphenation() && !pLyric->has_melisma())
+    {
+        // coverity[var_deref_model]
+        totalWidth += measure_text("-", pStyle, "en", textMeter)
+                      + pMeter->tenths_to_logical_max(10.0);
+    }
+
+    return totalWidth;
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceNoterest::add_lyrics(ScoreMeter* pMeter)
+{
+    ColStaffObjsEntry* pEntry = m_firstEntry;
+    for (int i=0; i < m_numEntries; ++i, pEntry = pEntry->get_next())
+    {
+        ImoStaffObj* pSO = pEntry->imo_object();
+
+        if (pSO->is_note() && pSO->get_num_attachments() > 0)
+        {
+            int iStaff = pMeter->staff_index(pEntry->num_instrument(), pEntry->staff());
+            ImoAttachments* pAuxObjs = pSO->get_attachments();
+            int size = pAuxObjs->get_num_items();
+            for (int i=0; i < size; ++i)
+            {
+                ImoAuxObj* pAO = static_cast<ImoAuxObj*>( pAuxObjs->get_item(i) );
+                if (pAO->is_lyric())
+                {
+                    ImoLyric* pLyric = static_cast<ImoLyric*>(pAO);
+                    m_lyrics.push_back( make_pair(pLyric, iStaff) );
+                }
+            }
+        }
+    }
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceNoterest::increment_xRi(LUnits value)
+{
+    m_xRiLyrics += value;
+    m_xRi = max(m_xRiLyrics - m_xLi, m_xRiMerged);
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceNoterest::merge_with_xRi(LUnits value)
+{
+    m_xRiMerged = max(m_xRiMerged, value);
+    m_xRi = max(m_xRiLyrics - m_xLi, m_xRiMerged);
+}
+
+//---------------------------------------------------------------------------------------
+void TimeSliceNoterest::set_minimum_xi(LUnits value)
+{
+    if (get_xi() < value)
+    {
+        m_xRiLyrics = value;
+        m_xRi = max(m_xRiLyrics - m_xLi, m_xRiMerged);
     }
 }
 
@@ -1585,8 +1846,11 @@ void TimeSliceNonTimed::move_shapes_to_final_positions(vector<StaffObjData*>& da
 ColumnDataGourlay::ColumnDataGourlay(TimeSlice* pSlice)
     : m_pFirstSlice(pSlice)
     , m_slope(1.0f)
+    , m_minFi(0.0f)
     , m_xFixed(0.0f)
     , m_colWidth(0.0f)
+    , m_colMinWidth(0.0f)
+    , m_barlinesInfo(0)
     , m_xPos(0.0f)
 {
 }

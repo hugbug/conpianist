@@ -45,6 +45,7 @@
 #include "lomse_autobeamer.h"
 #include "lomse_im_attributes.h"
 #include "lomse_measures_table.h"
+#include "lomse_score_utilities.h"
 
 
 using namespace std;
@@ -438,16 +439,14 @@ const string& ImoObj::get_name(int type)
         // ImoStaffObj (A)
         m_TypeToName[k_imo_barline] = "barline";
         m_TypeToName[k_imo_clef] = "clef";
+        m_TypeToName[k_imo_direction] = "direction";
+        m_TypeToName[k_imo_figured_bass] = "figured-bass";
+        m_TypeToName[k_imo_go_back_fwd] = "go-back-fwd";
         m_TypeToName[k_imo_key_signature] = "key-signature";
-        m_TypeToName[k_imo_time_signature] = "time-signature";
         m_TypeToName[k_imo_note] = "note";
         m_TypeToName[k_imo_rest] = "rest";
-        m_TypeToName[k_imo_go_back_fwd] = "go-back-fwd";
-        m_TypeToName[k_imo_metronome_mark] = "metronome-mark";
         m_TypeToName[k_imo_system_break] = "system-break";
-        m_TypeToName[k_imo_spacer] = "spacer";
-        m_TypeToName[k_imo_figured_bass] = "figured-bass";
-        m_TypeToName[k_imo_direction] = "direction";
+        m_TypeToName[k_imo_time_signature] = "time-signature";
 
         // ImoBlocksContainer (A)
         m_TypeToName[k_imo_content] = "content";
@@ -467,21 +466,20 @@ const string& ImoObj::get_name(int type)
         m_TypeToName[k_imo_para] = "paragraph";
 
         // ImoInlineLevelObj
+        m_TypeToName[k_imo_button] = "buttom";
+        m_TypeToName[k_imo_control] = "control";
         m_TypeToName[k_imo_image] = "image";
         m_TypeToName[k_imo_score_player] = "score-player";
-        m_TypeToName[k_imo_control] = "control";
-        m_TypeToName[k_imo_button] = "buttom";
         m_TypeToName[k_imo_text_item] = "text";
 
         // ImoBoxInline (A)
-        m_TypeToName[k_imo_inline_wrapper] = "wrapper";
         m_TypeToName[k_imo_link] = "link";
+        m_TypeToName[k_imo_inline_wrapper] = "wrapper";
 
         // ImoDto, ImoSimpleObj (A)
         m_TypeToName[k_imo_beam_dto] = "beam";
         m_TypeToName[k_imo_bezier_info] = "bezier";
         m_TypeToName[k_imo_border_dto] = "border";
-        m_TypeToName[k_imo_textblock_info] = "textblock";
         m_TypeToName[k_imo_color_dto] = "color";
         m_TypeToName[k_imo_cursor_info] = "cursor";
         m_TypeToName[k_imo_figured_bass_info] = "figured-bass";
@@ -501,6 +499,7 @@ const string& ImoObj::get_name(int type)
         m_TypeToName[k_imo_staff_info] = "staff-info";
         m_TypeToName[k_imo_style] = "style";
         m_TypeToName[k_imo_system_info] = "system-info";
+        m_TypeToName[k_imo_textblock_info] = "textblock";
         m_TypeToName[k_imo_text_info] = "text-info";
         m_TypeToName[k_imo_text_style] = "text-style";
         m_TypeToName[k_imo_tie_dto] = "tie-dto";
@@ -536,6 +535,7 @@ const string& ImoObj::get_name(int type)
         m_TypeToName[k_imo_dynamics_mark] = "dynamics-mark";
         m_TypeToName[k_imo_fermata] = "fermata";
         m_TypeToName[k_imo_line] = "line";
+        m_TypeToName[k_imo_metronome_mark] = "metronome-mark";
         m_TypeToName[k_imo_ornament] = "ornament";
         m_TypeToName[k_imo_score_text] = "score-text";
         m_TypeToName[k_imo_score_line] = "score-line";
@@ -693,7 +693,7 @@ ImoContentObj* ImoObj::get_contentobj_parent()
                     pImo = pImo->get_parent();
             }
 
-            if (pImo->is_contentobj())
+            if (pImo && pImo->is_contentobj())
                 return static_cast<ImoContentObj*>(pImo);
         }
     }
@@ -1333,6 +1333,7 @@ bool ImoBeamData::is_end_of_beam()
 ImoBeamDto::ImoBeamDto()
     : ImoSimpleObj(k_imo_beam_dto)
     , m_beamNum(0)
+    , m_pBeamElm(nullptr)
     , m_pNR(nullptr)
     , m_lineNum(0)
 {
@@ -1964,7 +1965,9 @@ void ImoContentObj::add_attachment(Document* pDoc, ImoAuxObj* pAO)
 ImoAuxObj* ImoContentObj::get_attachment(int i)
 {
     ImoAttachments* pAuxObjs = get_attachments();
-    return static_cast<ImoAuxObj*>( pAuxObjs->get_item(i) );
+    if (pAuxObjs)
+        return static_cast<ImoAuxObj*>( pAuxObjs->get_item(i) );
+    return nullptr;
 }
 
 //---------------------------------------------------------------------------------------
@@ -2523,7 +2526,7 @@ ImoStaffInfo* ImoInstrument::get_staff(int iStaff)
 {
     std::list<ImoStaffInfo*>::iterator it = m_staves.begin();
     for (; it != m_staves.end() && iStaff > 0; ++it, --iStaff);
-    return *it;
+    return (it != m_staves.end() ? *it : nullptr);
 }
 
 //---------------------------------------------------------------------------------------
@@ -2587,10 +2590,11 @@ ImoKeySignature* ImoInstrument::add_key_signature(int type, bool fVisible)
 }
 
 //---------------------------------------------------------------------------------------
-ImoSpacer* ImoInstrument::add_spacer(Tenths space)
+ImoDirection* ImoInstrument::add_spacer(Tenths space)
 {
     ImoMusicData* pMD = get_musicdata();
-    ImoSpacer* pImo = static_cast<ImoSpacer*>( ImFactory::inject(k_imo_spacer, m_pDoc) );
+    ImoDirection* pImo =
+            static_cast<ImoDirection*>( ImFactory::inject(k_imo_direction, m_pDoc) );
     pImo->set_width(space);
     pMD->append_child_imo(pImo);
     return pImo;
@@ -2800,7 +2804,7 @@ ImoInstrument* ImoInstrGroup::get_instrument(int iInstr)    //iInstr = 0..n-1
     std::list<ImoInstrument*>::iterator it;
     int i = 0;
     for (it = m_instruments.begin(); it != m_instruments.end() && i < iInstr; ++it, ++i);
-    if (i == iInstr)
+    if (i == iInstr && it != m_instruments.end())
         return *it;
     else
         return nullptr;
@@ -2818,6 +2822,52 @@ int ImoInstrGroup::get_num_instruments()
     return static_cast<int>( m_instruments.size() );
 }
 
+//=======================================================================================
+// ImoKeySignature implementation
+//=======================================================================================
+int ImoKeySignature::get_key_type()
+{
+    return int( KeyUtilities::key_components_to_key_type(m_fifths, EKeyMode(m_keyMode)) );
+}
+
+//---------------------------------------------------------------------------------------
+void ImoKeySignature::set_key_type(int type)
+{
+    m_keyMode = KeyUtilities::get_key_mode(EKeySignature(type));
+    m_fifths = KeyUtilities::key_signature_to_num_fifths(EKeySignature(type));
+}
+
+//---------------------------------------------------------------------------------------
+void ImoKeySignature::transpose(const int semitones)
+{
+                       //fifths  -7 -6 -5 -4  -3 -2 -1  0  1  2  3   4  5  6  7
+                       //Key:     C- G- D- A-  E- B- F  C  G  D  A   E  B  F+ C+
+    static int fifthsToIndex[] = {1, 8, 3, 10, 5, 0, 7, 2, 9, 4, 11, 6, 1, 8, 3};
+
+    int index = fifthsToIndex[m_fifths+7];
+    int newIndex = index + semitones;
+    //normalize 0..11
+    while (newIndex < 0)
+        newIndex += 11;
+    while (newIndex > 11)
+        newIndex -= 11;
+
+                       //index    0   1   2   3   4   5   6   7   8   9  10  11
+                       //newKey:  b-  b   c   c+  d   e-  e   f   f+  g  a-  a
+                       //             c-      d-                  g-
+    static int indexToFifths[] = {-2, 5,  0,  7,  2, -3,  4, -1,  6,  1, -4, 3};
+
+    m_fifths = indexToFifths[newIndex];
+    if (semitones < 0)
+    {
+        if (newIndex == 1)      //key can be B or C flat
+            m_fifths = -7;          //use C flat
+        else if (newIndex == 3) //key can be C sharp or D flat
+            m_fifths = -5;          //key D flat
+        else if (newIndex == 8) //key can be F sharp or G flat
+            m_fifths = -6;          //key G flat
+    }
+}
 
 //=======================================================================================
 // ImoLink implementation
@@ -3071,18 +3121,18 @@ static const FloatOption m_FloatOptions[] =
         // As the duration of quarter note is 64 (time units), I am
         // going to map it to 35 tenths. This gives a conversion factor
         // of 35/64 = 0.547
-    {"Render.SpacingFopt", 1.0f },
+    {"Render.SpacingFopt", 1.4f },
 };
 
 //---------------------------------------------------------------------------------------
 static const LongOption m_LongOptions[] =
 {
     {"Render.SpacingMethod", long(k_spacing_proportional) },
-    {"Render.SpacingOptions", 1L},      //'classic' appearance (LDP <= 2.0)
+    {"Render.SpacingOptions", k_render_opt_breaker_simple | k_render_opt_dmin_fixed },
     {"Render.SpacingValue", 35L },      //15 tenths (1.5 lines) [add 20 to desired value]
-    {"Score.JustifyLastSystem", 0L},    //never justify last system
+    {"Score.JustifyLastSystem", k_justify_never },
     {"Staff.UpperLegerLines.Displacement", 0L },
-    {"StaffLines.Truncate", 1L},        //only if last object is barline of type final
+    {"StaffLines.Truncate", k_truncate_barline_final },
 };
 
 //---------------------------------------------------------------------------------------
@@ -3385,7 +3435,7 @@ ImoOptionInfo* ImoScore::get_option(const std::string& name)
     ImoObj::children_iterator it;
     for (it= pColOpts->begin(); it != pColOpts->end(); ++it)
     {
-        ImoOptionInfo* pOpt = dynamic_cast<ImoOptionInfo*>(*it);
+        ImoOptionInfo* pOpt = static_cast<ImoOptionInfo*>(*it);
         if (pOpt->get_name() == name)
             return pOpt;
     }
@@ -4942,6 +4992,7 @@ ImoSlurData::ImoSlurData(ImoSlurDto* pDto)
     : ImoRelDataObj(k_imo_slur_data)
     , m_fStart( pDto->is_start() )
     , m_slurNum( pDto->get_slur_number() )
+    , m_orientation(k_orientation_default)
     , m_pBezier(nullptr)
 {
     if (pDto->get_bezier())
@@ -5208,6 +5259,7 @@ ImoTieData::ImoTieData(ImoTieDto* pDto)
     : ImoRelDataObj(k_imo_tie_data)
     , m_fStart( pDto->is_start() )
     , m_tieNum( pDto->get_tie_number() )
+    , m_orientation(k_orientation_default)
     , m_pBezier(nullptr)
 {
     if (pDto->get_bezier())

@@ -84,16 +84,27 @@ ScoreLayouter::ScoreLayouter(ImoContentObj* pItem, Layouter* pParent,
                              GraphicModel* pGModel, LibraryScope& libraryScope)
     : Layouter(pItem, pParent, pGModel, libraryScope, nullptr, true)
     , m_libraryScope(libraryScope)
-    , m_pScore( dynamic_cast<ImoScore*>(pItem) )
+    , m_pScore( static_cast<ImoScore*>(pItem) )
     , m_pScoreMeter( LOMSE_NEW ScoreMeter(m_pScore) )
     , m_pSpAlgorithm(nullptr)
     , m_pShapesCreator(nullptr)
     , m_pPartsEngraver(nullptr)
+    , m_startTop(0.0f)
+    , m_iCurPage(0)
+    , m_iCurSystem(0)
+    , m_pCurSysLyt(nullptr)
+    , m_iSysPage(0)
+    , m_iCurColumn(0)
+    , m_truncateStaffLines(0L)
+    , m_justifyLastSystem(0L)
+    , m_uFirstSystemIndent(0.0f)
+    , m_uOtherSystemIndent(0.0f)
     , m_pStub(nullptr)
     , m_pCurBoxPage(nullptr)
     , m_pCurBoxSystem(nullptr)
     , m_iColumnToTrace(-1)
     , m_nTraceLevel(k_trace_off)
+    , m_fFirstSystemInPage(true)
 {
 }
 
@@ -134,7 +145,7 @@ void ScoreLayouter::prepare_to_start_layout()
 //---------------------------------------------------------------------------------------
 void ScoreLayouter::layout_in_box()
 {
-    LOMSE_LOG_DEBUG(Logger::k_layout, "");
+    LOMSE_LOG_DEBUG(Logger::k_layout, string(""));
 
     //AWARE: This method is invoked to layout a page. If there are more pages to
     //layout, it will be invoked more times. Therefore, this method must not initialize
@@ -379,7 +390,7 @@ void ScoreLayouter::decide_systems_indentation()
 void ScoreLayouter::page_initializations(GmoBox* pContainerBox)
 {
     m_iCurPage++;
-    m_pCurBoxPage = dynamic_cast<GmoBoxScorePage*>( pContainerBox );
+    m_pCurBoxPage = static_cast<GmoBoxScorePage*>( pContainerBox );
     m_pCurBoxPage->set_page_number(m_iCurPage);
     is_first_system_in_page(true);
     m_startTop = m_pCurBoxPage->get_top();
@@ -991,7 +1002,7 @@ GmoShape* ShapesCreator::create_staffobj_shape(ImoStaffObj* pSO, int iInstr, int
         }
         case k_imo_clef:
         {
-            bool fSmallClef = flags && k_flag_small_clef;
+            bool fSmallClef = flags & k_flag_small_clef;
             ImoClef* pClef = static_cast<ImoClef*>(pSO);
             int clefSize = pClef->get_symbol_size();
             if (clefSize == k_size_default)
@@ -1045,24 +1056,12 @@ GmoShape* ShapesCreator::create_staffobj_shape(ImoStaffObj* pSO, int iInstr, int
             Color color = pImo->get_color();
             return engrv.create_shape(pImo, pos, color);
         }
-        case k_imo_spacer:
+        case k_imo_direction:
         {
-            ImoSpacer* pImo = static_cast<ImoSpacer*>(pSO);
+            ImoDirection* pImo = static_cast<ImoDirection*>(pSO);
             LUnits space = m_pScoreMeter->tenths_to_logical(pImo->get_width(),
                                                             iInstr, iStaff);
             return create_invisible_shape(pSO, iInstr, iStaff, pos, space);
-        }
-        case k_imo_direction:
-        {
-            //TODO
-            return create_invisible_shape(pSO, iInstr, iStaff, pos, 0.0f);
-        }
-        case k_imo_metronome_mark:
-        {
-            ImoMetronomeMark* pImo = static_cast<ImoMetronomeMark*>(pSO);
-            MetronomeMarkEngraver engrv(m_libraryScope, m_pScoreMeter, iInstr, iStaff);
-            Color color = pImo->get_color();
-            return engrv.create_shape(pImo, pos, color);
         }
         case k_imo_sound_change:
         default:
@@ -1103,6 +1102,13 @@ GmoShape* ShapesCreator::create_auxobj_shape(ImoAuxObj* pAO, int iInstr, int iSt
             FermataEngraver engrv(m_libraryScope, m_pScoreMeter, iInstr, iStaff);
             Color color = pImo->get_color();
             return engrv.create_shape(pImo, pos, color, pParentShape);
+        }
+        case k_imo_metronome_mark:
+        {
+            ImoMetronomeMark* pImo = static_cast<ImoMetronomeMark*>(pAO);
+            MetronomeMarkEngraver engrv(m_libraryScope, m_pScoreMeter, iInstr, iStaff);
+            Color color = pImo->get_color();
+            return engrv.create_shape(pImo, pos, color);
         }
         case k_imo_ornament:
         {

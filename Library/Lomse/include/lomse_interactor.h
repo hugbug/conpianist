@@ -245,7 +245,7 @@ public:
             {
                 spInteractor->set_operating_mode(Interactor::k_mode_playback);
 
-                SpEventPlayCtrl pEv = boost::static_pointer_cast<EventPlayCtrl>(pEvent);
+                SpEventPlayCtrl pEv = static_pointer_cast<EventPlayCtrl>(pEvent);
                 ImoScore* pScore = pEv->get_score();
                 ScorePlayer* pPlayer  = m_appScope.get_score_player();
                 PlayerGui* pPlayerGui = pEv->get_player();
@@ -933,11 +933,6 @@ public:
         @endcode
     */
 	virtual VisualEffect* get_tracking_effect(int effect);
-
-    /** Move the tempo line to the given note/rest.
-        @param pSO The tempo line will be placed at this note or rest.
-    */
-    virtual void move_tempo_line(ImoStaffObj* pSO);
 
     /** Move the tempo line to the given time position.
         @param scoreId  Id. of the score to which all other parameters refer.

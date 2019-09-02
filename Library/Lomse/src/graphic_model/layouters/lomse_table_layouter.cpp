@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2016. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -48,6 +48,10 @@ TableLayouter::TableLayouter(ImoContentObj* pItem, Layouter* pParent,
     , m_pTable( static_cast<ImoTable*>(pItem) )
     , m_headLayouter(nullptr)
     , m_bodyLayouter(nullptr)
+    , m_numHeadRows(0)
+    , m_numBodyRows(0)
+    , m_numCols(0)
+    , m_tableWidth(0.0f)
 {
 }
 
@@ -93,7 +97,7 @@ void TableLayouter::create_sections_layouters()
 //---------------------------------------------------------------------------------------
 void TableLayouter::layout_in_box()
 {
-    LOMSE_LOG_DEBUG(Logger::k_layout, "");
+    LOMSE_LOG_DEBUG(Logger::k_layout, string(""));
 
     //AWARE: This method is invoked to layout a page. If there are more pages to
     //layout, it will be invoked more times. Therefore, this method must not initialize
@@ -286,6 +290,7 @@ TableSectionLayouter::TableSectionLayouter(ImoContentObj* pItem, Layouter* pPare
     , m_numTableColumns(numCols)
     , m_tableWidth(tableWidth)
     , m_pRowLayouter(nullptr)
+    , m_nextLogicalRow(0)
 {
 }
 
@@ -311,7 +316,7 @@ void TableSectionLayouter::prepare_to_start_layout()
 //---------------------------------------------------------------------------------------
 void TableSectionLayouter::layout_in_box()
 {
-    LOMSE_LOG_DEBUG(Logger::k_layout, "");
+    LOMSE_LOG_DEBUG(Logger::k_layout, string(""));
 }
 
 //---------------------------------------------------------------------------------------
@@ -319,7 +324,7 @@ void TableSectionLayouter::create_main_box(GmoBox* UNUSED(pParentBox),
                                            UPoint UNUSED(pos), LUnits UNUSED(width),
                                            LUnits UNUSED(height))
 {
-    LOMSE_LOG_DEBUG(Logger::k_layout, "");
+    LOMSE_LOG_DEBUG(Logger::k_layout, string(""));
 }
 
 //---------------------------------------------------------------------------------------
@@ -355,7 +360,7 @@ void TableSectionLayouter::create_cell_layouters()
         for (itCell = pWrapper->begin(); itCell != pWrapper->end(); ++itCell, ++iCell, ++iCol)
         {
             while( iCell < numCells && !freeCell[iCell])
-            {    ++iCell; ++iCol; }
+                { ++iCell; ++iCol; }
 
             ImoTableCell* pCell = static_cast<ImoTableCell*>( *itCell );
             iLastCell = iCell;
@@ -530,7 +535,7 @@ TableRowLayouter::~TableRowLayouter()
 //---------------------------------------------------------------------------------------
 void TableRowLayouter::layout_in_box()
 {
-    LOMSE_LOG_DEBUG(Logger::k_layout, "");
+    LOMSE_LOG_DEBUG(Logger::k_layout, string(""));
 
     set_cursor_and_available_space();
     LUnits yPos = m_pageCursor.y;

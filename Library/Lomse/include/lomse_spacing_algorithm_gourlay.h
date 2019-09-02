@@ -148,8 +148,7 @@ public:
 
 protected:
     void new_column(TimeSlice* pSlice);
-    void new_slice(ColStaffObjsEntry* pEntry, int entryType, int iColumn, int iData,
-                   bool fInProlog);
+    void new_slice(ColStaffObjsEntry* pEntry, int entryType, int iColumn, int iData);
     void finish_slice(ColStaffObjsEntry* pLastEntry, int numEntries);
     void compute_springs();
     void order_slices_in_columns();
@@ -263,15 +262,14 @@ protected:
     friend class SpAlgGourlay;
     friend class ColumnDataGourlay;
     friend class TimeSliceNonTimed;
+    friend class TimeSliceBarline;
+    friend class TimeSliceNoterest;
     ColStaffObjsEntry*  m_firstEntry;
     ColStaffObjsEntry*  m_lastEntry;
     int         m_iFirstData;   //index to first StaffObjData element for this slice
     int         m_numEntries;   //num staffobjs in this slice
     int         m_type;         //type of slice. Value from enum ESliceType
     int         m_iColumn;      //Column in which this slice is included
-
-    //lyrics
-    vector<ImoLyric*> m_lyrics;
 
     //list
     TimeSlice* m_next;
@@ -291,8 +289,9 @@ protected:
     TimeUnits   m_minNote;      //min note/rest duration in this segment
     TimeUnits   m_minNoteNext;  //min note/rest duration still sounding in next segment
 
-public:
     TimeSlice(ColStaffObjsEntry* pEntry, int entryType, int column, int iData);
+
+public:
     virtual ~TimeSlice();
 
     enum ESliceType {
@@ -305,7 +304,7 @@ public:
 
     //creation
     void set_final_data(ColStaffObjsEntry* pLastEntry, int numEntries,
-                        TimeUnits maxNextTime, TimeUnits minNote);
+                        TimeUnits maxNextTime, TimeUnits minNote, ScoreMeter* pMeter);
 
     //list creation
     inline TimeSlice* next() { return m_next; }
@@ -315,11 +314,12 @@ public:
     void compute_spring_data(LUnits uSmin, float alpha, float log2dmin, TimeUnits dmin,
                              bool fProportional, LUnits dsFixed);
     virtual void assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
-                                       TextMeter& textMeter);
+                                       TextMeter& textMeter) = 0;
     void apply_force(float F);
     inline void increment_fixed_extent(LUnits value) { m_xLeft += value; }
-    inline void increment_xRi(LUnits value) { m_xRi += value; }
-    inline void set_minimum_xi(LUnits value) {
+    virtual void increment_xRi(LUnits value) { m_xRi += value; }
+    virtual void merge_with_xRi(LUnits value) { m_xRi = max(m_xRi, value); }
+    virtual void set_minimum_xi(LUnits value) {
         if (get_xi() < value)
             m_xRi = value - m_xLi;
     }
@@ -369,8 +369,6 @@ protected:
     LUnits spacing_function(LUnits uSmin, float alpha, float log2dmin, TimeUnits dmin);
     inline TimeUnits get_min_note_still_sounding() { return m_minNoteNext; }
 
-    void add_lyrics();
-    LUnits measure_lyric(ImoLyric* pLyric, ScoreMeter* pMeter, TextMeter& textMeter);
     LUnits measure_text(const string& text, ImoStyle* pStyle,
                         const string& language, TextMeter& meter);
 
@@ -390,18 +388,19 @@ protected:
     LUnits m_spaceBefore;
 
 public:
-    TimeSliceProlog(ColStaffObjsEntry* pEntry, int entryType, int column, int iData);
+    TimeSliceProlog(ColStaffObjsEntry* pEntry, int column, int iData);
     virtual ~TimeSliceProlog();
 
     //overrides
     void assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
-                               TextMeter& textMeter);
+                               TextMeter& textMeter) override;
     void move_shapes_to_final_positions(vector<StaffObjData*>& data, LUnits xPos,
                                         LUnits yPos, LUnits* yMin, LUnits* yMax,
-                                        ScoreMeter* pMeter);
+                                        ScoreMeter* pMeter) override;
 
     //specific methods
     void remove_after_space_if_not_full(ScoreMeter* pMeter, int SOtype);
+    void remove_after_space(ScoreMeter* pMeter);
 };
 
 
@@ -412,20 +411,75 @@ class TimeSliceNonTimed : public TimeSlice
 {
 protected:
     int m_numStaves;
-    LUnits m_realWidth;
     LUnits m_interSpace;
-    vector<LUnits> m_widths;    //total width for objects on each staff
+    vector<LUnits> m_widths;        //total width for objects, by staff
+    vector<bool> m_fHasObjects;     //there are objects, by staff
+    bool m_fHasWidth;               //true if at least one shape has width
+    bool m_fSomeVisible;            //true if at least one shape is visible
 
 public:
-    TimeSliceNonTimed(ColStaffObjsEntry* pEntry, int entryType, int column, int iData);
+    TimeSliceNonTimed(ColStaffObjsEntry* pEntry, int column, int iData);
     virtual ~TimeSliceNonTimed();
 
     //overrides
     void assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
-                               TextMeter& textMeter);
+                               TextMeter& textMeter) override;
     void move_shapes_to_final_positions(vector<StaffObjData*>& data, LUnits xPos,
                                         LUnits yPos, LUnits* yMin, LUnits* yMax,
-                                        ScoreMeter* pMeter);
+                                        ScoreMeter* pMeter) override;
+
+    inline bool has_width() { return m_fHasWidth; }
+    inline bool some_objects_visible() { return m_fSomeVisible; }
+    inline LUnits get_width_for_staff(int iStaff) { return m_widths[iStaff]; }
+    inline bool is_empty_staff(int iStaff) { return !m_fHasObjects[iStaff]; }
+};
+
+
+//---------------------------------------------------------------------------------------
+// TimeSliceBarline
+// An slice for barlines
+class TimeSliceBarline : public TimeSlice
+{
+protected:
+
+public:
+    TimeSliceBarline(ColStaffObjsEntry* pEntry, int column, int iData);
+    virtual ~TimeSliceBarline();
+
+    //overrides
+    void assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
+                               TextMeter& textMeter) override;
+
+};
+
+
+//---------------------------------------------------------------------------------------
+// TimeSliceNoterest
+// An slice for noterests
+class TimeSliceNoterest : public TimeSlice
+{
+protected:
+    //lyrics (ptr to lyrics, index to staff)
+    vector< pair<ImoLyric*, int> > m_lyrics;
+    LUnits m_xRiLyrics;     //part of xRi due to lyrics
+    LUnits m_xRiMerged;     //part of xRi due to merged from non-timed
+    vector<LUnits> m_xLy;   //rods for lyrics
+
+public:
+    TimeSliceNoterest(ColStaffObjsEntry* pEntry, int column, int iData);
+    virtual ~TimeSliceNoterest();
+
+    //overrides
+    void assign_spacing_values(vector<StaffObjData*>& data, ScoreMeter* pMeter,
+                               TextMeter& textMeter) override;
+    void increment_xRi(LUnits value) override;
+    void merge_with_xRi(LUnits value) override;
+    void set_minimum_xi(LUnits value) override;
+
+    //specific to deal with lyrics
+    void add_lyrics(ScoreMeter* pMeter);
+    LUnits measure_lyric(ImoLyric* pLyric, ScoreMeter* pMeter, TextMeter& textMeter);
+    inline LUnits get_lyrics_rod() { return m_xRiLyrics; }
 
 };
 

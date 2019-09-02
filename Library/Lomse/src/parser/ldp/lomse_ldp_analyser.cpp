@@ -94,7 +94,14 @@ public:
         , m_pAnalyser(pAnalyser)
         , m_libraryScope(libraryScope)
         , m_pLdpFactory(libraryScope.ldp_factory())
-        , m_pAnchor(pAnchor) {}
+        , m_pAnchor(pAnchor)
+        //
+        , m_pAnalysedNode(nullptr)
+        , m_pParamToAnalyse(nullptr)
+        , m_pNextParam(nullptr)
+        , m_pNextNextParam(nullptr)
+    {
+    }
     virtual ~ElementAnalyser() {}
     void analyse_node(LdpElement* pNode);
 
@@ -627,8 +634,8 @@ protected:
 
     //-----------------------------------------------------------------------------------
     //@ attachment : { `text` | `textbox` | `line` | `fermata` | `dynamics` |
-    //@            :   `accent` | `articulation` | `caesura` | `breathMark` |
-    //@            :   `technical` | `ornament` }
+    //@            :   `metronome` | `accent` | `articulation` | `caesura` |
+    //@            :   `breathMark` | `technical` | `ornament` }
     //@
     bool is_noterest_attachment(int type)
     {
@@ -1850,6 +1857,51 @@ protected:
 };
 
 //@--------------------------------------------------------------------------------------
+//@ ImoDirection StaffObj
+//@ <direction> = (dir <staffobjOptions>* <dirAttachments>*)
+//@ dirAttachment : { `metronome` }
+//@
+class DirectionAnalyser : public ElementAnalyser
+{
+public:
+    DirectionAnalyser(LdpAnalyser* pAnalyser, ostream& reporter,
+                      LibraryScope& libraryScope, ImoObj* pAnchor)
+        : ElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor) {}
+
+    void do_analysis()
+    {
+        Document* pDoc = m_pAnalyser->get_document_being_analysed();
+        ImoDirection* pDir = static_cast<ImoDirection*>(
+                    ImFactory::inject(k_imo_direction, pDoc, get_node_id()) );
+
+        // <staffobjOptions>*
+        analyse_staffobjs_options(pDir);
+
+        // <dirAttachments>*
+        analyse_attachments(pDir);
+
+        add_to_model(pDir);
+    }
+
+protected:
+
+    void analyse_attachments(ImoDirection* pDir)
+    {
+        while( more_params_to_analyse() )
+        {
+            m_pParamToAnalyse = get_param_to_analyse();
+            ELdpElement type = m_pParamToAnalyse->get_type();
+            if (type == k_metronome)
+                m_pAnalyser->analyse_node(m_pParamToAnalyse, pDir);
+            else
+                error_invalid_param();
+
+            move_to_next_param();
+        }
+    }
+};
+
+//@--------------------------------------------------------------------------------------
 //@ For dynamic content, i.e. exercises
 //@
 //@ <dynamic> = (dynamic <classid> <param>*)
@@ -2980,6 +3032,7 @@ protected:
         }
         else
         {
+            // coverity[tainted_data]
             for(; nStaves > 1; --nStaves)
                 pInstrument->add_staff();
         }
@@ -3085,6 +3138,8 @@ public:
             m_pAnalyser->save_root_imo_document(pImoDoc);
             pDoc->set_imo_doc(pImoDoc);
         }
+        else
+            return;
 
         // [<language>]
         if (get_optional(k_language))
@@ -3454,14 +3509,13 @@ protected:
 //@--------------------------------------------------------------------------------------
 //@ <metronome> = (metronome { <NoteType><TicksPerMinute> | <NoteType><NoteType> |
 //@                            <TicksPerMinute> }
-//@                          [parenthesis][<staffObjOptions>*] )
+//@                          [parenthesis]<printOptions>* )
 //@
 //@ examples:
 //@    (metronome q 80)                -->  quarter_note_sign = 80
 //@    (metronome q q.)                -->  quarter_note_sign = dotted_quarter_note_sign
 //@    (metronome 80)                  -->  m.m. = 80
 //@    (metronome q 80 parenthesis)    -->  (quarter_note_sign = 80)
-//@    (metronome 120 noVisible)       -->  nothing displayed
 
 class MetronomeAnalyser : public ElementAnalyser
 {
@@ -3532,7 +3586,7 @@ public:
                 error_invalid_param();
         }
 
-        // [<staffObjOptions>*]
+        // <printOptions>*
         analyse_scoreobj_options(pMtr);
 
         error_if_more_elements();
@@ -3542,13 +3596,17 @@ public:
 };
 
 //@--------------------------------------------------------------------------------------
-//@ <musicData> = (musicData [{<note>|<rest>|<barline>|<chord>|<clef>|<figuredBass>|
-//@                            <graphic>|<key>|<line>|<metronome>|<newSystem>|<spacer>|
-//@                            <text>|<time>|<goFwd>|<goBack>}*] )
+//@ <musicData> = (musicData [{<note>|<rest>|<barline>|<chord>|<clef>|<direction>|
+//@                            <figuredBass>|<key>|<metronome>|<newSystem>|<spacer>|
+//@                            <time>|<goFwd>|<goBack>|<graphic>|<line>|<text>}*] )
 //@
 //@ <graphic>, <line> and <text> elements are accepted for compatibility with 1.5.
 //@ From 1.6 these elements will no longer be possible. They must go attached to an
 //@ spacer or other staffobj
+//@
+//@ <metronome> element is accepted for backwards compatibility with 2.0. But in
+//@ future <metronome> element will not be possible here. It must go attached to a
+//@ <direction> element.
 
 
 class MusicDataAnalyser : public ElementAnalyser
@@ -3581,6 +3639,7 @@ public:
                    || analyse_optional(k_time_signature, pMD)
                    || analyse_optional(k_goFwd, pMD)
                    || analyse_optional(k_goBack, pMD)
+                   || analyse_optional(k_direction, pMD)
 #if LOMSE_COMPATIBILITY_LDP_1_5
                    || analyse_optional(k_graphic, pMD)
                    || analyse_optional(k_line, pMD)
@@ -3865,7 +3924,11 @@ protected:
                 pNote->set_notated_pitch(k_step_C, 4, k_no_accidentals);
             }
             else
+            {
                 pNote->set_notated_pitch(step, octave, accidentals);
+                if (accidentals != k_no_accidentals)
+                    pNote->force_to_display_accidentals();
+            }
         }
     }
 
@@ -4106,9 +4169,10 @@ protected:
                 m_pAnalyser->add_to_open_tuplets(pNR);
 
             m_pTupletInfo->set_note_rest(pNR);
+            bool fEndOfTuplet = m_pTupletInfo->is_end_of_tuplet();
             m_pAnalyser->add_relation_info(m_pTupletInfo);
 
-            if (m_pTupletInfo->is_end_of_tuplet())
+            if (fEndOfTuplet)
                 m_pAnalyser->add_to_open_tuplets(pNR);
         }
         else
@@ -4208,18 +4272,18 @@ public:
                 pOpt->set_name("Score.JustifyLastSystem");
                 pOpt->set_type(ImoOptionInfo::k_number_long);
                 if (pOpt->get_bool_value())
-                    pOpt->set_long_value(1L);   //yes = 1-only if ends in barline
+                    pOpt->set_long_value(k_justify_barline_final);
                 else
-                    pOpt->set_long_value(0L);   //no = 0-never justify last system
+                    pOpt->set_long_value(k_justify_never);
             }
             else if (name == "StaffLines.StopAtFinalBarline")
             {
                 pOpt->set_name("StaffLines.Truncate");
                 pOpt->set_type(ImoOptionInfo::k_number_long);
                 if (pOpt->get_bool_value())
-                    pOpt->set_long_value(1L);   //yes = 1-only barline of type final
+                    pOpt->set_long_value(k_truncate_barline_final);
                 else
-                    pOpt->set_long_value(0L);   //no = 0-never
+                    pOpt->set_long_value(k_truncate_never);
             }
         }
 
@@ -4245,6 +4309,7 @@ public:
     {
         return (name == "Render.SpacingMethod")
             || (name == "Render.SpacingOptions")
+            || (name == "Render.SpacingValue")
             || (name == "Score.JustifyLastSystem")
             || (name == "Staff.UpperLegerLines.Displacement")
             || (name == "StaffLines.Truncate")
@@ -4255,7 +4320,6 @@ public:
     {
         return (name == "Render.SpacingFactor")
             || (name == "Render.SpacingFopt")
-            || (name == "Render.SpacingValue")
             ;
     }
 
@@ -4740,12 +4804,11 @@ protected:
         string version = pScore->get_version_string();
         if (version == "2.1")
         {
-            ImoOptionInfo* pOpt = pScore->get_option("Render.SpacingFactor");
-            pOpt->set_float_value(0.35f);
+            ImoOptionInfo* pOpt = pScore->get_option("Render.SpacingFopt");
+            pOpt->set_float_value(1.0f);
 
             pOpt = pScore->get_option("Render.SpacingOptions");
-            pOpt->set_long_value(k_render_opt_breaker_optimal
-                                 | k_render_opt_dmin_global);
+            pOpt->set_long_value(k_render_opt_breaker_optimal | k_render_opt_dmin_global);
         }
         else
         {
@@ -4904,7 +4967,7 @@ protected:
 };
 
 //@--------------------------------------------------------------------------------------
-//@ ImoSpacer StaffObj
+//@ ImoDirection StaffObj
 //@ <spacer> = (spacer <width> <staffobjOptions>* <soAttachments>*)
 //@
 //@ width in Tenths
@@ -4919,8 +4982,8 @@ public:
     void do_analysis()
     {
         Document* pDoc = m_pAnalyser->get_document_being_analysed();
-        ImoSpacer* pSpacer = static_cast<ImoSpacer*>(
-                    ImFactory::inject(k_imo_spacer, pDoc, get_node_id()) );
+        ImoDirection* pSpacer = static_cast<ImoDirection*>(
+                    ImFactory::inject(k_imo_direction, pDoc, get_node_id()) );
 
         // <width>
         if (get_optional(k_number))
@@ -6352,6 +6415,8 @@ LdpAnalyser::LdpAnalyser(ostream& reporter, LibraryScope& libraryScope, Document
     , m_scoreVersion(0)
     , m_pTree()
     , m_fileLocator("")
+    , m_curStaff(0)
+    , m_curVoice(0)
     , m_nShowTupletBracket(k_yesno_default)
     , m_nShowTupletNumber(k_yesno_default)
     , m_pLastNote(nullptr)
@@ -6967,9 +7032,10 @@ ElementAnalyser* LdpAnalyser::new_analyser(ELdpElement type, ImoObj* pAnchor)
         case k_color:           return LOMSE_NEW ColorAnalyser(this, m_reporter, m_libraryScope);
         case k_cursor:          return LOMSE_NEW CursorAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_defineStyle:     return LOMSE_NEW DefineStyleAnalyser(this, m_reporter, m_libraryScope, pAnchor);
-        case k_endPoint:        return LOMSE_NEW PointAnalyser(this, m_reporter, m_libraryScope, pAnchor);
+        case k_direction:       return LOMSE_NEW DirectionAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_dynamic:         return LOMSE_NEW DynamicAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_dynamics_mark:   return LOMSE_NEW DynamicsAnalyser(this, m_reporter, m_libraryScope, pAnchor);
+        case k_endPoint:        return LOMSE_NEW PointAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_fermata:         return LOMSE_NEW FermataAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_figuredBass:     return LOMSE_NEW FiguredBassAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_font:            return LOMSE_NEW FontAnalyser(this, m_reporter, m_libraryScope, pAnchor);
@@ -7104,6 +7170,7 @@ OldTiesBuilder::OldTiesBuilder(ostream& reporter, LdpAnalyser* pAnalyser)
     : m_reporter(reporter)
     , m_pAnalyser(pAnalyser)
     , m_pStartNoteTieOld(nullptr)
+    , m_pOldTieParam(nullptr)
 {
 }
 

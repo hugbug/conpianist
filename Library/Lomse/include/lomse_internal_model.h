@@ -118,7 +118,6 @@ class ImoSimpleObj;
 class ImoSlurDto;
 class ImoSoundInfo;
 class ImoSounds;
-class ImoSpacer;
 class ImoStaffInfo;
 class ImoStaffObj;
 class ImoStyle;
@@ -299,6 +298,53 @@ enum EKeySignature
     k_max_key = k_key_d,        ///< Maximum value for valid key signatures = D minor
 };
 #define k_num_keys k_max_key - k_min_key + 1
+
+//-----------------------------------------------------------------------------
+/** @ingroup enumerations
+
+    This enum describes valid modes for standard key signatures.
+
+    @#include <lomse_internal_model.h>
+*/
+enum EKeyMode
+{
+    k_key_mode_none = 0,
+    k_key_mode_major,
+    k_key_mode_minor,
+    k_key_mode_dorian,
+    k_key_mode_phrygian,
+    k_key_mode_lydian,
+    k_key_mode_mixolydian,
+    k_key_mode_aeolian,
+    k_key_mode_ionian,
+    k_key_mode_locrian,
+};
+
+//-----------------------------------------------------------------------------
+/** @ingroup enumerations
+
+    This enum describes valid values for the number of fifths in standard key signatures.
+
+    @#include <lomse_internal_model.h>
+*/
+enum EKeyFifths
+{
+    k_fifths_Cf = -7,              ///< C-flat
+    k_fifths_Gf,                   ///< G-flat
+    k_fifths_Df,                   ///< D-flat
+    k_fifths_Af,                   ///< A-flat
+    k_fifths_Ef,                   ///< E-flat
+    k_fifths_Bf,                   ///< B-flat
+    k_fifths_F,                    ///< F
+    k_fifths_C,                    ///< C
+    k_fifths_G,                    ///< G
+    k_fifths_D,                    ///< D
+    k_fifths_A,                    ///< A
+    k_fifths_E,                    ///< E
+    k_fifths_B,                    ///< B
+    k_fifths_Fs,                   ///< F-sharp
+    k_fifths_Cs,                   ///< C-sharp
+};
 
 
 //-----------------------------------------------------------------------------
@@ -621,11 +667,9 @@ enum EImoObjType
     k_imo_figured_bass,     ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Figured bass mark
     k_imo_go_back_fwd,      ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GoBackFwd
     k_imo_key_signature,    ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Key signature
-    k_imo_metronome_mark,   ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Metronome mark
     k_imo_note,             ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Note
     k_imo_rest,             ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Rest
     k_imo_sound_change,     ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Playback parameters
-    k_imo_spacer,           ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Spacer
     k_imo_system_break,     ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; System break
     k_imo_time_signature,   ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Time signature
     k_imo_staffobj_last,
@@ -634,6 +678,7 @@ enum EImoObjType
     k_imo_auxobj,               ///< &nbsp;&nbsp;&nbsp;&nbsp; <b>Auxiliary object. Any of the following:</b>
     k_imo_dynamics_mark,    ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Dynamics mark
     k_imo_fermata,          ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Fermata
+    k_imo_metronome_mark,   ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Metronome mark
     k_imo_ornament,         ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Ornament
     k_imo_symbol_repetition_mark,   ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Symbol for repetition mark
     k_imo_technical,        ///< &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Technical mark
@@ -717,6 +762,70 @@ enum EImoObjType
 
 };
 
+//---------------------------------------------------------------------------------------
+/** @ingroup enumerations
+
+    This enum describes valid values for score option "Score.JustifyLastSystem". This
+    option controls the justification of the last system.
+
+    @#include <lomse_internal_model.h>
+*/
+enum EJustifyLastSystemOpts
+{
+	k_justify_never = 0,			///< Never justify last system
+    k_justify_barline_final = 1,	///< Justify it only if ends in barline of type final
+    k_justify_barline_any = 2,		///< Justify it only if ends in barline of any type
+    k_justify_always = 3,			///< Justify it in any case
+};
+
+//---------------------------------------------------------------------------------------
+/** @ingroup enumerations
+
+    When a system is not justified, the staff lines should always run until right margin
+	of the score, but this behavior can be controlled by the score option
+	"StaffLines.Truncate". This option only works when a system is not justified and
+	the valid values are described by this enum.
+
+    Option 'k_truncate_barline_final' is the default behavior and it can be useful
+	for score editors: staff lines will run always to right margin until a barline of
+	type final is entered.
+
+    Option 'k_truncate_always' truncates staff lines after last staff object. It can
+	be useful for creating score samples (i.e. for ebooks).
+
+    @#include <lomse_internal_model.h>
+*/
+enum ETruncateStaffLinesOpts
+{
+
+    k_truncate_never = 0,			///< Never truncate. Staff lines will always run to right margin.
+    k_truncate_barline_final = 1,	///< Truncate only if last object is a barline of type final
+    k_truncate_barline_any = 2,		///< Truncate only if last object is a barline of any type
+    k_truncate_always = 3,			///< Truncate always, in any case, after last object
+};
+
+//---------------------------------------------------------------------------------------
+/** @ingroup enumerations
+
+    This enum describes valid flags for score option "Render.SpacingOptions". This
+    flags control the algorithms for laying out scores.
+
+    @#include <lomse_internal_model.h>
+*/
+enum ERenderSpacingOpts
+{
+    // Lines breaker algorithm
+    k_render_opt_breaker_simple     = 0x0001,   ///< use LinesBreakerSimple.
+    k_render_opt_breaker_optimal    = 0x0002,   ///< use LinesBreakerOptimal
+    k_render_opt_breaker_no_shrink  = 0x0004,   ///< do not shrink lines
+
+    // Spacing algorithm
+    k_render_opt_dmin_fixed         = 0x0100,   ///< use fixed value for Dmin
+    k_render_opt_dmin_global        = 0x0200,   ///< use min note in score for Dmin
+};
+
+
+
 ///@cond INTERNALS
 //---------------------------------------------------------------------------------------
 // a struct to contain note/rest figure and dots
@@ -747,7 +856,7 @@ protected:
     }
 
 public:
-    InlineLevelCreatorApi() {}
+    InlineLevelCreatorApi() : m_pParent(nullptr) {}
     virtual ~InlineLevelCreatorApi() {}
 
     //API
@@ -776,7 +885,7 @@ protected:
     }
 
 public:
-    BlockLevelCreatorApi() {}
+    BlockLevelCreatorApi() : m_pParent(nullptr) {}
     virtual ~BlockLevelCreatorApi() {}
 
     //API
@@ -1353,7 +1462,7 @@ public:
     inline bool is_slur_dto() { return m_objtype == k_imo_slur_dto; }
     inline bool is_sound_change() { return m_objtype == k_imo_sound_change; }
     inline bool is_sound_info() { return m_objtype == k_imo_sound_info; }
-    inline bool is_spacer() { return m_objtype == k_imo_spacer; }
+    inline bool is_spacer() { return m_objtype == k_imo_direction; }
     inline bool is_staff_info() { return m_objtype == k_imo_staff_info; }
     inline bool is_style() { return m_objtype == k_imo_style; }
     inline bool is_styles() { return m_objtype == k_imo_styles; }
@@ -4090,6 +4199,9 @@ public:
 };
 
 //---------------------------------------------------------------------------------------
+/** ImoDirection represents a discrete instruction in the score that applies to
+    notated events.
+*/
 class ImoDirection : public ImoStaffObj
 {
 protected:
@@ -4118,50 +4230,20 @@ public:
     virtual ~ImoDirection() {}
 
     //getters
-    inline Tenths get_width()
-    {
-        return m_space;
-    }
-    inline int get_placement()
-    {
-        return m_placement;
-    }
-    inline int get_display_repeat()
-    {
-        return m_displayRepeat;
-    }
-    inline int get_sound_repeat()
-    {
-        return m_soundRepeat;
-    }
+    inline Tenths get_width() { return m_space; }
+    inline int get_placement() { return m_placement; }
+    inline int get_display_repeat() { return m_displayRepeat; }
+    inline int get_sound_repeat() { return m_soundRepeat; }
 
     //setters
-    inline void set_width(Tenths space)
-    {
-        m_space = space;
-    }
-    inline void set_placement(int placement)
-    {
-        m_placement = placement;
-    }
-    inline void set_display_repeat(int repeat)
-    {
-        m_displayRepeat = repeat;
-    }
-    inline void set_sound_repeat(int repeat)
-    {
-        m_soundRepeat = repeat;
-    }
+    inline void set_width(Tenths space) { m_space = space; }
+    inline void set_placement(int placement) { m_placement = placement; }
+    inline void set_display_repeat(int repeat) { m_displayRepeat = repeat; }
+    inline void set_sound_repeat(int repeat) { m_soundRepeat = repeat; }
 
     //info
-    inline bool is_display_repeat()
-    {
-        return m_displayRepeat != k_repeat_none;
-    }
-    inline bool is_sound_repeat()
-    {
-        return m_soundRepeat != k_repeat_none;
-    }
+    inline bool is_display_repeat() { return m_displayRepeat != k_repeat_none; }
+    inline bool is_sound_repeat() { return m_soundRepeat != k_repeat_none; }
 };
 
 ////---------------------------------------------------------------------------------------
@@ -4819,6 +4901,7 @@ protected:
     friend class ImFactory;
     ImoTextRepetitionMark()
         : ImoScoreText(k_imo_text_repetition_mark)
+        , m_repeatType(0)
     {
     }
 
@@ -5125,7 +5208,7 @@ public:
     ImoClef* add_clef(int type, int nStaff=1, bool fVisible=true);
     ImoKeySignature* add_key_signature(int type, bool fVisible=true);
     ImoTimeSignature* add_time_signature(int top, int bottom, bool fVisible=true);
-    ImoSpacer* add_spacer(Tenths space);
+    ImoDirection* add_spacer(Tenths space);
     ImoObj* add_object(const string& ldpsource);
     void add_staff_objects(const string& ldpsource);
 
@@ -5199,23 +5282,36 @@ public:
 class ImoKeySignature : public ImoStaffObj
 {
 protected:
-    int m_keyType;
+
+    //Variable only valid for standard key signatures
+    //Standard key signatures are represented by the number of flats and sharps, plus an
+    //optional mode for major/minor/other distinctions.
+    /** Number of flats or sharps (negative numbers are used for flats and positive
+        numbers for sharps), reflecting the key's placement within the circle of fifths
+        (hence the name of this variable).
+    */
+    int m_fifths;
+    int m_keyMode;      ///< A value from EKeyModes
 
     friend class ImFactory;
-    ImoKeySignature() : ImoStaffObj(k_imo_key_signature), m_keyType(k_key_undefined) {}
+    ImoKeySignature()
+        : ImoStaffObj(k_imo_key_signature)
+        , m_fifths(0)
+        , m_keyMode(k_key_mode_major)
+    {
+    }
 
 public:
     virtual ~ImoKeySignature() {}
 
     //getters and setters
-    inline int get_key_type()
-    {
-        return m_keyType;
-    }
-    inline void set_key_type(int type)
-    {
-        m_keyType = type;
-    }
+    int get_key_type();
+    void set_key_type(int type);
+    inline int get_fifths() { return m_fifths; }
+    inline void set_fifths(int fifths) { m_fifths = fifths; }
+
+    //operations
+    void transpose(const int semitones);
 
     //overrides: key signatures always in staff 0
     void set_staff(int UNUSED(staff))
@@ -5307,7 +5403,7 @@ protected:
 };
 
 //---------------------------------------------------------------------------------------
-class ImoMetronomeMark : public ImoStaffObj
+class ImoMetronomeMark : public ImoAuxObj
 {
 protected:
     int     m_markType;
@@ -5320,7 +5416,7 @@ protected:
 
     friend class ImFactory;
     ImoMetronomeMark()
-        : ImoStaffObj(k_imo_metronome_mark), m_markType(k_value)
+        : ImoAuxObj(k_imo_metronome_mark), m_markType(k_value)
         , m_ticksPerMinute(60), m_leftNoteType(0), m_leftDots(0)
         , m_rightNoteType(0), m_rightDots(0), m_fParenthesis(false)
     {}
@@ -5859,32 +5955,6 @@ public:
     inline void set_height(Tenths h)
     {
         m_size.height = h;
-    }
-
-};
-
-//---------------------------------------------------------------------------------------
-class ImoSpacer : public ImoStaffObj
-{
-protected:
-    Tenths  m_space;
-
-    friend class ImFactory;
-    ImoSpacer() : ImoStaffObj(k_imo_spacer), m_space(0.0f) {}
-
-public:
-    virtual ~ImoSpacer() {}
-
-    //getters
-    inline Tenths get_width()
-    {
-        return m_space;
-    }
-
-    //setters
-    inline void set_width(Tenths space)
-    {
-        m_space = space;
     }
 
 };
@@ -7053,7 +7123,15 @@ protected:
     int m_nPlacement;
 
     friend class ImFactory;
-    ImoTuplet() : ImoRelObj(k_imo_tuplet) {}
+    ImoTuplet()
+        : ImoRelObj(k_imo_tuplet)
+        , m_nActualNum(0)
+        , m_nNormalNum(0)
+        , m_nShowBracket(0)
+        , m_nShowNumber(0)
+        , m_nPlacement(0)
+    {
+    }
     ImoTuplet(ImoTupletDto* dto);
 
 public:

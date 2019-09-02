@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2016. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -370,8 +370,9 @@ protected:
 public:
     BeamLdpGenerator(ImoObj* pImo, LdpExporter* pExporter)
         : LdpGenerator(pExporter)
+        , m_pRO( static_cast<ImoRelObj*>(pImo) )
+        , m_pNR(nullptr)
     {
-        m_pRO = static_cast<ImoRelObj*>(pImo);
     }
 
     string generate_source(ImoObj* pParent=nullptr)
@@ -848,6 +849,44 @@ protected:
             m_source << " invalid value " << value;
 
         end_element(k_in_same_line);
+    }
+
+};
+
+//---------------------------------------------------------------------------------------
+class DirectionLdpGenerator : public LdpGenerator
+{
+protected:
+    ImoDirection* m_pObj;
+
+public:
+    DirectionLdpGenerator(ImoObj* pImo, LdpExporter* pExporter) : LdpGenerator(pExporter)
+    {
+        m_pObj = static_cast<ImoDirection*>(pImo);
+    }
+
+    string generate_source(ImoObj* UNUSED(pParent) =nullptr)
+    {
+        if (m_pObj->has_attachments())
+            start_element("dir", m_pObj->get_id());
+        else if (m_pObj->get_width() > 0.0f)
+            start_element("spacer", m_pObj->get_id());
+        else
+            return string("");
+
+        add_space_width();
+        source_for_staffobj_options(m_pObj);
+        source_for_attachments(m_pObj);
+        end_element(k_in_same_line);
+        return m_source.str();
+    }
+
+protected:
+
+    void add_space_width()
+    {
+        m_source << " " << m_pObj->get_width();
+        space_needed();
     }
 
 };
@@ -1364,7 +1403,12 @@ protected:
     ImoScore* m_pScore;
 
 public:
-    MusicDataLdpGenerator(ImoObj* pImo, LdpExporter* pExporter) : LdpGenerator(pExporter)
+    MusicDataLdpGenerator(ImoObj* pImo, LdpExporter* pExporter)
+        : LdpGenerator(pExporter)
+        , m_curMeasure(0)
+        , m_iInstr(0)
+        , m_fNewMeasure(false)
+        , m_pColStaffObjs(nullptr)
     {
         m_pObj = static_cast<ImoMusicData*>(pImo);
         m_pScore = pExporter->get_current_score();
@@ -1701,7 +1745,7 @@ protected:
 //---------------------------------------------------------------------------------------
 //@ <metronome> = (metronome { <NoteType><TicksPerMinute> | <NoteType><NoteType> |
 //@                            <TicksPerMinute> }
-//@                          [parenthesis][<staffObjOptions>*] )
+//@                          [parenthesis][<printOptions>*] )
 class MetronomeLdpGenerator : public LdpGenerator
 {
 protected:
@@ -1719,7 +1763,7 @@ public:
         start_element("metronome", m_pImo->get_id());
         add_marks();
         add_parenthesis();
-        source_for_staffobj_options(m_pImo);
+        source_for_print_options(m_pImo);
         end_element(k_in_same_line);
         return m_source.str();
     }
@@ -1753,15 +1797,17 @@ protected:
                 s << "Invalid type. Value=" << type;
                 LOMSE_LOG_ERROR(s.str());
             }
-            space_needed();
         }
-
+        space_needed();
     }
 
     void add_parenthesis()
     {
         if (m_pImo->has_parenthesis())
+        {
             m_source << " parenthesis";
+            space_needed();
+        }
     }
 
 };
@@ -1826,6 +1872,7 @@ protected:
         if (acc != k_no_accidentals)
             m_source << LdpExporter::accidentals_to_string(acc);
 
+        // coverity[check_return]
         m_source << sNoteName[m_pObj->get_step()];
         m_source << sOctave[m_pObj->get_octave()];
     }
@@ -2200,8 +2247,9 @@ protected:
 public:
     SlurLdpGenerator(ImoObj* pImo, LdpExporter* pExporter)
         : LdpGenerator(pExporter)
+        , m_pObj( static_cast<ImoSlur*>(pImo) )
+        , m_pNote(nullptr)
     {
-        m_pObj = static_cast<ImoSlur*>(pImo);
     }
 
     string generate_source(ImoObj* pParent =nullptr)
@@ -2400,38 +2448,6 @@ public:
 };
 
 //---------------------------------------------------------------------------------------
-class SpacerLdpGenerator : public LdpGenerator
-{
-protected:
-    ImoSpacer* m_pObj;
-
-public:
-    SpacerLdpGenerator(ImoObj* pImo, LdpExporter* pExporter) : LdpGenerator(pExporter)
-    {
-        m_pObj = static_cast<ImoSpacer*>(pImo);
-    }
-
-    string generate_source(ImoObj* UNUSED(pParent) =nullptr)
-    {
-        start_element("spacer", m_pObj->get_id());
-        add_space_width();
-        source_for_staffobj_options(m_pObj);
-        source_for_attachments(m_pObj);
-        end_element(k_in_same_line);
-        return m_source.str();
-    }
-
-protected:
-
-    void add_space_width()
-    {
-        m_source << " " << m_pObj->get_width();
-        space_needed();
-    }
-
-};
-
-//---------------------------------------------------------------------------------------
 class TieLdpGenerator : public LdpGenerator
 {
 protected:
@@ -2439,9 +2455,11 @@ protected:
     ImoNote* m_pNote;
 
 public:
-    TieLdpGenerator(ImoObj* pImo, LdpExporter* pExporter) : LdpGenerator(pExporter)
+    TieLdpGenerator(ImoObj* pImo, LdpExporter* pExporter)
+        : LdpGenerator(pExporter)
+        , m_pTie( static_cast<ImoTie*>(pImo) )
+        , m_pNote(nullptr)
     {
-        m_pTie = static_cast<ImoTie*>(pImo);
     }
 
     string generate_source(ImoObj* pParent=nullptr)
@@ -2598,8 +2616,9 @@ protected:
 public:
     TupletLdpGenerator(ImoObj* pImo, LdpExporter* pExporter)
         : LdpGenerator(pExporter)
+        , m_pTuplet( static_cast<ImoTuplet*>(pImo) )
+        , m_pNR(nullptr)
     {
-        m_pTuplet = static_cast<ImoTuplet*>(pImo);
     }
 
     string generate_source(ImoObj* pParent=nullptr)
@@ -2841,7 +2860,7 @@ protected:
         ImoObj::children_iterator it;
         for (it= pColOpts->begin(); it != pColOpts->end(); ++it)
         {
-            ImoOptionInfo* pOpt = dynamic_cast<ImoOptionInfo*>(*it);
+            ImoOptionInfo* pOpt = static_cast<ImoOptionInfo*>(*it);
             if (!m_pObj->has_default_value(pOpt))
             {
                 start_element("opt", pOpt->get_id(), k_in_new_line);
@@ -3359,6 +3378,7 @@ LdpGenerator* LdpExporter::new_generator(ImoObj* pImo)
                                     return LOMSE_NEW ArticulationSymbolLdpGenerator(pImo, this);
         case k_imo_barline:         return LOMSE_NEW BarlineLdpGenerator(pImo, this);
         case k_imo_clef:            return LOMSE_NEW ClefLdpGenerator(pImo, this);
+        case k_imo_direction:       return LOMSE_NEW DirectionLdpGenerator(pImo, this);
         case k_imo_document:        return LOMSE_NEW LenmusdocLdpGenerator(pImo, this);
         case k_imo_dynamics_mark:   return LOMSE_NEW DynamicsLdpGenerator(pImo, this);
         case k_imo_fermata:         return LOMSE_NEW FermataLdpGenerator(pImo, this);
@@ -3377,7 +3397,6 @@ LdpGenerator* LdpExporter::new_generator(ImoObj* pImo)
         case k_imo_score_text:      return LOMSE_NEW ScoreTextLdpGenerator(pImo, this);
         case k_imo_score_line:      return LOMSE_NEW ScoreLineLdpGenerator(pImo, this);
         case k_imo_slur:            return LOMSE_NEW SlurLdpGenerator(pImo, this);
-        case k_imo_spacer:          return LOMSE_NEW SpacerLdpGenerator(pImo, this);
         case k_imo_time_signature:  return LOMSE_NEW TimeSignatureLdpGenerator(pImo, this);
         case k_imo_tie:             return LOMSE_NEW TieLdpGenerator(pImo, this);
         default:

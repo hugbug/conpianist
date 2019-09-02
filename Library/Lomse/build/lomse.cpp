@@ -111,6 +111,7 @@
 #include "../src/module/lomse_events_dispatcher.cpp"
 #include "../src/module/lomse_image.cpp"
 #include "../src/module/lomse_injectors.cpp"
+#include "../src/module/lomse_interval.cpp"
 #include "../src/module/lomse_logger.cpp"
 #include "../src/module/lomse_pitch.cpp"
 #include "../src/module/lomse_time.cpp"

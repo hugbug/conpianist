@@ -1061,6 +1061,7 @@ protected:
 
 
         start_attrib("pitch");
+        // coverity[check_return]
         m_source << sNoteName[m_pObj->get_step()];
         m_source << sOctave[m_pObj->get_octave()];
         end_attrib();
@@ -1302,12 +1303,12 @@ protected:
 class SpacerMnxGenerator : public MnxGenerator
 {
 protected:
-    ImoSpacer* m_pObj;
+    ImoDirection* m_pObj;
 
 public:
     SpacerMnxGenerator(ImoObj* pImo, MnxExporter* pExporter) : MnxGenerator(pExporter)
     {
-        m_pObj = static_cast<ImoSpacer*>(pImo);
+        m_pObj = static_cast<ImoDirection*>(pImo);
     }
 
     string generate_source()
@@ -1714,7 +1715,7 @@ MnxGenerator* MnxExporter::new_generator(ImoObj* pImo)
         case k_imo_note:            return LOMSE_NEW NoteMnxGenerator(pImo, this);
         case k_imo_rest:            return LOMSE_NEW RestMnxGenerator(pImo, this);
         case k_imo_score:           return LOMSE_NEW ScoreMnxGenerator(pImo, this);
-        case k_imo_spacer:          return LOMSE_NEW SpacerMnxGenerator(pImo, this);
+        case k_imo_direction:          return LOMSE_NEW SpacerMnxGenerator(pImo, this);
         case k_imo_style:           return LOMSE_NEW DefineStyleMnxGenerator(pImo, this);
         case k_imo_styles:          return LOMSE_NEW StylesMnxGenerator(pImo, this);
         default:

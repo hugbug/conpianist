@@ -101,8 +101,17 @@ void PartList::add_score_part(const string& id, ImoInstrument* pInstrument)
 bool PartList::mark_part_as_added(const string& id)
 {
     int i = find_index_for(id);
+    if (i == -1)
+    {
+        LOMSE_LOG_ERROR("Logic error. Part %s does not exist", id.c_str());
+        return true;    //error: instrument does not exist
+    }
     if (m_partAdded[i])
-        return true;    //if instrument is already marked!
+    {
+        LOMSE_LOG_ERROR("Logic error. Part %s is already marked!", id.c_str());
+        return true;    //error: instrument is already marked!
+    }
+
     m_partAdded[i] = true;
     return false;
 }
@@ -1051,6 +1060,51 @@ protected:
 //        return size;
 //    }
 
+    //-----------------------------------------------------------------------------------
+    // Auxiliary methods
+    //-----------------------------------------------------------------------------------
+
+    int to_note_type(const string& type)
+    {
+        int noteType = k_unknown_notetype;
+
+        if (type == "quarter")
+            noteType = k_quarter;
+        else if (type == "eighth")
+            noteType = k_eighth;
+        else if (type == "16th")
+            noteType = k_16th;
+        else if (type == "half")
+            noteType = k_half;
+        else if (type == "32nd")
+            noteType = k_32nd;
+        else if (type == "64th")
+            noteType = k_64th;
+        else if (type == "whole")
+            noteType = k_whole;
+        else if (type == "long")
+            noteType = k_longa;
+        else if (type == "128th")
+            noteType = k_128th;
+        else if (type == "256th")
+            noteType = k_256th;
+        else if (type == "breve")
+            noteType = k_breve;
+//        else if (type == "512th")
+//            noteType = k_512th;
+//        else if (type == "1024th")
+//            noteType = k_1024th;
+//        else if (type == "maxima")
+//            noteType = k_maxima;
+        else
+        {
+            error_msg2(
+                "Invalid or not supported <type> value '" + type + "'. Replaced by 'eighth'.");
+            noteType = k_eighth;
+        }
+        return noteType;
+    }
+
 };
 
 
@@ -1135,7 +1189,7 @@ int MxlElementAnalyser::get_attribute_as_integer(const string& name, int nDefaul
     if ((iss >> std::dec >> nNumber).fail())
         return nDefault;
     else
-        return nNumber;
+        return int(nNumber);
 }
 
 //---------------------------------------------------------------------------------------
@@ -1403,7 +1457,7 @@ int MxlElementAnalyser::get_cur_node_value_as_integer(int nDefault)
     if ((iss >> std::dec >> nNumber).fail())
         return nDefault;
     else
-        return nNumber;
+        return int(nNumber);
 }
 
 ////---------------------------------------------------------------------------------------
@@ -1799,6 +1853,7 @@ public:
         {
             int staves = get_child_value_integer(1);
             ImoInstrument* pInstr = dynamic_cast<ImoInstrument*>(m_pAnchor->get_parent_imo());
+            // coverity[tainted_data]
             for(; staves > 1; --staves)
                 pInstr->add_staff();
         }
@@ -1834,6 +1889,9 @@ public:
         // measure-style*
         while (get_optional("measure-style"))
             ; //TODO <measure-style>
+//        <measure-style>
+//          <multiple-rest>1</multiple-rest>
+//        </measure-style>
 
         error_if_more_elements();
 
@@ -2205,8 +2263,10 @@ public:
     ClefMxlAnalyser(MxlAnalyser* pAnalyser, ostream& reporter, LibraryScope& libraryScope,
                     ImoObj* pAnchor)
         : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor)
-        , m_line(0), m_octaveChange(0)
-        {}
+        , m_line(0)
+        , m_octaveChange(0)
+    {
+    }
 
 
     ImoObj* do_analysis()
@@ -2752,7 +2812,7 @@ public:
         m_pVolta->set_barline(pBarline);
         m_pAnalyser->add_relation_info(m_pVolta);
 
-        return m_pVolta;
+        return nullptr;     //m_pVolta has been deleted in add_relation_info()
     }
 
 protected:
@@ -3387,7 +3447,14 @@ public:
 
     ImoObj* do_analysis()
     {
-        ImoMusicData* pMD = dynamic_cast<ImoMusicData*>(m_pAnchor);
+        ImoMusicData* pMD = nullptr;
+        if (m_pAnchor && m_pAnchor->is_music_data())
+            pMD = static_cast<ImoMusicData*>(m_pAnchor);
+        else
+        {
+            LOMSE_LOG_ERROR("pAnchor is nullptr or it is not musicData");
+            return nullptr;
+        }
 
         //attrb: number CDATA #REQUIRED
         string num = get_optional_string_attribute("number", "");
@@ -3485,6 +3552,20 @@ protected:
 
 //@--------------------------------------------------------------------------------------
 //@ <metronome>
+//@ <!ELEMENT metronome
+//@ 	((beat-unit, beat-unit-dot*,
+//@      (per-minute | (beat-unit, beat-unit-dot*))) |
+//@ 	(metronome-note+, (metronome-relation, metronome-note+)?))>
+//@ <!ATTLIST metronome
+//@     %print-style;
+//@     parentheses %yes-no; #IMPLIED
+//@ >
+//@ <!ELEMENT beat-unit (#PCDATA)>
+//@ <!ELEMENT beat-unit-dot EMPTY>
+//@ <!ELEMENT per-minute (#PCDATA)>
+//@ <!ATTLIST per-minute
+//@     %font;
+//@ >
 class MetronomeMxlAnalyser : public MxlElementAnalyser
 {
 public:
@@ -3494,9 +3575,85 @@ public:
 
     ImoObj* do_analysis()
     {
-		//TODO
-        return nullptr;
+        if (m_pAnchor == nullptr || !m_pAnchor->is_direction())
+        {
+            LOMSE_LOG_ERROR("pAnchor is nullptr or it is not ImoDirection");
+            error_msg("<direction-type> <measure> is not child of <direction>. Ignored.");
+            return nullptr;
+        }
+
+        Document* pDoc = m_pAnalyser->get_document_being_analysed();
+        ImoMetronomeMark* pMtr = static_cast<ImoMetronomeMark*>(
+                    ImFactory::inject(k_imo_metronome_mark, pDoc) );
+
+        //attrb: %print-style;
+            //TODO
+
+        //attrb: parentheses %yes-no; #IMPLIED
+            //TODO
+
+
+        //elements
+
+        if (get_optional("beat-unit"))
+        {
+            // (beat-unit, beat-unit-dot*, (per-minute | (beat-unit, beat-unit-dot*))
+
+            int noteType = get_beat_unit();
+            pMtr->set_left_note_type(noteType);
+
+            int dots = 0;
+            while (get_optional("beat-unit-dot"))
+                ++dots;
+            pMtr->set_left_dots(dots);
+
+            if (get_optional("per-minute"))
+            {
+                // case 1: (beat-unit, beat-unit-dot*) = per-minute
+                pMtr->set_ticks_per_minute( get_child_value_integer(60) );
+                pMtr->set_mark_type(ImoMetronomeMark::k_note_value);
+            }
+            else if (get_optional("beat-unit"))
+            {
+                // case 2: (beat-unit, beat-unit-dot*) = (beat-unit, beat-unit-dot*)
+                int noteType = get_beat_unit();
+                pMtr->set_right_note_type(noteType);
+
+                int dots = 0;
+                while (get_optional("beat-unit-dot"))
+                    ++dots;
+                pMtr->set_right_dots(dots);
+                pMtr->set_mark_type(ImoMetronomeMark::k_note_note);
+            }
+            else
+            {
+                error_msg2(
+                        "Error in metronome parameters. Replaced by '(metronome 60)'.");
+                pMtr->set_ticks_per_minute(60);
+                pMtr->set_mark_type(ImoMetronomeMark::k_value);
+                add_to_model(pMtr);
+                return pMtr;
+            }
+        }
+        else if (get_optional("metronome-note"))
+        {
+            // (metronome-note+, (metronome-relation, metronome-note+)?)
+
+            //TODO: examples needed, for understanding and unit tests
+        }
+
+        add_to_model(pMtr);
+        return pMtr;
     }
+
+protected:
+
+    int get_beat_unit()
+    {
+        return to_note_type( m_childToAnalyse.value() );
+    }
+
+
 };
 
 //@--------------------------------------------------------------------------------------
@@ -3515,7 +3672,11 @@ protected:
 public:
     MidiDeviceMxlAnalyser(MxlAnalyser* pAnalyser, ostream& reporter,
                           LibraryScope& libraryScope, ImoObj* pAnchor)
-        : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor) {}
+        : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor)
+        , m_pSounds(nullptr)
+        , m_pSC(nullptr)
+    {
+    }
 
 
     ImoObj* do_analysis()
@@ -3624,7 +3785,7 @@ protected:
 
                 //copy data from latest MidiInfo for this score-instrument
                 ImoMidiInfo* pMidiOld = m_pAnalyser->get_latest_midi_info_for(id);
-                if (pMidi)
+                if (pMidiOld)
                     *pMidi = *pMidiOld;
                 m_pAnalyser->set_latest_midi_info_for(id, pMidi);
             }
@@ -3717,7 +3878,7 @@ public:
 
                 //copy data from latest MidiInfo for this score-instrument
                 ImoMidiInfo* pMidiOld = m_pAnalyser->get_latest_midi_info_for(id);
-                if (pMidi)
+                if (pMidiOld)
                     *pMidi = *pMidiOld;
                 m_pAnalyser->set_latest_midi_info_for(id, pMidi);
             }
@@ -4042,7 +4203,7 @@ protected:
         int noteType = k_unknown_notetype;
         TimeUnits units = m_pAnalyser->duration_to_timepos(duration);
         if (!type.empty())
-            noteType = get_note_type(type);
+            noteType = to_note_type(type);
         else if (pNR->is_rest() && static_cast<ImoRest*>(pNR)->is_full_measure())
         {
             dots = 0;
@@ -4060,65 +4221,30 @@ protected:
             else if (is_equal_time(units, k_duration_half))
                 noteType = k_half;
             else if (is_equal_time(units, k_duration_quarter))
-                noteType = k_duration_quarter;
+                noteType = k_quarter;
             else if (is_equal_time(units, k_duration_eighth))
-                noteType = k_duration_eighth;
+                noteType = k_eighth;
             else if (is_equal_time(units, k_duration_16th))
-                noteType = k_duration_16th;
+                noteType = k_16th;
             else if (is_equal_time(units, k_duration_32nd))
-                noteType = k_duration_32nd;
+                noteType = k_32nd;
             else if (is_equal_time(units, k_duration_64th))
-                noteType = k_duration_64th;
+                noteType = k_64th;
             else if (is_equal_time(units, k_duration_128th))
-                noteType = k_duration_128th;
+                noteType = k_128th;
+            else if (is_equal_time(units, k_duration_256th))
+                noteType = k_256th;
             else
-                noteType = k_duration_256th;
+            {
+                stringstream msg;
+                msg << "Invalid <duration> value " << duration << " ("
+                    << units << " TimeUnits). Multi-rest?";
+                error_msg2(msg.str());
+                noteType = k_256th;
+            }
         }
 
         pNR->set_type_dots_duration(noteType, dots, units);
-    }
-
-    //----------------------------------------------------------------------------------
-    int get_note_type(const string& type)
-    {
-        int noteType = k_unknown_notetype;
-
-        if (type == "quarter")
-            noteType = k_quarter;
-        else if (type == "eighth")
-            noteType = k_eighth;
-        else if (type == "16th")
-            noteType = k_16th;
-        else if (type == "half")
-            noteType = k_half;
-        else if (type == "32nd")
-            noteType = k_32nd;
-        else if (type == "64th")
-            noteType = k_64th;
-        else if (type == "whole")
-            noteType = k_whole;
-        else if (type == "long")
-            noteType = k_longa;
-        else if (type == "128th")
-            noteType = k_128th;
-        else if (type == "256th")
-            noteType = k_256th;
-        else if (type == "breve")
-            noteType = k_breve;
-//        else if (type == "512th")
-//            noteType = k_512th;
-//        else if (type == "1024th")
-//            noteType = k_1024th;
-//        else if (type == "maxima")
-//            noteType = k_maxima;
-        else
-        {
-            //report_msg(m_pAnalyser->get_line_number(&m_analysedNode),
-            error_msg2(
-                "Invalid or not supported <type> value '" + type + "'. Replaced by 'eighth'.");
-            noteType = k_eighth;
-        }
-        return noteType;
     }
 
     //----------------------------------------------------------------------------------
@@ -4196,6 +4322,8 @@ protected:
                 "Invalid or not supported <accidentals> value '" + acc + "'. Ignored.");
         }
         pNote->set_notated_accidentals(accidentals);
+        if (accidentals != k_no_accidentals)
+            pNote->force_to_display_accidentals();
     }
 
     //----------------------------------------------------------------------------------
@@ -4904,6 +5032,14 @@ public:
     ImoObj* do_analysis()
     {
         //anchor object is ImoNote
+        ImoNote* pNote = nullptr;
+        if (m_pAnchor && m_pAnchor->is_note())
+            pNote = static_cast<ImoNote*>(m_pAnchor);
+        else
+        {
+            LOMSE_LOG_ERROR("pAnchor is nullptr or it is not note");
+            return nullptr;
+        }
 
         // <step>
         string step = (get_mandatory("step") ? m_childToAnalyse.value() : "C");
@@ -4916,13 +5052,10 @@ public:
 
         error_if_more_elements();
 
-        ImoNote* pNote = dynamic_cast<ImoNote*>(m_pAnchor);
         int nStep = mxl_step_to_step(step);
         float acc = mxl_alter_to_accidentals(accidentals);
         int nOctave = mxl_octave_to_octave(octave);
-        pNote->set_step(nStep);
-        pNote->set_octave(nOctave);
-        pNote->set_actual_accidentals(acc);
+        pNote->set_pitch(nStep, nOctave, acc);
         return pNote;
     }
 
@@ -5372,14 +5505,19 @@ public:
 
         //TODO: deal with ignored elements
         // [<work>]
+        // coverity[check_return]
         get_optional("work");
         // [<movement-number>]
+        // coverity[check_return]
         get_optional("movement-number");
         // [<movement-title>]
+        // coverity[check_return]
         get_optional("movement-title");
         // [<identification>]
+        // coverity[check_return]
         get_optional("identification");
         // [<defaults>]
+        // coverity[check_return]
         get_optional("defaults");
         // [<credit>*]
         while (get_optional("credit"));
@@ -5449,15 +5587,11 @@ protected:
 
     void set_options(ImoScore* pScore)
     {
-        ImoOptionInfo* pOpt = pScore->get_option("Render.SpacingFactor");
-        pOpt->set_float_value(0.35f);
-
-        pOpt = pScore->get_option("Score.JustifyLastSystem");
-        pOpt->set_long_value(3);    //justify it in any case
+        ImoOptionInfo* pOpt = pScore->get_option("Score.JustifyLastSystem");
+        pOpt->set_long_value(k_justify_always);
 
         pOpt = pScore->get_option("Render.SpacingOptions");
-        pOpt->set_long_value(k_render_opt_breaker_optimal
-                             | k_render_opt_dmin_global);
+        pOpt->set_long_value(k_render_opt_breaker_optimal | k_render_opt_dmin_global);
     }
 
     void remove_score(ImoDocument* pImoDoc, ImoScore* pScore)
@@ -5769,7 +5903,7 @@ public:
             m_pAnalyser->add_relation_info(m_pInfo2);
         }
 
-        return m_pInfo1;
+        return nullptr;     //m_pInfo1 has been deleted in add_relation_info()
     }
 
 protected:
@@ -6183,7 +6317,7 @@ public:
             m_pAnalyser->add_relation_info(m_pInfo2);
         }
 
-        return m_pInfo1;
+        return nullptr;     //m_pInfo1 has been deleted in add_relation_info()
     }
 
 protected:
@@ -6305,6 +6439,9 @@ public:
     TimeModificationXmlAnalyser(MxlAnalyser* pAnalyser, ostream& reporter,
                                 LibraryScope& libraryScope, ImoObj* pAnchor)
         : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor)
+        , m_pNR(nullptr)
+        , m_actual(0)
+        , m_normal(0)
         {
         }
 
@@ -6334,6 +6471,7 @@ public:
 
         //TODO: They are useless in IM. Confirm this.
         // (normal-type, normal-dot*)?
+        // coverity[check_return]
         get_optional("normal-type");
         while (get_optional("normal-dots"));
 
@@ -6401,6 +6539,7 @@ public:
     TupletMxlAnalyser(MxlAnalyser* pAnalyser, ostream& reporter,
                       LibraryScope& libraryScope, ImoObj* pAnchor)
         : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor)
+        , m_pInfo(nullptr)
         {
         }
 
@@ -6468,7 +6607,7 @@ public:
         //add to model
         m_pAnalyser->add_relation_info(m_pInfo);
 
-        return m_pInfo;
+        return nullptr;     //m_pInfo has been deleted in add_relation_info()
     }
 
 protected:
@@ -6593,8 +6732,9 @@ public:
     TupletNumbersMxlAnalyser(MxlAnalyser* pAnalyser, ostream& reporter,
                              LibraryScope& libraryScope, ImoObj* pAnchor)
         : MxlElementAnalyser(pAnalyser, reporter, libraryScope, pAnchor)
-        {
-        }
+        , m_pInfo(nullptr)
+    {
+    }
 
     ImoObj* do_analysis()
     {
@@ -6828,12 +6968,14 @@ MxlAnalyser::MxlAnalyser(ostream& reporter, LibraryScope& libraryScope, Document
     , m_pCurScore(nullptr)
     , m_pCurInstrument(nullptr)
     , m_pLastNote(nullptr)
+    , m_pLastBarline(nullptr)
     , m_pImoDoc(nullptr)
     , m_time(0.0)
     , m_maxTime(0.0)
     , m_divisions(1.0f)
     , m_curMeasureNum("")
     , m_measuresCounter(0)
+    , m_curVoice(0)
 {
     //populate the name to enum conversion map
     m_NameToEnum["accordion-registration"] = k_mxl_tag_accordion_registration;
@@ -6989,6 +7131,11 @@ int MxlAnalyser::create_index_for_sound(const string& id)
 ImoMidiInfo* MxlAnalyser::get_latest_midi_info_for(const string& id)
 {
     int idx = get_index_for_sound(id);
+    if (idx < 0)
+    {
+        LOMSE_LOG_ERROR("Logic error: instrument %s not found!", id.c_str());
+        return nullptr;
+    }
     return m_latestMidiInfo[idx];
 }
 
@@ -7289,7 +7436,7 @@ MxlElementAnalyser* MxlAnalyser::new_analyser(const string& name, ImoObj* pAncho
         case k_mxl_tag_key:                  return LOMSE_NEW KeyMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_mxl_tag_lyric:                return LOMSE_NEW LyricMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_mxl_tag_measure:              return LOMSE_NEW MeasureMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
-//        case k_mxl_tag_metronome:            return LOMSE_NEW MetronomeMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
+        case k_mxl_tag_metronome:            return LOMSE_NEW MetronomeMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_mxl_tag_midi_device:          return LOMSE_NEW MidiDeviceMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_mxl_tag_midi_instrument:      return LOMSE_NEW MidiInstrumentMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);
         case k_mxl_tag_notations:            return LOMSE_NEW NotationsMxlAnalyser(this, m_reporter, m_libraryScope, pAnchor);

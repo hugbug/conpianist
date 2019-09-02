@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2016. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -49,6 +49,9 @@ MetronomeMarkEngraver::MetronomeMarkEngraver(LibraryScope& libraryScope,
                                              ScoreMeter* pScoreMeter, int iInstr,
                                              int iStaff)
     : Engraver(libraryScope, pScoreMeter, iInstr, iStaff)
+    , m_pMainShape(nullptr)
+    , m_fontSize(0.0)
+    , m_pCreatorImo(nullptr)
 {
 }
 
@@ -79,7 +82,7 @@ GmoShape* MetronomeMarkEngraver::create_shape(ImoMetronomeMark* pImo, UPoint uPo
             msg << "[MetronomeMarkEngraver::create_shape] invalid mark type " <<
                    markType ;
             LOMSE_LOG_ERROR(msg.str());
-            throw runtime_error(msg.str());
+            return create_shape_note_value();
         }
     }
 }
@@ -188,6 +191,8 @@ int MetronomeMarkEngraver::select_glyph(int noteType)
 {
     switch (noteType)
 	{
+        case k_longa:
+            return k_glyph_small_longa_note;
         case k_whole:
             return k_glyph_small_whole_note;
         case k_half:
@@ -208,10 +213,9 @@ int MetronomeMarkEngraver::select_glyph(int noteType)
             return k_glyph_small_256th_note;
         default:
         {
-            stringstream msg;
-            msg << "[MetronomeMarkEngraver::select_glyph] invalid note type " << noteType;
-            LOMSE_LOG_ERROR(msg.str());
-            throw runtime_error(msg.str());
+            LOMSE_LOG_ERROR(
+                "[MetronomeMarkEngraver::select_glyph] invalid note type %d", noteType);
+            return k_glyph_error;
         }
     }
 }

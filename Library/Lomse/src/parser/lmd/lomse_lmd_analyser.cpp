@@ -984,7 +984,9 @@ public:
 
     ImoObj* do_analysis()
     {
-        ImoBeamDto* pInfo = nullptr;
+        Document* pDoc = m_pAnalyser->get_document_being_analysed();
+        ImoBeamDto* pInfo = static_cast<ImoBeamDto*>(
+                ImFactory::inject(k_imo_beam_dto, pDoc, get_node_id()) );
 
         // num
         if (get_optional(k_number))
@@ -2304,6 +2306,7 @@ public:
         ImoImage* pImg = static_cast<ImoImage*>( ImFactory::inject(k_imo_image, pDoc) );
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pImg);
 
         // <file>
@@ -2458,6 +2461,7 @@ public:
         while (analyse_optional("staff", pInstrument));
 
         // infoMIDI?
+        // coverity[check_return]
         analyse_optional("infoMIDI", pInstrument);
 
         // musicData
@@ -2488,6 +2492,7 @@ protected:
         }
         else
         {
+            // coverity[tainted_data]
             for(; nStaves > 1; --nStaves)
                 pInstrument->add_staff();
         }
@@ -2758,6 +2763,7 @@ public:
 
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pLink);
 
         // <url>
@@ -2800,6 +2806,7 @@ public:
                                                     : ImoList::k_ordered);
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pList);
 
         // <listitem>*
@@ -2827,6 +2834,7 @@ public:
         ImoListItem* pListItem = static_cast<ImoListItem*>(
                             ImFactory::inject(k_imo_listitem, pDoc, get_node_id()) );
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pListItem);
 
         // {<inlineObject> | <blockObject>}*
@@ -3242,7 +3250,11 @@ protected:
                 pNote->set_notated_pitch(k_step_C, 4, k_no_accidentals);
             }
             else
+            {
                 pNote->set_notated_pitch(step, octave, accidentals);
+                if (accidentals != k_no_accidentals)
+                    pNote->force_to_display_accidentals();
+            }
         }
     }
 
@@ -3604,18 +3616,18 @@ public:
                 pOpt->set_name("Score.JustifyLastSystem");
                 pOpt->set_type(ImoOptionInfo::k_number_long);
                 if (pOpt->get_bool_value())
-                    pOpt->set_long_value(1L);   //yes = 1-only if ends in barline
+                    pOpt->set_long_value(k_justify_barline_final);
                 else
-                    pOpt->set_long_value(0L);   //no = 0-never justify last system
+                    pOpt->set_long_value(k_justify_never);
             }
             else if (name == "StaffLines.StopAtFinalBarline")
             {
                 pOpt->set_name("StaffLines.Truncate");
                 pOpt->set_type(ImoOptionInfo::k_number_long);
                 if (pOpt->get_bool_value())
-                    pOpt->set_long_value(1L);   //yes = 1-only barline of type final
+                    pOpt->set_long_value(k_truncate_barline_final);
                 else
-                    pOpt->set_long_value(0L);   //no = 0-never
+                    pOpt->set_long_value(k_truncate_never);
             }
         }
 
@@ -3643,6 +3655,7 @@ public:
     {
         return (name == "Render.SpacingMethod")
             || (name == "Render.SpacingOptions")
+            || (name == "Render.SpacingValue")
             || (name == "Score.JustifyLastSystem")
             || (name == "Staff.UpperLegerLines.Displacement")
             || (name == "StaffLines.Truncate")
@@ -3653,7 +3666,6 @@ public:
     {
         return (name == "Render.SpacingFactor")
             || (name == "Render.SpacingFopt")
-            || (name == "Render.SpacingValue")
             ;
     }
 
@@ -3876,6 +3888,7 @@ public:
         ImoParagraph* pPara = static_cast<ImoParagraph*>(
                                     ImFactory::inject(k_imo_para, pDoc, get_node_id()) );
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pPara);
 
         // <inlineObject>*
@@ -4029,6 +4042,7 @@ public:
         pHeading->set_level(level);
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pHeading);
 
         // <inlineObject>+
@@ -4055,9 +4069,11 @@ public:
         //TODO all
 
         // [<cursor>]
+        // coverity[check_return]
         analyse_optional(k_cursor, m_pAnchor);
 
         // [<undoData>]
+        // coverity[check_return]
         analyse_optional(k_undoData, m_pAnchor);
 
         error_if_more_elements();
@@ -4093,6 +4109,7 @@ public:
 //        }
 
         // [<language>]
+        // coverity[check_return]
         analyse_optional(k_language);
 
 //        // [<style>]
@@ -4128,6 +4145,7 @@ public:
         while (analyse_optional(k_opt, pScore));
 
         // [<parts>]
+        // coverity[check_return]
         analyse_optional("parts", pScore);
 
         // <instrument>+
@@ -4224,6 +4242,7 @@ public:
         pSP->attach_score( m_pAnalyser->get_last_analysed_score() );
 
         // attr: [style]
+        // coverity[check_return]
         analyse_optional_style(pSP);
 
         // playLabel?
@@ -4314,6 +4333,7 @@ public:
         }
 
         // [<bezier>]
+        // coverity[check_return]
         analyse_optional(k_bezier, pInfo);
 
         // [<color>]
@@ -4349,7 +4369,7 @@ protected:
 };
 
 //@--------------------------------------------------------------------------------------
-//@ ImoSpacer StaffObj
+//@ ImoDirection StaffObj
 //@ <spacer> = (spacer <width>[<staffobjOptions>*][<attachments>*])     width in Tenths
 
 class SpacerLmdAnalyser : public LmdElementAnalyser
@@ -4362,8 +4382,8 @@ public:
     ImoObj* do_analysis()
     {
         Document* pDoc = m_pAnalyser->get_document_being_analysed();
-        ImoSpacer* pSpacer = static_cast<ImoSpacer*>(
-                                    ImFactory::inject(k_imo_spacer, pDoc) );
+        ImoDirection* pSpacer = static_cast<ImoDirection*>(
+                                    ImFactory::inject(k_imo_direction, pDoc) );
 
         // <width>
         if (get_optional(k_number))
@@ -4630,12 +4650,14 @@ public:
                              ImFactory::inject(k_imo_table, pDoc, get_node_id()) );
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pTable);
 
         // [<tableColumn>*]
         while( analyse_optional(k_table_column, pTable) );
 
         // [<tableHead>]
+        // coverity[check_return]
         analyse_optional(k_table_head, pTable);
 
         // <tableBody>
@@ -4698,6 +4720,7 @@ public:
         ImoTableCell* pImo = static_cast<ImoTableCell*>(
                                 ImFactory::inject(k_imo_table_cell, pDoc, get_node_id()) );
         //[<style>]
+        // coverity[check_return]
         analyse_optional_style(pImo);
 
         ////[<rowspan>]
@@ -4798,6 +4821,7 @@ public:
                         ImFactory::inject(k_imo_table_row, pDoc, get_node_id()) );
 
         // [<style>]
+        // coverity[check_return]
         analyse_optional_style(pRow);
 
         // <tableCell>*
@@ -5068,6 +5092,7 @@ public:
         }
 
         // [<bezier>]
+        // coverity[check_return]
         analyse_optional(k_bezier, pInfo);
 
         // [<color>]
@@ -5482,7 +5507,7 @@ int LmdElementAnalyser::get_attribute_as_integer(const string& name, int nDefaul
         return nDefault;
     }
     else
-        return nNumber;
+        return int(nNumber);
 }
 
 //---------------------------------------------------------------------------------------
@@ -5758,6 +5783,8 @@ LmdAnalyser::LmdAnalyser(ostream& reporter, LibraryScope& libraryScope, Document
     , m_fInstrIdRequired(false)
     , m_pTree()
     , m_fileLocator("")
+    , m_curStaff(0)
+    , m_curVoice(0)
     , m_nShowTupletBracket(k_yesno_default)
     , m_nShowTupletNumber(k_yesno_default)
     , m_pLastNote(nullptr)
@@ -6316,6 +6343,7 @@ OldLmdTiesBuilder::OldLmdTiesBuilder(ostream& reporter, LmdAnalyser* pAnalyser)
     : m_reporter(reporter)
     , m_pAnalyser(pAnalyser)
     , m_pStartNoteTieOld(nullptr)
+    , m_pOldTieParam(nullptr)
 {
 }
 
