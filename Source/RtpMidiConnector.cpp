@@ -121,4 +121,12 @@ void RtpMidiConnector::SendMessage(const MidiMessage& message)
 	{
 		rtpMidi->sysEx(message.getSysExData() - 1, message.getSysExDataSize() + 2);
 	}
+	else if (message.isNoteOn())
+	{
+		rtpMidi->noteOn(message.getNoteNumber(), message.getVelocity(), message.getChannel());
+	}
+	else if (message.isNoteOff())
+	{
+		rtpMidi->noteOff(message.getNoteNumber(), message.getVelocity(), message.getChannel());
+	}
 }
