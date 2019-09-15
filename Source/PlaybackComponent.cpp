@@ -568,7 +568,7 @@ void PlaybackComponent::updateSongState()
 	transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
 
 	bool loopSet = pianoController.GetLoop().begin.measure > 0;
-	bool loopHalf = loopStart.measure > 0;
+	bool loopHalf = pianoController.GetLoopStart().measure > 0;
 	loopButton->setImages(false, true, true, ImageCache::getFromMemory(
 		loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
 		loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
@@ -630,26 +630,23 @@ void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
 void PlaybackComponent::loopButtonClicked()
 {
 	bool loopSet = pianoController.GetLoop().begin.measure > 0;
-	bool loopHalf = loopStart.measure > 0;
+	bool loopHalf = pianoController.GetLoopStart().measure > 0;
 
 	if (loopSet)
 	{
 		pianoController.ResetLoop();
 	}
-	else if (loopHalf && loopStart == pianoController.GetPosition())
+	else if (loopHalf && pianoController.GetLoopStart() == pianoController.GetPosition())
 	{
-		loopStart = {0,0};
-		updateSongState();
+		pianoController.SetLoopStart({0,0});
 	}
 	else if (loopHalf)
 	{
-		pianoController.SetLoop({loopStart, pianoController.GetPosition()});
-		loopStart = {0,0};
+		pianoController.SetLoop({pianoController.GetLoopStart(), pianoController.GetPosition()});
 	}
 	else
 	{
-		loopStart = pianoController.GetPosition();
-		updateSongState();
+		pianoController.SetLoopStart(pianoController.GetPosition());
 	}
 }
 

@@ -67,7 +67,6 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     PianoController& pianoController;
-	PianoController::Position loopStart {0,0};
     //[/UserVariables]
 
     //==============================================================================

@@ -24,6 +24,8 @@
 #include <lomse_presenter.h>
 #include <lomse_tasks.h>
 #include <lomse_tempo_line.h>
+#include <lomse_score_algorithms.h>
+#include <lomse_fragment_mark.h>
 
 #include "ScoreComponent.h"
 
@@ -34,8 +36,8 @@ class LomseScoreComponent : public ScoreComponent, public PianoController::Liste
 public:
 	LomseScoreComponent(PianoController& pianoController, Settings& settings);
 
-    void paint (Graphics& g) override;
-    void resized() override;
+	void paint (Graphics& g) override;
+	void resized() override;
 	void mouseDown(const MouseEvent& event) override;
 	void mouseUp(const MouseEvent& event) override;
 	void mouseMove(const MouseEvent& event) override;
@@ -49,17 +51,23 @@ private:
 	lomse::LomseDoorway m_lomse;
 	ScopedPointer<Presenter> m_presenter;
 	RenderingBuffer m_rbuf_window;
-    ScopedPointer<juce::Image> m_image;
+	ScopedPointer<juce::Image> m_image;
 	PianoController& m_pianoController;
-    Settings& m_settings;
+	Settings& m_settings;
 	int m_resolution;
 	float m_scale = 1;
 	int m_scoreId = 0;
+	PianoController::Loop loop{{0,0},{0,0}};
+	PianoController::Position loopStart{0,0};
+	FragmentMark* loopStartMark = nullptr;
+	FragmentMark* loopEndMark = nullptr;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
 	LUnits ScaledUnits(int pixels);
 	unsigned GetMouseFlags(const MouseEvent& event);
+	void UpdateTempoLine(bool scroll);
+	void UpdateABMarks(bool force);
 
 	// Piano controller callbacks
 	void UpdateSongState();
@@ -105,8 +113,8 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 
 	m_lomse.set_default_fonts_path((m_settings.resourcesPath + "/fonts/").toStdString());
 
-    //set required callbacks
-    m_lomse.set_notify_callback(this, LomseEventWrapper);
+	//set required callbacks
+	m_lomse.set_notify_callback(this, LomseEventWrapper);
 
 	pianoController.AddListener(this);
 }
@@ -143,7 +151,7 @@ void LomseScoreComponent::LoadDocument(String filename)
 	interactor->set_visual_tracking_mode(k_tracking_tempo_line);
 
 	TempoLine* tempoLine = static_cast<TempoLine*>(interactor->get_tracking_effect(k_tracking_tempo_line));
-	tempoLine->set_color(Color(152, 201, 254));   // light orange
+	tempoLine->set_color(Color(15, 90, 235, 128));   // light orange
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
@@ -164,6 +172,8 @@ void LomseScoreComponent::LoadDocument(String filename)
 			score->get_instrument(i)->set_measures_numbering(ImoInstrument::k_system);
 		}
 	}
+
+	loop = {{0,0},{0,0}};
 }
 
 void LomseScoreComponent::PrepareImage()
@@ -194,7 +204,8 @@ void LomseScoreComponent::PrepareImage()
 	pageInfo->set_binding_margin(0);
 
 	interactor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
-
+	UpdateABMarks(true);
+	UpdateTempoLine(false);
 	interactor->redraw_bitmap();
 }
 
@@ -210,7 +221,7 @@ void LomseScoreComponent::UpdateWindow(SpEventInfo event)
 
 void LomseScoreComponent::LomseEvent(SpEventInfo event)
 {
-    if (event->get_event_type() == k_update_viewport_event)
+	if (event->get_event_type() == k_update_viewport_event)
 	{
 		SpEventUpdateViewport viewportEvent(static_pointer_cast<EventUpdateViewport>(event));
 		SpInteractor interactor = m_presenter->get_interactor(0).lock();
@@ -236,8 +247,7 @@ void LomseScoreComponent::paint(Graphics& g)
 	}
 	else
 	{
-		String text = //"No score-file found for " +
-			//File(m_settings.songFilename).getFileNameWithoutExtension().toStdString() + ". "
+		String text =
 			"To display score for a song put the score-file in MusicXML format near MIDI-file. "
 			"The score-file should have the same name as MIDI-file and extension .musicxml or .xml.";
 		g.setColour(Colour(167,172,176));
@@ -311,11 +321,64 @@ void LomseScoreComponent::UpdateSongState()
 {
 	if (!m_presenter) return;
 
+	UpdateABMarks(false);
+	UpdateTempoLine(true);
+}
+
+void LomseScoreComponent::UpdateTempoLine(bool scroll)
+{
 	// highlight playback position
-	PianoController::Position songPosition = m_pianoController.GetPosition();
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	interactor->move_tempo_line_and_scroll_if_necessary(m_scoreId,
-		songPosition.measure - 1, songPosition.beat - 1);
+	PianoController::Position songPosition = m_pianoController.GetPosition();
+	if (scroll)
+	{
+		interactor->move_tempo_line_and_scroll_if_necessary(m_scoreId,
+			songPosition.measure - 1, songPosition.beat - 1);
+	}
+	else
+	{
+		interactor->move_tempo_line(m_scoreId,
+			songPosition.measure - 1, songPosition.beat - 1);
+	}
+}
+
+void LomseScoreComponent::UpdateABMarks(bool force)
+{
+	SpInteractor interactor = m_presenter->get_interactor(0).lock();
+	Document* doc = m_presenter->get_document_raw_ptr();
+	ImoScore* score = dynamic_cast<ImoScore*>(doc->get_im_root()->get_content_item(0));
+
+	// highlight AB-Loop
+	PianoController::Loop curLoop = m_pianoController.GetLoop();
+	PianoController::Position curLoopStart = m_pianoController.GetLoopStart();
+	if (!(loop.begin == curLoop.begin && loop.end == curLoop.end && loopStart == curLoopStart) || force)
+	{
+		loop = curLoop;
+		loopStart = curLoopStart;
+
+		interactor->remove_mark(loopStartMark);
+		interactor->remove_mark(loopEndMark);
+
+		if (loop.begin.measure > 0 || loopStart.measure > 0)
+		{
+			TimeUnits timepos = ScoreAlgorithms::get_timepos_for(score,
+				loop.begin.measure > 0 ? loop.begin.measure - 1 : loopStart.measure - 1,
+				loop.begin.measure > 0 ? loop.begin.beat - 1 : loopStart.beat - 1);
+			loopStartMark = interactor->add_fragment_mark_at_note_rest(m_scoreId, timepos);
+			loopStartMark->color(Color(15, 90, 235, 128)); // light orange
+			loopStartMark->type(k_mark_open_rounded);
+			loopStartMark->x_shift(-5);
+		}
+
+		if (loop.end.measure > 0)
+		{
+			TimeUnits timepos = ScoreAlgorithms::get_timepos_for(score, loop.end.measure - 1, loop.end.beat - 1);
+			timepos -= 1;
+			loopEndMark = interactor->add_fragment_mark_at_note_rest(m_scoreId, timepos);
+			loopEndMark->color(Color(15, 90, 235, 128)); // light orange
+			loopEndMark->type(k_mark_close_rounded);
+		}
+	}
 }
 
 void LomseScoreComponent::LoadSong()
@@ -336,6 +399,6 @@ void LomseScoreComponent::LoadSong()
 		}
 	}
 
-	resized();
+	PrepareImage();
 	repaint();
 }

@@ -83,6 +83,8 @@ public:
 	void SetPosition(const Position position);
 	Loop GetLoop() { return m_loop; }
 	void SetLoop(Loop loop);
+	Position GetLoopStart() { return m_loopStart; }
+	void SetLoopStart(const Position loopStart);
 	void ResetLoop();
 	int GetVolume() { return m_volume; }
 	void SetVolume(int volume);
@@ -137,6 +139,7 @@ private:
 	int m_volume = 0;
 	int m_tempo = 0;
 	int m_transpose = 0;
+	Position m_loopStart{0,0};
 	Loop m_loop{{0,0},{0,0}};
 	String m_voice[3];
 	bool m_voiceActive[3]{true, false, false};

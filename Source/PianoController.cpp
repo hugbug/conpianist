@@ -395,6 +395,7 @@ void PianoController::SetRightPart(bool enable)
 
 void PianoController::SetLoop(Loop loop)
 {
+	m_loopStart = {0,0};
 	SendCspMessage(String(CSP_LOOP) +
 		WordToHex(loop.begin.measure) + " " + WordToHex(loop.begin.beat) + " " +
 		WordToHex(loop.end.measure) + " " + WordToHex(loop.end.beat));
@@ -402,7 +403,14 @@ void PianoController::SetLoop(Loop loop)
 
 void PianoController::ResetLoop()
 {
+	m_loopStart = {0,0};
 	SendCspMessage(CSP_LOOP_RESET);
+}
+
+void PianoController::SetLoopStart(const Position loopStart)
+{
+	m_loopStart = loopStart;
+	NotifyChanged();
 }
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
@@ -489,6 +497,7 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 					(message.getSysExData()[20] << 7) + message.getSysExData()[21]},
 					{(message.getSysExData()[22] << 7) + message.getSysExData()[23],
 					(message.getSysExData()[24] << 7) + message.getSysExData()[25]}};
+				m_loopStart = {0,0};
 			}
 			else
 			{
@@ -528,6 +537,7 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		}
 		else if (IsCspMessage(message, CSP_SONG_NAME_STATE))
 		{
+			m_position = {1,1};
 			NotifySongLoaded();
 		}
 	}
@@ -596,3 +606,4 @@ void PianoController::NotifySongLoaded()
 		listener->PianoSongLoaded();
 	}
 }
+
