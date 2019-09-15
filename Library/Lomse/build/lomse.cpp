@@ -89,6 +89,7 @@
 #include "../src/graphic_model/lomse_time_grid.cpp"
 #include "../src/graphic_model/lomse_timegrid_table.cpp"
 #include "../src/graphic_model/lomse_visual_effect.cpp"
+#include "../src/graphic_model/lomse_fragment_mark.cpp"
 #include "../src/gui_controls/lomse_button_ctrl.cpp"
 #include "../src/gui_controls/lomse_checkbox_ctrl.cpp"
 #include "../src/gui_controls/lomse_hyperlink_ctrl.cpp"
