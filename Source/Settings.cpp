@@ -38,7 +38,7 @@ void Settings::Save()
 	state.createNewChildElement("Keyboard.Channel")->addTextElement(String(keyboardChannel));
 
 	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	state.writeToFile(stateFile, "");
+	state.writeTo(stateFile);
 
 	sendChangeMessage();
 }
@@ -51,7 +51,7 @@ void Settings::Load()
 		return;
 	}
 
-	ScopedPointer<XmlElement> savedState = XmlDocument::parse(stateFile);
+	std::unique_ptr<XmlElement> savedState = XmlDocument::parse(stateFile);
 	if (!savedState)
 	{
 		return;

@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.1
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -34,17 +34,21 @@ SceneComponent::SceneComponent (Settings& settings)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    addAndMakeVisible (topbarPanel = new GroupComponent ("Top Bar",
-                                                         TRANS("Top Bar")));
+    topbarPanel.reset (new GroupComponent ("Top Bar",
+                                           TRANS("Top Bar")));
+    addAndMakeVisible (topbarPanel.get());
     topbarPanel->setTextLabelPosition (Justification::centred);
 
-    addAndMakeVisible (playbackPanel = new Component());
+    playbackPanel.reset (new Component());
+    addAndMakeVisible (playbackPanel.get());
     playbackPanel->setName ("Playback Panel");
 
-    addAndMakeVisible (largeContentPanel = new Component());
+    largeContentPanel.reset (new Component());
+    addAndMakeVisible (largeContentPanel.get());
     largeContentPanel->setName ("Large Content");
 
-    addAndMakeVisible (muteButton = new ImageButton ("Mute Button"));
+    muteButton.reset (new ImageButton ("Mute Button"));
+    addAndMakeVisible (muteButton.get());
     muteButton->setTooltip (TRANS("Local Control on/off"));
     muteButton->setButtonText (TRANS("Mute"));
     muteButton->addListener (this);
@@ -53,8 +57,9 @@ SceneComponent::SceneComponent (Settings& settings)
                            ImageCache::getFromMemory (BinaryData::buttonvolume_png, BinaryData::buttonvolume_pngSize), 1.000f, Colour (0x00000000),
                            Image(), 0.750f, Colour (0x00000000),
                            Image(), 1.000f, Colour (0x00000000));
-    addAndMakeVisible (statusLabel = new Label ("Status Label",
-                                                TRANS("Looking for the instrument")));
+    statusLabel.reset (new Label ("Status Label",
+                                  TRANS("Looking for the instrument")));
+    addAndMakeVisible (statusLabel.get());
     statusLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     statusLabel->setJustificationType (Justification::centredLeft);
     statusLabel->setEditable (false, false, false);
@@ -63,7 +68,8 @@ SceneComponent::SceneComponent (Settings& settings)
 
     statusLabel->setBounds (48, 11, 240, 24);
 
-    addAndMakeVisible (connectionButton = new ImageButton ("Connection Button"));
+    connectionButton.reset (new ImageButton ("Connection Button"));
+    addAndMakeVisible (connectionButton.get());
     connectionButton->setTooltip (TRANS("Connection Settings"));
     connectionButton->setButtonText (TRANS("Mute"));
     connectionButton->addListener (this);
@@ -74,7 +80,8 @@ SceneComponent::SceneComponent (Settings& settings)
                                  Image(), 1.000f, Colour (0x00000000));
     connectionButton->setBounds (8, 8, 32, 28);
 
-    addAndMakeVisible (zoomInButton = new ImageButton ("Zoom In UI Button"));
+    zoomInButton.reset (new ImageButton ("Zoom In UI Button"));
+    addAndMakeVisible (zoomInButton.get());
     zoomInButton->setTooltip (TRANS("Zoom In UI"));
     zoomInButton->setButtonText (TRANS("Mute"));
     zoomInButton->addListener (this);
@@ -83,7 +90,8 @@ SceneComponent::SceneComponent (Settings& settings)
                              ImageCache::getFromMemory (BinaryData::buttonzoomin_png, BinaryData::buttonzoomin_pngSize), 1.000f, Colour (0x00000000),
                              Image(), 0.750f, Colour (0x00000000),
                              Image(), 1.000f, Colour (0x00000000));
-    addAndMakeVisible (zoomOutButton = new ImageButton ("Zoom Out UI Button"));
+    zoomOutButton.reset (new ImageButton ("Zoom Out UI Button"));
+    addAndMakeVisible (zoomOutButton.get());
     zoomOutButton->setTooltip (TRANS("Zoom Out UI"));
     zoomOutButton->setButtonText (TRANS("Mute"));
     zoomOutButton->addListener (this);
@@ -92,10 +100,12 @@ SceneComponent::SceneComponent (Settings& settings)
                               ImageCache::getFromMemory (BinaryData::buttonzoomout_png, BinaryData::buttonzoomout_pngSize), 1.000f, Colour (0x00000000),
                               Image(), 0.750f, Colour (0x00000000),
                               Image(), 1.000f, Colour (0x00000000));
-    addAndMakeVisible (keyboardPanel = new Component());
+    keyboardPanel.reset (new Component());
+    addAndMakeVisible (keyboardPanel.get());
     keyboardPanel->setName ("Keyboard Panel");
 
-    addAndMakeVisible (keyboardButton = new ImageButton ("Virtual Keyboard Button"));
+    keyboardButton.reset (new ImageButton ("Virtual Keyboard Button"));
+    addAndMakeVisible (keyboardButton.get());
     keyboardButton->setTooltip (TRANS("Virtual Keyboard"));
     keyboardButton->setButtonText (TRANS("Virtual Keyboard"));
     keyboardButton->addListener (this);
@@ -104,38 +114,36 @@ SceneComponent::SceneComponent (Settings& settings)
                                ImageCache::getFromMemory (BinaryData::buttonkeyboard_png, BinaryData::buttonkeyboard_pngSize), 1.000f, Colour (0x00000000),
                                Image(), 0.750f, Colour (0x00000000),
                                Image(), 1.000f, Colour (0x00000000));
-    addAndMakeVisible (scoreButton = new TextButton ("Score Button"));
+    scoreButton.reset (new TextButton ("Score Button"));
+    addAndMakeVisible (scoreButton.get());
     scoreButton->setTooltip (TRANS("Score View"));
     scoreButton->setButtonText (TRANS("Score"));
     scoreButton->addListener (this);
 
-    scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
-
-    addAndMakeVisible (voiceButton = new TextButton ("Voice Button"));
+    voiceButton.reset (new TextButton ("Voice Button"));
+    addAndMakeVisible (voiceButton.get());
     voiceButton->setTooltip (TRANS("Voice Selection"));
     voiceButton->setButtonText (TRANS("Voice"));
     voiceButton->addListener (this);
-
-    voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
 
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
     topbarPanel->setText("");
 
-	playbackComponent = new PlaybackComponent(pianoController);
-	playbackPanel->addAndMakeVisible(playbackComponent);
+	playbackComponent.reset(new PlaybackComponent(pianoController));
+	playbackPanel->addAndMakeVisible(playbackComponent.get());
 
-	keyboardComponent = new KeyboardComponent(pianoController, settings);
-	keyboardPanel->addAndMakeVisible(keyboardComponent);
+	keyboardComponent.reset(new KeyboardComponent(pianoController, settings));
+	keyboardPanel->addAndMakeVisible(keyboardComponent.get());
 
-	voiceComponent = new VoiceComponent(pianoController);
-	scoreComponent = ScoreComponent::Create(pianoController, settings);
-	largeContentPanel->addChildComponent(voiceComponent);
-    largeContentPanel->addChildComponent(scoreComponent);
+	voiceComponent.reset(new VoiceComponent(pianoController));
+	scoreComponent.reset(ScoreComponent::Create(pianoController, settings));
+	largeContentPanel->addChildComponent(voiceComponent.get());
+    largeContentPanel->addChildComponent(scoreComponent.get());
 	voiceButton->getProperties().set("tab", "yes");
 	scoreButton->getProperties().set("tab", "yes");
-	//[/UserPreSize]
+    //[/UserPreSize]
 
     setSize (850, 550);
 
@@ -145,7 +153,7 @@ SceneComponent::SceneComponent (Settings& settings)
     settings.addChangeListener(this);
 	applySettings();
 
-	switchLargePanel(scoreButton);
+	switchLargePanel(scoreButton.get());
 
 	startTimer(250);
     //[/Constructor]
@@ -212,6 +220,8 @@ void SceneComponent::resized()
     zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
     keyboardPanel->setBounds (0, getHeight() - 67, getWidth() - 0, 67);
     keyboardButton->setBounds (getWidth() - 129 - 32, 8, 32, 28);
+    scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
+    voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
     //[UserResized] Add your own custom resize handling here..
     playbackPanel->setBounds(playbackPanel->getX(), playbackPanel->getY(), playbackPanel->getWidth(),
     	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
@@ -236,43 +246,43 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == muteButton)
+    if (buttonThatWasClicked == muteButton.get())
     {
         //[UserButtonCode_muteButton] -- add your button handler code here..
         pianoController.SetLocalControl(!pianoController.GetLocalControl());
         //[/UserButtonCode_muteButton]
     }
-    else if (buttonThatWasClicked == connectionButton)
+    else if (buttonThatWasClicked == connectionButton.get())
     {
         //[UserButtonCode_connectionButton] -- add your button handler code here..
 		showConnectionDialog();
         //[/UserButtonCode_connectionButton]
     }
-    else if (buttonThatWasClicked == zoomInButton)
+    else if (buttonThatWasClicked == zoomInButton.get())
     {
         //[UserButtonCode_zoomInButton] -- add your button handler code here..
         zoomUi(true);
         //[/UserButtonCode_zoomInButton]
     }
-    else if (buttonThatWasClicked == zoomOutButton)
+    else if (buttonThatWasClicked == zoomOutButton.get())
     {
         //[UserButtonCode_zoomOutButton] -- add your button handler code here..
         zoomUi(false);
         //[/UserButtonCode_zoomOutButton]
     }
-    else if (buttonThatWasClicked == keyboardButton)
+    else if (buttonThatWasClicked == keyboardButton.get())
     {
         //[UserButtonCode_keyboardButton] -- add your button handler code here..
         toggleKeyboard();
         //[/UserButtonCode_keyboardButton]
     }
-    else if (buttonThatWasClicked == scoreButton)
+    else if (buttonThatWasClicked == scoreButton.get())
     {
         //[UserButtonCode_scoreButton] -- add your button handler code here..
 		switchLargePanel(buttonThatWasClicked);
         //[/UserButtonCode_scoreButton]
     }
-    else if (buttonThatWasClicked == voiceButton)
+    else if (buttonThatWasClicked == voiceButton.get())
     {
         //[UserButtonCode_voiceButton] -- add your button handler code here..
 		switchLargePanel(buttonThatWasClicked);
@@ -367,8 +377,8 @@ void SceneComponent::applySettings()
 
 		if (settings.midiPort == "")
 		{
-			rtpMidiConnector = new RtpMidiConnector(settings.pianoIp);
-			midiConnector = rtpMidiConnector;
+			rtpMidiConnector.reset(new RtpMidiConnector(settings.pianoIp));
+			midiConnector = rtpMidiConnector.get();
 			pianoController.SetMidiConnector(midiConnector);
 			rtpMidiConnector->startThread();
 		}
@@ -376,8 +386,8 @@ void SceneComponent::applySettings()
 		{
 			audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
 			audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
-			localMidiConnector = new LocalMidiConnector(&audioDeviceManager);
-			midiConnector = localMidiConnector;
+			localMidiConnector.reset(new LocalMidiConnector(&audioDeviceManager));
+			midiConnector = localMidiConnector.get();
 			pianoController.SetMidiConnector(midiConnector);
 		}
 
@@ -416,11 +426,11 @@ void SceneComponent::toggleKeyboard()
 
 void SceneComponent::switchLargePanel(Button* button)
 {
-	voiceComponent->setVisible(button == voiceButton);
-	scoreComponent->setVisible(button == scoreButton);
+	voiceComponent->setVisible(button == voiceButton.get());
+	scoreComponent->setVisible(button == scoreButton.get());
 
-	voiceButton->setToggleState(button == voiceButton, NotificationType::dontSendNotification);
-	scoreButton->setToggleState(button == scoreButton, NotificationType::dontSendNotification);
+	voiceButton->setToggleState(button == voiceButton.get(), NotificationType::dontSendNotification);
+	scoreButton->setToggleState(button == scoreButton.get(), NotificationType::dontSendNotification);
 
 	resized();
 }
@@ -459,39 +469,34 @@ BEGIN_JUCER_METADATA
                posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
-               opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
-               opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
-               opacityDown="1.00000000000000000000" colourDown="0"/>
+               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
+               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <LABEL name="Status Label" id="71086bde8935001" memberName="statusLabel"
          virtualName="" explicitFocusOrder="0" pos="48 11 240 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Looking for the instrument" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
-         bold="0" italic="0" justification="33"/>
+         fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="33"/>
   <IMAGEBUTTON name="Connection Button" id="c87eaad1c0559e4c" memberName="connectionButton"
                virtualName="" explicitFocusOrder="0" pos="8 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Connection Settings"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonport_png"
-               opacityNormal="1.00000000000000000000" colourNormal="0" resourceOver=""
-               opacityOver="0.75000000000000000000" colourOver="0" resourceDown=""
-               opacityDown="1.00000000000000000000" colourDown="0"/>
+               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
+               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom In UI Button" id="8f2ba3f851b38bd8" memberName="zoomInButton"
                virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom In UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
-               resourceNormal="BinaryData::buttonzoomin_png" opacityNormal="1.00000000000000000000"
-               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
-               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
-               colourDown="0"/>
+               resourceNormal="BinaryData::buttonzoomin_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom Out UI Button" id="9c93ecb0c87ce0c4" memberName="zoomOutButton"
                virtualName="" explicitFocusOrder="0" pos="89Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom Out UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
-               resourceNormal="BinaryData::buttonzoomout_png" opacityNormal="1.00000000000000000000"
-               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
-               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
-               colourDown="0"/>
+               resourceNormal="BinaryData::buttonzoomout_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
   <GENERICCOMPONENT name="Keyboard Panel" id="d578dbfb8bf47c83" memberName="keyboardPanel"
                     virtualName="" explicitFocusOrder="0" pos="0 0Rr 0M 67" class="Component"
                     params=""/>
@@ -499,10 +504,9 @@ BEGIN_JUCER_METADATA
                virtualName="" explicitFocusOrder="0" pos="129Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Virtual Keyboard" buttonText="Virtual Keyboard"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
-               resourceNormal="BinaryData::buttonkeyboard_png" opacityNormal="1.00000000000000000000"
-               colourNormal="0" resourceOver="" opacityOver="0.75000000000000000000"
-               colourOver="0" resourceDown="" opacityDown="1.00000000000000000000"
-               colourDown="0"/>
+               resourceNormal="BinaryData::buttonkeyboard_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
   <TEXTBUTTON name="Score Button" id="470fdf4dc9f8f0cd" memberName="scoreButton"
               virtualName="" explicitFocusOrder="0" pos="298 18 80 34" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" tooltip="Score View" buttonText="Score"
@@ -520,3 +524,4 @@ END_JUCER_METADATA
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

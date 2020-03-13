@@ -132,13 +132,13 @@ String BytesToText(const uint8* buf, int size)
 {
 	if (size < 3)
 	{
-		return String::empty;
+		return String();
 	}
 
 	int textSize = (buf[0] << 7) + buf[1];
 	if (size < textSize + 2)
 	{
-		return String::empty;
+		return String();
 	}
 
 	String text;

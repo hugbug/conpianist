@@ -49,9 +49,9 @@ public:
 
 private:
 	lomse::LomseDoorway m_lomse;
-	ScopedPointer<Presenter> m_presenter;
+	std::unique_ptr<Presenter> m_presenter;
 	RenderingBuffer m_rbuf_window;
-	ScopedPointer<juce::Image> m_image;
+	std::unique_ptr<juce::Image> m_image;
 	PianoController& m_pianoController;
 	Settings& m_settings;
 	int m_resolution;
@@ -127,12 +127,12 @@ void LomseScoreComponent::LoadDocument(String filename)
 	if (filename.isNotEmpty())
 	{
 		// load from file
-		m_presenter = m_lomse.open_document(lomse::k_view_vertical_book, filename.toStdString());
+		m_presenter.reset(m_lomse.open_document(lomse::k_view_vertical_book, filename.toStdString()));
 	}
 	else
 	{
 		// empty document
-		m_presenter = m_lomse.new_document(lomse::k_view_vertical_book);
+		m_presenter.reset(m_lomse.new_document(lomse::k_view_vertical_book));
 	}
 
 	//get the pointer to the interactor, set the rendering buffer and register for
@@ -178,8 +178,8 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 void LomseScoreComponent::PrepareImage()
 {
-	m_image = new juce::Image(juce::Image::PixelFormat::ARGB,
-		int(getWidth() * m_scale), int(getHeight() * m_scale), false, SoftwareImageType());
+	m_image.reset(new juce::Image(juce::Image::PixelFormat::ARGB,
+		int(getWidth() * m_scale), int(getHeight() * m_scale), false, SoftwareImageType()));
 
 	//creates a bitmap of specified size and associates it to the rendering
 	//buffer for the view. Any existing buffer is automatically deleted

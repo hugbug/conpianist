@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.1
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ class VoiceComponent  : public Component,
 public:
     //==============================================================================
     VoiceComponent (PianoController& pianoController);
-    ~VoiceComponent();
+    ~VoiceComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -69,17 +69,17 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<TreeView> voicesTree;
-    ScopedPointer<GroupComponent> targetGroup;
-    ScopedPointer<TextButton> leftVoiceButton;
-    ScopedPointer<TextButton> mainVoiceButton;
-    ScopedPointer<TextButton> layerVoiceButton;
-    ScopedPointer<TextButton> mainTitleButton;
-    ScopedPointer<TextButton> leftTitleButton;
-    ScopedPointer<TextButton> layerTitleButton;
-    ScopedPointer<Label> leftIndicatorLabel;
-    ScopedPointer<Label> mainIndicatorLabel;
-    ScopedPointer<Label> layerIndicatorLabel;
+    std::unique_ptr<TreeView> voicesTree;
+    std::unique_ptr<GroupComponent> targetGroup;
+    std::unique_ptr<TextButton> leftVoiceButton;
+    std::unique_ptr<TextButton> mainVoiceButton;
+    std::unique_ptr<TextButton> layerVoiceButton;
+    std::unique_ptr<TextButton> mainTitleButton;
+    std::unique_ptr<TextButton> leftTitleButton;
+    std::unique_ptr<TextButton> layerTitleButton;
+    std::unique_ptr<Label> leftIndicatorLabel;
+    std::unique_ptr<Label> mainIndicatorLabel;
+    std::unique_ptr<Label> layerIndicatorLabel;
 
 
     //==============================================================================
@@ -88,3 +88,4 @@ private:
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

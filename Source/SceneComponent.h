@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.1
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -50,7 +50,7 @@ class SceneComponent  : public Component,
 public:
     //==============================================================================
     SceneComponent (Settings& settings);
-    ~SceneComponent();
+    ~SceneComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -76,12 +76,12 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
     PianoController pianoController;
-    ScopedPointer<PlaybackComponent> playbackComponent;
-    ScopedPointer<VoiceComponent> voiceComponent;
-    ScopedPointer<ScoreComponent> scoreComponent;
-    ScopedPointer<KeyboardComponent> keyboardComponent;
-	ScopedPointer<LocalMidiConnector> localMidiConnector;
-	ScopedPointer<RtpMidiConnector> rtpMidiConnector;
+    std::unique_ptr<PlaybackComponent> playbackComponent;
+    std::unique_ptr<VoiceComponent> voiceComponent;
+    std::unique_ptr<ScoreComponent> scoreComponent;
+    std::unique_ptr<KeyboardComponent> keyboardComponent;
+	std::unique_ptr<LocalMidiConnector> localMidiConnector;
+	std::unique_ptr<RtpMidiConnector> rtpMidiConnector;
 	MidiConnector* midiConnector = nullptr;
 	String currentPianoIp;
 	String currentMidiPort;
@@ -89,18 +89,18 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> topbarPanel;
-    ScopedPointer<Component> playbackPanel;
-    ScopedPointer<Component> largeContentPanel;
-    ScopedPointer<ImageButton> muteButton;
-    ScopedPointer<Label> statusLabel;
-    ScopedPointer<ImageButton> connectionButton;
-    ScopedPointer<ImageButton> zoomInButton;
-    ScopedPointer<ImageButton> zoomOutButton;
-    ScopedPointer<Component> keyboardPanel;
-    ScopedPointer<ImageButton> keyboardButton;
-    ScopedPointer<TextButton> scoreButton;
-    ScopedPointer<TextButton> voiceButton;
+    std::unique_ptr<GroupComponent> topbarPanel;
+    std::unique_ptr<Component> playbackPanel;
+    std::unique_ptr<Component> largeContentPanel;
+    std::unique_ptr<ImageButton> muteButton;
+    std::unique_ptr<Label> statusLabel;
+    std::unique_ptr<ImageButton> connectionButton;
+    std::unique_ptr<ImageButton> zoomInButton;
+    std::unique_ptr<ImageButton> zoomOutButton;
+    std::unique_ptr<Component> keyboardPanel;
+    std::unique_ptr<ImageButton> keyboardButton;
+    std::unique_ptr<TextButton> scoreButton;
+    std::unique_ptr<TextButton> voiceButton;
 
 
     //==============================================================================
@@ -109,3 +109,4 @@ private:
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.1
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -92,39 +92,48 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    addAndMakeVisible (voicesTree = new TreeView ("Voices TreeView"));
+    voicesTree.reset (new TreeView ("Voices TreeView"));
+    addAndMakeVisible (voicesTree.get());
     voicesTree->setRootItemVisible (false);
 
-    addAndMakeVisible (targetGroup = new GroupComponent ("Target Group",
-                                                         TRANS("Target")));
+    targetGroup.reset (new GroupComponent ("Target Group",
+                                           TRANS("Target")));
+    addAndMakeVisible (targetGroup.get());
     targetGroup->setTextLabelPosition (Justification::centred);
 
-    addAndMakeVisible (leftVoiceButton = new TextButton ("Left Voice Button"));
+    leftVoiceButton.reset (new TextButton ("Left Voice Button"));
+    addAndMakeVisible (leftVoiceButton.get());
     leftVoiceButton->setButtonText (TRANS("None"));
     leftVoiceButton->addListener (this);
 
-    addAndMakeVisible (mainVoiceButton = new TextButton ("Main Voice Button"));
+    mainVoiceButton.reset (new TextButton ("Main Voice Button"));
+    addAndMakeVisible (mainVoiceButton.get());
     mainVoiceButton->setButtonText (TRANS("Yamaha CFX Grand"));
     mainVoiceButton->addListener (this);
 
-    addAndMakeVisible (layerVoiceButton = new TextButton ("Layer Voice Button"));
+    layerVoiceButton.reset (new TextButton ("Layer Voice Button"));
+    addAndMakeVisible (layerVoiceButton.get());
     layerVoiceButton->setButtonText (TRANS("Strings"));
     layerVoiceButton->addListener (this);
 
-    addAndMakeVisible (mainTitleButton = new TextButton ("Main Title Button"));
+    mainTitleButton.reset (new TextButton ("Main Title Button"));
+    addAndMakeVisible (mainTitleButton.get());
     mainTitleButton->setButtonText (TRANS("Main"));
     mainTitleButton->addListener (this);
 
-    addAndMakeVisible (leftTitleButton = new TextButton ("Left Title Button"));
+    leftTitleButton.reset (new TextButton ("Left Title Button"));
+    addAndMakeVisible (leftTitleButton.get());
     leftTitleButton->setButtonText (TRANS("Left"));
     leftTitleButton->addListener (this);
 
-    addAndMakeVisible (layerTitleButton = new TextButton ("Layer Title Button"));
+    layerTitleButton.reset (new TextButton ("Layer Title Button"));
+    addAndMakeVisible (layerTitleButton.get());
     layerTitleButton->setButtonText (TRANS("Layer"));
     layerTitleButton->addListener (this);
 
-    addAndMakeVisible (leftIndicatorLabel = new Label ("Left Indicator Label",
-                                                       String()));
+    leftIndicatorLabel.reset (new Label ("Left Indicator Label",
+                                         String()));
+    addAndMakeVisible (leftIndicatorLabel.get());
     leftIndicatorLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     leftIndicatorLabel->setJustificationType (Justification::centredLeft);
     leftIndicatorLabel->setEditable (false, false, false);
@@ -132,8 +141,9 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     leftIndicatorLabel->setColour (TextEditor::textColourId, Colours::black);
     leftIndicatorLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    addAndMakeVisible (mainIndicatorLabel = new Label ("Main Indicator Label",
-                                                       String()));
+    mainIndicatorLabel.reset (new Label ("Main Indicator Label",
+                                         String()));
+    addAndMakeVisible (mainIndicatorLabel.get());
     mainIndicatorLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     mainIndicatorLabel->setJustificationType (Justification::centredLeft);
     mainIndicatorLabel->setEditable (false, false, false);
@@ -141,8 +151,9 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     mainIndicatorLabel->setColour (TextEditor::textColourId, Colours::black);
     mainIndicatorLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    addAndMakeVisible (layerIndicatorLabel = new Label ("Layer Indicator Label",
-                                                        String()));
+    layerIndicatorLabel.reset (new Label ("Layer Indicator Label",
+                                          String()));
+    addAndMakeVisible (layerIndicatorLabel.get());
     layerIndicatorLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     layerIndicatorLabel->setJustificationType (Justification::centredLeft);
     layerIndicatorLabel->setEditable (false, false, false);
@@ -219,15 +230,15 @@ void VoiceComponent::resized()
 
     voicesTree->setBounds (8, (-8) + 104, getWidth() - 16, getHeight() - 98);
     targetGroup->setBounds (0, -8, getWidth() - 0, 104);
-    leftVoiceButton->setBounds (0 + 16, (-8) + 55, proportionOfWidth (0.3030f), 28);
-    mainVoiceButton->setBounds (0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3030f) / 2), (-8) + 55, proportionOfWidth (0.3030f), 28);
-    layerVoiceButton->setBounds (0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3030f), (-8) + 55, proportionOfWidth (0.3030f), 28);
-    mainTitleButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3030f) / 2)) + proportionOfWidth (0.3030f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    leftTitleButton->setBounds ((0 + 16) + proportionOfWidth (0.3030f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    layerTitleButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3030f)) + proportionOfWidth (0.3030f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3030f), 3);
-    mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3030f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3030f), 3);
-    layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3030f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3030f), 3);
+    leftVoiceButton->setBounds (0 + 16, (-8) + 55, proportionOfWidth (0.3023f), 28);
+    mainVoiceButton->setBounds (0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3023f) / 2), (-8) + 55, proportionOfWidth (0.3023f), 28);
+    layerVoiceButton->setBounds (0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3023f), (-8) + 55, proportionOfWidth (0.3023f), 28);
+    mainTitleButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3023f) / 2)) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    leftTitleButton->setBounds ((0 + 16) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    layerTitleButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3023f)) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
+    mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3023f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
+    layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3023f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -237,37 +248,37 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == leftVoiceButton)
+    if (buttonThatWasClicked == leftVoiceButton.get())
     {
         //[UserButtonCode_leftVoiceButton] -- add your button handler code here..
         voiceButtonClicked(buttonThatWasClicked);
         //[/UserButtonCode_leftVoiceButton]
     }
-    else if (buttonThatWasClicked == mainVoiceButton)
+    else if (buttonThatWasClicked == mainVoiceButton.get())
     {
         //[UserButtonCode_mainVoiceButton] -- add your button handler code here..
         voiceButtonClicked(buttonThatWasClicked);
         //[/UserButtonCode_mainVoiceButton]
     }
-    else if (buttonThatWasClicked == layerVoiceButton)
+    else if (buttonThatWasClicked == layerVoiceButton.get())
     {
         //[UserButtonCode_layerVoiceButton] -- add your button handler code here..
         voiceButtonClicked(buttonThatWasClicked);
         //[/UserButtonCode_layerVoiceButton]
     }
-    else if (buttonThatWasClicked == mainTitleButton)
+    else if (buttonThatWasClicked == mainTitleButton.get())
     {
         //[UserButtonCode_mainTitleButton] -- add your button handler code here..
         pianoController.SetVoiceActive(PianoController::vsMain, !pianoController.GetVoiceActive(PianoController::vsMain));
         //[/UserButtonCode_mainTitleButton]
     }
-    else if (buttonThatWasClicked == leftTitleButton)
+    else if (buttonThatWasClicked == leftTitleButton.get())
     {
         //[UserButtonCode_leftTitleButton] -- add your button handler code here..
         pianoController.SetVoiceActive(PianoController::vsLeft, !pianoController.GetVoiceActive(PianoController::vsLeft));
         //[/UserButtonCode_leftTitleButton]
     }
-    else if (buttonThatWasClicked == layerTitleButton)
+    else if (buttonThatWasClicked == layerTitleButton.get())
     {
         //[UserButtonCode_layerTitleButton] -- add your button handler code here..
         pianoController.SetVoiceActive(PianoController::vsLayer, !pianoController.GetVoiceActive(PianoController::vsLayer));
@@ -343,13 +354,13 @@ void VoiceComponent::voiceItemClicked(Voice* voice)
 
 void VoiceComponent::voiceButtonClicked(Button* button)
 {
-	mainIndicatorLabel->setVisible(button == mainVoiceButton);
-	layerIndicatorLabel->setVisible(button == layerVoiceButton);
-	leftIndicatorLabel->setVisible(button == leftVoiceButton);
+	mainIndicatorLabel->setVisible(button == mainVoiceButton.get());
+	layerIndicatorLabel->setVisible(button == layerVoiceButton.get());
+	leftIndicatorLabel->setVisible(button == leftVoiceButton.get());
 
-	String voice = button == layerVoiceButton ?
+	String voice = button == layerVoiceButton.get() ?
 		pianoController.GetVoice(PianoController::vsLayer) :
-		button == leftVoiceButton ? pianoController.GetVoice(PianoController::vsLeft) :
+		button == leftVoiceButton.get() ? pianoController.GetVoice(PianoController::vsLeft) :
 		pianoController.GetVoice(PianoController::vsMain);
 
 	scrollToVoice(voice);
@@ -440,16 +451,16 @@ BEGIN_JUCER_METADATA
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 104" title="Target"
                   textpos="36"/>
   <TEXTBUTTON name="Left Voice Button" id="f4f376ddb622016f" memberName="leftVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="16 55 30.229% 28"
+              virtualName="" explicitFocusOrder="0" pos="16 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="None" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Main Voice Button" id="a44dda5da363325" memberName="mainVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="0Cc 55 30.229% 28"
+              virtualName="" explicitFocusOrder="0" pos="0Cc 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="Yamaha CFX Grand" connectedEdges="0" needsCallback="1"
               radioGroupId="0"/>
   <TEXTBUTTON name="Layer Voice Button" id="e72441cfef2070c4" memberName="layerVoiceButton"
-              virtualName="" explicitFocusOrder="0" pos="16Rr 55 30.229% 28"
+              virtualName="" explicitFocusOrder="0" pos="16Rr 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
               buttonText="Strings" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Main Title Button" id="9fa4d9ce58b1b951" memberName="mainTitleButton"
@@ -465,26 +476,26 @@ BEGIN_JUCER_METADATA
               posRelativeY="56427593ca278ddd" buttonText="Layer" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
   <LABEL name="Left Indicator Label" id="6dca46264bc44c03" memberName="leftIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="16 90 30.229% 3" posRelativeX="56427593ca278ddd"
+         virtualName="" explicitFocusOrder="0" pos="16 90 30.295% 3" posRelativeX="56427593ca278ddd"
          posRelativeY="56427593ca278ddd" posRelativeW="56427593ca278ddd"
          bkgCol="feee6c0a" edTextCol="ff000000" edBkgCol="0" labelText=""
          editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
-         fontname="Default font" fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
-         bold="0" italic="0" justification="33"/>
+         fontname="Default font" fontsize="15.0" kerning="0.0" bold="0"
+         italic="0" justification="33"/>
   <LABEL name="Main Indicator Label" id="236984f4049a87bf" memberName="mainIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="0Cc 90 30.229% 3"
+         virtualName="" explicitFocusOrder="0" pos="0Cc 90 30.295% 3"
          posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
          posRelativeW="56427593ca278ddd" bkgCol="feee6c0a" edTextCol="ff000000"
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
-         kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
+         kerning="0.0" bold="0" italic="0" justification="33"/>
   <LABEL name="Layer Indicator Label" id="66b7f4c6c601497b" memberName="layerIndicatorLabel"
-         virtualName="" explicitFocusOrder="0" pos="16Rr 90 30.229% 3"
+         virtualName="" explicitFocusOrder="0" pos="16Rr 90 30.295% 3"
          posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
          posRelativeW="56427593ca278ddd" bkgCol="feee6c0a" edTextCol="ff000000"
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
-         kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
+         kerning="0.0" bold="0" italic="0" justification="33"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
@@ -494,3 +505,4 @@ END_JUCER_METADATA
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

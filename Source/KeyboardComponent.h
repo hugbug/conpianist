@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -44,7 +44,7 @@ class KeyboardComponent  : public Component,
 public:
     //==============================================================================
     KeyboardComponent (PianoController& pianoController, Settings& settings);
-    ~KeyboardComponent();
+    ~KeyboardComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -72,9 +72,9 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<MidiKeyboardComponent> midiKeyboardComponent;
-    ScopedPointer<ComboBox> channelComboBox;
-    ScopedPointer<Label> label;
+    std::unique_ptr<MidiKeyboardComponent> midiKeyboardComponent;
+    std::unique_ptr<ComboBox> channelComboBox;
+    std::unique_ptr<Label> label;
 
 
     //==============================================================================
@@ -83,3 +83,4 @@ private:
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

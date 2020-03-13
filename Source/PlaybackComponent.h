@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -42,7 +42,7 @@ class PlaybackComponent  : public Component,
 public:
     //==============================================================================
     PlaybackComponent (PianoController& pianoController);
-    ~PlaybackComponent();
+    ~PlaybackComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
@@ -70,32 +70,32 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    ScopedPointer<GroupComponent> songGroup;
-    ScopedPointer<Label> songLabel;
-    ScopedPointer<GroupComponent> playbackGroup;
-    ScopedPointer<Slider> positionSlider;
-    ScopedPointer<Label> positionLabel;
-    ScopedPointer<Label> lengthLabel;
-    ScopedPointer<ImageButton> playButton;
-    ScopedPointer<ImageButton> rewindButton;
-    ScopedPointer<ImageButton> forwardButton;
-    ScopedPointer<ImageButton> chooseSongButton;
-    ScopedPointer<TextButton> backingPartButton;
-    ScopedPointer<Label> partLabel;
-    ScopedPointer<TextButton> leftPartButton;
-    ScopedPointer<TextButton> rightPartButton;
-    ScopedPointer<ImageButton> guideButton;
-    ScopedPointer<ImageButton> loopButton;
-    ScopedPointer<ImageButton> lightsButton;
-    ScopedPointer<Label> volumeTitleLabel;
-    ScopedPointer<Slider> volumeSlider;
-    ScopedPointer<Label> volumeLabel;
-    ScopedPointer<Label> tempoTitleLabel;
-    ScopedPointer<Slider> tempoSlider;
-    ScopedPointer<Label> tempoLabel;
-    ScopedPointer<Label> transposeTitleLabel;
-    ScopedPointer<Slider> transposeSlider;
-    ScopedPointer<Label> transposeLabel;
+    std::unique_ptr<GroupComponent> songGroup;
+    std::unique_ptr<Label> songLabel;
+    std::unique_ptr<GroupComponent> playbackGroup;
+    std::unique_ptr<Slider> positionSlider;
+    std::unique_ptr<Label> positionLabel;
+    std::unique_ptr<Label> lengthLabel;
+    std::unique_ptr<ImageButton> playButton;
+    std::unique_ptr<ImageButton> rewindButton;
+    std::unique_ptr<ImageButton> forwardButton;
+    std::unique_ptr<ImageButton> chooseSongButton;
+    std::unique_ptr<TextButton> backingPartButton;
+    std::unique_ptr<Label> partLabel;
+    std::unique_ptr<TextButton> leftPartButton;
+    std::unique_ptr<TextButton> rightPartButton;
+    std::unique_ptr<ImageButton> guideButton;
+    std::unique_ptr<ImageButton> loopButton;
+    std::unique_ptr<ImageButton> lightsButton;
+    std::unique_ptr<Label> volumeTitleLabel;
+    std::unique_ptr<Slider> volumeSlider;
+    std::unique_ptr<Label> volumeLabel;
+    std::unique_ptr<Label> tempoTitleLabel;
+    std::unique_ptr<Slider> tempoSlider;
+    std::unique_ptr<Label> tempoLabel;
+    std::unique_ptr<Label> transposeTitleLabel;
+    std::unique_ptr<Slider> transposeSlider;
+    std::unique_ptr<Label> transposeLabel;
 
 
     //==============================================================================
@@ -104,3 +104,4 @@ private:
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

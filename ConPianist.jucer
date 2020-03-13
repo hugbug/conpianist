@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.3.1" bundleIdentifier="prygunkov.ConPianist"
+<JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.4.7" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
-              companyEmail="a.prygunkov@gmail.com" version="0.1" companyWebsite="https://github.com/hugbug/conpianist"
-              headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build">
+              companyEmail="a.prygunkov@gmail.com" version="1.0" companyWebsite="https://github.com/hugbug/conpianist"
+              headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
+              id="MqsAFh">
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{55F16F24-1229-2B19-7C82-4DE9AF5D9B4B}" name="Library">
       <FILE id="oUYthh" name="lomse.cpp" compile="1" resource="0" file="Library/Lomse/build/lomse.cpp"/>
@@ -154,4 +155,7 @@
     <MODULE id="juce_video" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
   </MODULES>
   <JUCEOPTIONS/>
+  <LIVE_SETTINGS>
+    <OSX/>
+  </LIVE_SETTINGS>
 </JUCERPROJECT>

@@ -33,7 +33,7 @@ public:
 #if TARGET_OS_IPHONE
 		Desktop::getInstance().setGlobalScaleFactor(1.2);
 #endif
-        mainWindow = new MainWindow (getApplicationName());
+        mainWindow.reset(new MainWindow (getApplicationName()));
         mainWindow->setLookAndFeel(&lookAndFeel);
 #if TARGET_OS_IPHONE
 		mainWindow->setFullScreen(true);
@@ -121,7 +121,7 @@ public:
     };
 
 private:
-    ScopedPointer<MainWindow> mainWindow;
+    std::unique_ptr<MainWindow> mainWindow;
 };
 
 //==============================================================================

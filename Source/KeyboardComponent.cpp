@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -33,10 +33,12 @@ KeyboardComponent::KeyboardComponent (PianoController& pianoController, Settings
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    addAndMakeVisible (midiKeyboardComponent = new MidiKeyboardComponent (keyState, MidiKeyboardComponent::horizontalKeyboard));
+    midiKeyboardComponent.reset (new MidiKeyboardComponent (keyState, MidiKeyboardComponent::horizontalKeyboard));
+    addAndMakeVisible (midiKeyboardComponent.get());
     midiKeyboardComponent->setName ("Midi Keyboard Component");
 
-    addAndMakeVisible (channelComboBox = new ComboBox ("Channel Combo Box"));
+    channelComboBox.reset (new ComboBox ("Channel Combo Box"));
+    addAndMakeVisible (channelComboBox.get());
     channelComboBox->setTooltip (TRANS("MIDI Channel"));
     channelComboBox->setEditableText (false);
     channelComboBox->setJustificationType (Justification::centred);
@@ -62,8 +64,9 @@ KeyboardComponent::KeyboardComponent (PianoController& pianoController, Settings
 
     channelComboBox->setBounds (12, 26, 56, 24);
 
-    addAndMakeVisible (label = new Label ("new label",
-                                          TRANS("Channel")));
+    label.reset (new Label ("new label",
+                            TRANS("Channel")));
+    addAndMakeVisible (label.get());
     label->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     label->setJustificationType (Justification::centredLeft);
     label->setEditable (false, false, false);
@@ -157,7 +160,7 @@ void KeyboardComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     //[UsercomboBoxChanged_Pre]
     //[/UsercomboBoxChanged_Pre]
 
-    if (comboBoxThatHasChanged == channelComboBox)
+    if (comboBoxThatHasChanged == channelComboBox.get())
     {
         //[UserComboBoxCode_channelComboBox] -- add your combo box handling code here..
         settings.keyboardChannel = channelComboBox->getSelectedItemIndex() + 1;
@@ -257,8 +260,8 @@ BEGIN_JUCER_METADATA
   <LABEL name="new label" id="92ffa529bd029da5" memberName="label" virtualName=""
          explicitFocusOrder="0" pos="8 2 64 24" edTextCol="ff000000" edBkgCol="0"
          labelText="Channel" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.00000000000000000000"
-         kerning="0.00000000000000000000" bold="0" italic="0" justification="33"/>
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
+         kerning="0.0" bold="0" italic="0" justification="33"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
@@ -268,3 +271,4 @@ END_JUCER_METADATA
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+

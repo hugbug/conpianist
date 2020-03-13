@@ -7,7 +7,7 @@
   the "//[xyz]" and "//[/xyz]" sections will be retained when the file is loaded
   and re-saved.
 
-  Created with Projucer version: 5.3.0
+  Created with Projucer version: 5.4.7
 
   ------------------------------------------------------------------------------
 
@@ -33,8 +33,9 @@ ConnectionComponent::ConnectionComponent (Settings& settings)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    addAndMakeVisible (pianoIpLabel = new Label ("Piano IP Label",
-                                                 TRANS("Piano IP Address:")));
+    pianoIpLabel.reset (new Label ("Piano IP Label",
+                                   TRANS("Piano IP Address:")));
+    addAndMakeVisible (pianoIpLabel.get());
     pianoIpLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     pianoIpLabel->setJustificationType (Justification::centredRight);
     pianoIpLabel->setEditable (false, false, false);
@@ -43,7 +44,8 @@ ConnectionComponent::ConnectionComponent (Settings& settings)
 
     pianoIpLabel->setBounds (128, 16, 144, 24);
 
-    addAndMakeVisible (pianoIpEdit = new TextEditor ("Piano IP Edit"));
+    pianoIpEdit.reset (new TextEditor ("Piano IP Edit"));
+    addAndMakeVisible (pianoIpEdit.get());
     pianoIpEdit->setMultiLine (false);
     pianoIpEdit->setReturnKeyStartsNewLine (false);
     pianoIpEdit->setReadOnly (false);
@@ -52,8 +54,9 @@ ConnectionComponent::ConnectionComponent (Settings& settings)
     pianoIpEdit->setPopupMenuEnabled (true);
     pianoIpEdit->setText (TRANS("192.168.1.235"));
 
-    addAndMakeVisible (midiPortLabel = new Label ("Midi Port Label",
-                                                  TRANS("Piano Midi Port:")));
+    midiPortLabel.reset (new Label ("Midi Port Label",
+                                    TRANS("Piano Midi Port:")));
+    addAndMakeVisible (midiPortLabel.get());
     midiPortLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
     midiPortLabel->setJustificationType (Justification::centredRight);
     midiPortLabel->setEditable (false, false, false);
@@ -62,7 +65,8 @@ ConnectionComponent::ConnectionComponent (Settings& settings)
 
     midiPortLabel->setBounds (128, 56, 144, 24);
 
-    addAndMakeVisible (midiPortComboBox = new ComboBox ("Midi Port ComboBox"));
+    midiPortComboBox.reset (new ComboBox ("Midi Port ComboBox"));
+    addAndMakeVisible (midiPortComboBox.get());
     midiPortComboBox->setEditableText (false);
     midiPortComboBox->setJustificationType (Justification::centredLeft);
     midiPortComboBox->setTextWhenNothingSelected (String());
@@ -71,8 +75,8 @@ ConnectionComponent::ConnectionComponent (Settings& settings)
 
 
     //[UserPreSize]
-	pianoIpLabel->attachToComponent(pianoIpEdit, true);
-	midiPortLabel->attachToComponent(midiPortComboBox, true);
+	pianoIpLabel->attachToComponent(pianoIpEdit.get(), true);
+	midiPortLabel->attachToComponent(midiPortComboBox.get(), true);
 
 	load();
     //[/UserPreSize]
@@ -128,7 +132,7 @@ void ConnectionComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     //[UsercomboBoxChanged_Pre]
     //[/UsercomboBoxChanged_Pre]
 
-    if (comboBoxThatHasChanged == midiPortComboBox)
+    if (comboBoxThatHasChanged == midiPortComboBox.get())
     {
         //[UserComboBoxCode_midiPortComboBox] -- add your combo box handling code here..
         //[/UserComboBoxCode_midiPortComboBox]
@@ -211,8 +215,7 @@ BEGIN_JUCER_METADATA
          virtualName="" explicitFocusOrder="0" pos="128 16 144 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Piano IP Address:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
-         bold="0" italic="0" justification="34"/>
+         fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="34"/>
   <TEXTEDITOR name="Piano IP Edit" id="83358b622e96ec09" memberName="pianoIpEdit"
               virtualName="" explicitFocusOrder="0" pos="39.972% 16 136 24"
               initialText="192.168.1.235" multiline="0" retKeyStartsLine="0"
@@ -221,8 +224,7 @@ BEGIN_JUCER_METADATA
          virtualName="" explicitFocusOrder="0" pos="128 56 144 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Piano Midi Port:" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
-         fontsize="15.00000000000000000000" kerning="0.00000000000000000000"
-         bold="0" italic="0" justification="34"/>
+         fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="34"/>
   <COMBOBOX name="Midi Port ComboBox" id="d5a3cb7506a2d491" memberName="midiPortComboBox"
             virtualName="" explicitFocusOrder="0" pos="39.972% 56 54.278% 24"
             editable="0" layout="33" items="" textWhenNonSelected="" textWhenNoItems="(no choices)"/>
@@ -235,3 +237,4 @@ END_JUCER_METADATA
 
 //[EndFile] You can add extra defines here...
 //[/EndFile]
+
