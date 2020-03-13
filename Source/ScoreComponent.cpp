@@ -399,6 +399,9 @@ void LomseScoreComponent::LoadSong()
 		}
 	}
 
-	PrepareImage();
+	if (m_presenter)
+	{
+		PrepareImage();
+	}
 	repaint();
 }
