@@ -68,17 +68,17 @@ SceneComponent::SceneComponent (Settings& settings)
 
     statusLabel->setBounds (48, 11, 240, 24);
 
-    connectionButton.reset (new ImageButton ("Connection Button"));
-    addAndMakeVisible (connectionButton.get());
-    connectionButton->setTooltip (TRANS("Connection Settings"));
-    connectionButton->setButtonText (TRANS("Mute"));
-    connectionButton->addListener (this);
+    menuButton.reset (new ImageButton ("Menu Button"));
+    addAndMakeVisible (menuButton.get());
+    menuButton->setTooltip (TRANS("Main Menu"));
+    menuButton->setButtonText (TRANS("Menu"));
+    menuButton->addListener (this);
 
-    connectionButton->setImages (false, true, true,
-                                 ImageCache::getFromMemory (BinaryData::buttonport_png, BinaryData::buttonport_pngSize), 1.000f, Colour (0x00000000),
-                                 Image(), 0.750f, Colour (0x00000000),
-                                 Image(), 1.000f, Colour (0x00000000));
-    connectionButton->setBounds (8, 8, 32, 28);
+    menuButton->setImages (false, true, true,
+                           ImageCache::getFromMemory (BinaryData::buttonmenu_png, BinaryData::buttonmenu_pngSize), 1.000f, Colour (0x00000000),
+                           Image(), 0.750f, Colour (0x00000000),
+                           Image(), 1.000f, Colour (0x00000000));
+    menuButton->setBounds (8, 8, 32, 28);
 
     zoomInButton.reset (new ImageButton ("Zoom In UI Button"));
     addAndMakeVisible (zoomInButton.get());
@@ -173,7 +173,7 @@ SceneComponent::~SceneComponent()
     largeContentPanel = nullptr;
     muteButton = nullptr;
     statusLabel = nullptr;
-    connectionButton = nullptr;
+    menuButton = nullptr;
     zoomInButton = nullptr;
     zoomOutButton = nullptr;
     keyboardPanel = nullptr;
@@ -252,11 +252,11 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         pianoController.SetLocalControl(!pianoController.GetLocalControl());
         //[/UserButtonCode_muteButton]
     }
-    else if (buttonThatWasClicked == connectionButton.get())
+    else if (buttonThatWasClicked == menuButton.get())
     {
-        //[UserButtonCode_connectionButton] -- add your button handler code here..
-		showConnectionDialog();
-        //[/UserButtonCode_connectionButton]
+        //[UserButtonCode_menuButton] -- add your button handler code here..
+        showMenu();
+        //[/UserButtonCode_menuButton]
     }
     else if (buttonThatWasClicked == zoomInButton.get())
     {
@@ -321,9 +321,25 @@ void SceneComponent::updateSettingsState()
 	//keyboardButton->setToggleState(settings.keyboard, NotificationType::dontSendNotification);
 }
 
-void SceneComponent::showConnectionDialog()
+void SceneComponent::showMenu()
 {
-	ConnectionComponent::showDialog(settings);
+	PopupMenu menu;
+	menu.addSectionHeader("SETTINGS");
+	menu.addItem(1, "Instrument");
+	menu.addSectionHeader("ABOUT");
+	menu.addItem(2, "Version " + JUCEApplication::getInstance()->getApplicationVersion());
+	menu.addItem(3, "Homepage");
+
+	const int result = menu.showAt(menuButton.get(), 0, 0, 0, menuButton->getHeight() * 1.3);
+
+	if (result == 1)
+	{
+		ConnectionComponent::showDialog(settings);
+	}
+	else if (result == 3)
+	{
+		URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
+	}
 }
 
 void SceneComponent::timerCallback()
@@ -476,13 +492,13 @@ BEGIN_JUCER_METADATA
          edBkgCol="0" labelText="Looking for the instrument" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="33"/>
-  <IMAGEBUTTON name="Connection Button" id="c87eaad1c0559e4c" memberName="connectionButton"
+  <IMAGEBUTTON name="Menu Button" id="c87eaad1c0559e4c" memberName="menuButton"
                virtualName="" explicitFocusOrder="0" pos="8 8 32 28" posRelativeX="c7b94b60aa96c6e2"
-               posRelativeY="c7b94b60aa96c6e2" tooltip="Connection Settings"
-               buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
-               keepProportions="1" resourceNormal="BinaryData::buttonport_png"
-               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
-               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Main Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttonmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom In UI Button" id="8f2ba3f851b38bd8" memberName="zoomInButton"
                virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom In UI" buttonText="Mute"

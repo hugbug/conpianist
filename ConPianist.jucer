@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.4.7" bundleIdentifier="prygunkov.ConPianist"
-              companyName="Andrey Prygunkov" companyCopyright="(C) 2018 Andrey Prygunkov"
+              companyName="Andrey Prygunkov" companyCopyright="(C) 2018-2020 Andrey Prygunkov"
               companyEmail="a.prygunkov@gmail.com" version="1.0" companyWebsite="https://github.com/hugbug/conpianist"
               headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
               id="MqsAFh">
@@ -25,6 +25,7 @@
             file="Graphics/button-keyboard.png"/>
       <FILE id="CQLPJd" name="button-lights.png" compile="0" resource="1"
             file="Graphics/button-lights.png"/>
+      <FILE id="np2Q5R" name="button-menu.png" compile="0" resource="1" file="Graphics/button-menu.png"/>
       <FILE id="ZCgQlX" name="button-mute.png" compile="0" resource="1" file="Graphics/button-mute.png"/>
       <FILE id="H3P4oz" name="button-pause.png" compile="0" resource="1"
             file="Graphics/button-pause.png"/>

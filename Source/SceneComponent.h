@@ -57,7 +57,7 @@ public:
     void changeListenerCallback(ChangeBroadcaster* source) override;
     void PianoStateChanged() override { MessageManager::callAsync([=](){updateSettingsState();}); }
 	void updateSettingsState();
-	void showConnectionDialog();
+	void showMenu();
 	void timerCallback() override;
 	void applySettings();
 	void checkConnection();
@@ -94,7 +94,7 @@ private:
     std::unique_ptr<Component> largeContentPanel;
     std::unique_ptr<ImageButton> muteButton;
     std::unique_ptr<Label> statusLabel;
-    std::unique_ptr<ImageButton> connectionButton;
+    std::unique_ptr<ImageButton> menuButton;
     std::unique_ptr<ImageButton> zoomInButton;
     std::unique_ptr<ImageButton> zoomOutButton;
     std::unique_ptr<Component> keyboardPanel;
