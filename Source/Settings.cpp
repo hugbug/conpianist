@@ -21,7 +21,11 @@
 
 Settings::Settings()
 {
-	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory().getFullPathName() + "/Resources";
+#ifdef __APPLE__
+	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getFullPathName() + "/Contents/Resources";
+#else
+	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory(). getFullPathName() + "/Resources";
+#endif
 }
 
 void Settings::Save()
