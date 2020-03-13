@@ -1,3 +1,7 @@
+#pragma clang diagnostic push
+// Ignore warnings in Lomse code: Implicit conversion loses integer precision
+#pragma clang diagnostic ignored "-Wshorten-64-to-32"
+
 #include "../src/agg/src/agg_arc.cpp"
 #include "../src/agg/src/agg_bezier_arc.cpp"
 #include "../src/agg/src/agg_curves.cpp"
@@ -154,3 +158,5 @@
 	#include "../packages/minizip/ioapi.c"
 	#include "../packages/minizip/unzip.c"
 #endif
+
+#pragma clang diagnostic pop
