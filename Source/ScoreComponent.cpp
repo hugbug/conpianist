@@ -203,10 +203,10 @@ void LomseScoreComponent::PrepareImage()
 	pageInfo->set_bottom_margin(500);
 	pageInfo->set_binding_margin(0);
 
-	interactor->on_document_updated();  //This rebuilds GraphicModel and will generate a Paint event
+	interactor->on_document_updated();  //This rebuilds GraphicModel
+	interactor->redraw_bitmap();
 	UpdateABMarks(true);
 	UpdateTempoLine(false);
-	interactor->redraw_bitmap();
 }
 
 LUnits LomseScoreComponent::ScaledUnits(int pixels)
