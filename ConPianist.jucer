@@ -2,7 +2,7 @@
 
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.4.7" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018-2020 Andrey Prygunkov"
-              companyEmail="a.prygunkov@gmail.com" version="1.0" companyWebsite="https://github.com/hugbug/conpianist"
+              companyEmail="a.prygunkov@gmail.com" version="2.0" companyWebsite="https://github.com/hugbug/conpianist"
               headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
               id="MqsAFh">
   <MAINGROUP id="LcKf1o" name="ConPianist">
@@ -15,6 +15,8 @@
             file="Graphics/button-abloop-half.png"/>
       <FILE id="LeY4n6" name="button-abloop.png" compile="0" resource="1"
             file="Graphics/button-abloop.png"/>
+      <FILE id="gP3lD1" name="button-balance.png" compile="0" resource="1"
+            file="Graphics/button-balance.png"/>
       <FILE id="PJo2ya" name="button-expand.png" compile="0" resource="1"
             file="Graphics/button-expand.png"/>
       <FILE id="OFWZDB" name="button-fastforward.png" compile="0" resource="1"
@@ -41,6 +43,10 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="qRmb9r" name="BalanceComponent.cpp" compile="1" resource="0"
+            file="Source/BalanceComponent.cpp"/>
+      <FILE id="g8JSIL" name="BalanceComponent.h" compile="0" resource="0"
+            file="Source/BalanceComponent.h"/>
       <FILE id="myytNU" name="ScoreComponent.cpp" compile="1" resource="0"
             file="Source/ScoreComponent.cpp"/>
       <FILE id="mXObOJ" name="ScoreComponent.h" compile="0" resource="0"

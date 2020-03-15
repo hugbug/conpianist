@@ -19,6 +19,7 @@
 
 //[Headers] You can add your own extra header files here...
 #include "ConnectionComponent.h"
+#include "BalanceComponent.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -126,6 +127,16 @@ SceneComponent::SceneComponent (Settings& settings)
     voiceButton->setButtonText (TRANS("Voice"));
     voiceButton->addListener (this);
 
+    balanceButton.reset (new ImageButton ("Balance Button"));
+    addAndMakeVisible (balanceButton.get());
+    balanceButton->setTooltip (TRANS("Balance"));
+    balanceButton->setButtonText (TRANS("Balance"));
+    balanceButton->addListener (this);
+
+    balanceButton->setImages (false, true, true,
+                              ImageCache::getFromMemory (BinaryData::buttonbalance_png, BinaryData::buttonbalance_pngSize), 1.000f, Colour (0x00000000),
+                              Image(), 0.750f, Colour (0x00000000),
+                              Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -180,6 +191,7 @@ SceneComponent::~SceneComponent()
     keyboardButton = nullptr;
     scoreButton = nullptr;
     voiceButton = nullptr;
+    balanceButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -222,6 +234,7 @@ void SceneComponent::resized()
     keyboardButton->setBounds (getWidth() - 129 - 32, 8, 32, 28);
     scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
     voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
+    balanceButton->setBounds (getWidth() - 169 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     playbackPanel->setBounds(playbackPanel->getX(), playbackPanel->getY(), playbackPanel->getWidth(),
     	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
@@ -287,6 +300,12 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         //[UserButtonCode_voiceButton] -- add your button handler code here..
 		switchLargePanel(buttonThatWasClicked);
         //[/UserButtonCode_voiceButton]
+    }
+    else if (buttonThatWasClicked == balanceButton.get())
+    {
+        //[UserButtonCode_balanceButton] -- add your button handler code here..
+		BalanceComponent::showDialog(pianoController);
+        //[/UserButtonCode_balanceButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -531,6 +550,12 @@ BEGIN_JUCER_METADATA
               virtualName="" explicitFocusOrder="0" pos="378 18 80 34" posRelativeX="69305d91c2150486"
               posRelativeY="69305d91c2150486" tooltip="Voice Selection" buttonText="Voice"
               connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+  <IMAGEBUTTON name="Balance Button" id="b26d1a0a73e9171c" memberName="balanceButton"
+               virtualName="" explicitFocusOrder="0" pos="169Rr 8 32 28" tooltip="Balance"
+               buttonText="Balance" connectedEdges="0" needsCallback="1" radioGroupId="0"
+               keepProportions="1" resourceNormal="BinaryData::buttonbalance_png"
+               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
+               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

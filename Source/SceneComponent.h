@@ -101,6 +101,7 @@ private:
     std::unique_ptr<ImageButton> keyboardButton;
     std::unique_ptr<TextButton> scoreButton;
     std::unique_ptr<TextButton> voiceButton;
+    std::unique_ptr<ImageButton> balanceButton;
 
 
     //==============================================================================
