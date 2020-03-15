@@ -59,8 +59,8 @@ static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
 static const char* CSP_PART_EVENTS = "02 00 04 00 0e 01";
 static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
 static const char* CSP_SONG_NAME_EVENTS = "02 00 04 00 01 01";
-static const char* CSP_VOLUME = "0c 00 00 01 50 01 00 00 01 ";
-static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01 50 01 00 00 01";
+static const char* CSP_VOLUME = "0c 00 00 01 NN 01 00 00 01 ";
+static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
@@ -82,6 +82,9 @@ static const char* CSP_VOICE_ENABLE_MAIN_STATE = "00 00 0c 00 01 01 00 01 00 00 
 static const char* CSP_VOICE_ENABLE_LAYER_STATE = "00 00 0c 00 01 01 01 01 00 00 01";
 static const char* CSP_VOICE_ENABLE_LEFT_STATE = "00 00 0c 00 01 01 02 01 00 00 01";
 static const char* CSP_VOICE_ENABLE_EVENTS = "02 00 0c 00 01 01";
+
+static const int BalanceSlotId[PianoController::BalanceSlot::bsMax - PianoController::BalanceSlot::bsMin + 1] =
+	{0, 1, 2, 0x40, 0x41, 0x44, 0x50, 0x51};
 
 void Sleep(int milliseconds)
 {
@@ -229,8 +232,13 @@ void PianoController::Connect()
 	SetGuide(false);
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
-	SetVolume(MinVolume);
-	SetVolume(DefaultVolume);
+
+	for (int slot = BalanceSlot::bsMin; slot <= BalanceSlot::bsMax; slot++)
+	{
+		SetVolume((BalanceSlot)slot, MinVolume);
+		SetVolume((BalanceSlot)slot, DefaultVolume);
+	}
+
 	SetTempo(MinTempo);
 	SetTempo(DefaultTempo);
 	ResetTempo();
@@ -358,9 +366,10 @@ void PianoController::SetPosition(const Position position)
 	SendCspMessage(String(CSP_POSITION) + WordToHex(position.measure) + " " + WordToHex(position.beat));
 }
 
-void PianoController::SetVolume(int volume)
+void PianoController::SetVolume(BalanceSlot slot, int volume)
 {
-	SendCspMessage(String(CSP_VOLUME) + ByteToHex(volume));
+	String command = String(CSP_VOLUME).replace("NN", ByteToHex(BalanceSlotId[slot])) + ByteToHex(volume);
+	SendCspMessage(command);
 }
 
 void PianoController::SetTempo(int tempo)
@@ -475,7 +484,14 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		}
 		else if (IsCspMessage(message, CSP_VOLUME_STATE))
 		{
-			m_volume = message.getSysExData()[17];
+			int slotId = message.getSysExData()[12];
+			for (int slot = BalanceSlot::bsMin; slot <= BalanceSlot::bsMax; slot++)
+			{
+				if (BalanceSlotId[slot] == slotId)
+				{
+					m_volume[slot] = message.getSysExData()[17];
+				}
+			}
 			NotifyChanged();
 		}
 		else if (IsCspMessage(message, CSP_TEMPO_STATE))

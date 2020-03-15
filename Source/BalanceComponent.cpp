@@ -143,19 +143,21 @@ BalanceComponent::BalanceComponent (PianoController& pianoController)
 
 
     //[UserPreSize]
-    updateSongState();
     //[/UserPreSize]
 
     setSize (366, 264);
 
 
     //[Constructor] You can add your own custom stuff here..
+    pianoController.AddListener(this);
+    updateSongState();
     //[/Constructor]
 }
 
 BalanceComponent::~BalanceComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
+    pianoController.RemoveListener(this);
     //[/Destructor_pre]
 
     leftLabel = nullptr;
@@ -211,32 +213,37 @@ void BalanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == leftSlider.get())
     {
         //[UserSliderCode_leftSlider] -- add your slider handling code here..
+        pianoController.SetVolume(PianoController::BalanceSlot::bsLeft, leftSlider->getValue());
         //[/UserSliderCode_leftSlider]
     }
     else if (sliderThatWasMoved == mainSlider.get())
     {
         //[UserSliderCode_mainSlider] -- add your slider handling code here..
+        pianoController.SetVolume(PianoController::BalanceSlot::bsMain, mainSlider->getValue());
         //[/UserSliderCode_mainSlider]
     }
     else if (sliderThatWasMoved == layerSlider.get())
     {
         //[UserSliderCode_layerSlider] -- add your slider handling code here..
+        pianoController.SetVolume(PianoController::BalanceSlot::bsLayer, layerSlider->getValue());
         //[/UserSliderCode_layerSlider]
     }
     else if (sliderThatWasMoved == songSlider.get())
     {
         //[UserSliderCode_songSlider] -- add your slider handling code here..
-        pianoController.SetVolume(songSlider->getValue());
+        pianoController.SetVolume(PianoController::BalanceSlot::bsMidi, songSlider->getValue());
         //[/UserSliderCode_songSlider]
     }
     else if (sliderThatWasMoved == micSlider.get())
     {
         //[UserSliderCode_micSlider] -- add your slider handling code here..
+        pianoController.SetVolume(PianoController::BalanceSlot::bsMic, micSlider->getValue());
         //[/UserSliderCode_micSlider]
     }
     else if (sliderThatWasMoved == auxInSlider.get())
     {
         //[UserSliderCode_auxInSlider] -- add your slider handling code here..
+        pianoController.SetVolume(PianoController::BalanceSlot::bsAuxIn, auxInSlider->getValue());
         //[/UserSliderCode_auxInSlider]
     }
 
@@ -249,8 +256,12 @@ void BalanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void BalanceComponent::updateSongState()
 {
-	//volumeLabel->setText(String(pianoController.GetVolume()), NotificationType::dontSendNotification);
-	songSlider->setValue(pianoController.GetVolume(), NotificationType::dontSendNotification);
+	leftSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsLeft), NotificationType::dontSendNotification);
+	mainSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMain), NotificationType::dontSendNotification);
+	layerSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsLayer), NotificationType::dontSendNotification);
+	songSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMidi), NotificationType::dontSendNotification);
+	micSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMic), NotificationType::dontSendNotification);
+	auxInSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsAuxIn), NotificationType::dontSendNotification);
 }
 
 void BalanceComponent::showDialog(PianoController& pianoController)

@@ -46,6 +46,20 @@ public:
 		vsLeft = 2
 	};
 
+	enum BalanceSlot
+	{
+		bsMain,
+		bsLayer,
+		bsLeft,
+		bsMic,
+		bsAuxIn,
+		bsWav,
+		bsMidi,
+		bsStyle,
+		bsMin = bsMain,
+		bsMax = bsStyle
+	};
+
 	class Listener
 	{
 	public:
@@ -86,8 +100,8 @@ public:
 	Position GetLoopStart() { return m_loopStart; }
 	void SetLoopStart(const Position loopStart);
 	void ResetLoop();
-	int GetVolume() { return m_volume; }
-	void SetVolume(int volume);
+	int GetVolume(BalanceSlot slot) { return m_volume[slot]; }
+	void SetVolume(BalanceSlot slot, int volume);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();
@@ -136,7 +150,7 @@ private:
 	bool m_backingPart = false;
 	bool m_leftPart = false;
 	bool m_rightPart = false;
-	int m_volume = 0;
+	int m_volume[BalanceSlot::bsMax - BalanceSlot::bsMin + 1]{0,0,0,0,0,0,0,0};
 	int m_tempo = 0;
 	int m_transpose = 0;
 	Position m_loopStart{0,0};
