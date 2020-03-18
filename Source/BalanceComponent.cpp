@@ -33,145 +33,40 @@ BalanceComponent::BalanceComponent (PianoController& pianoController)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    leftLabel.reset (new Label ("Left Label",
-                                TRANS("Left")));
-    addAndMakeVisible (leftLabel.get());
-    leftLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    leftLabel->setJustificationType (Justification::centredTop);
-    leftLabel->setEditable (false, false, false);
-    leftLabel->setColour (TextEditor::textColourId, Colours::black);
-    leftLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    leftLabel->setBounds (8, 8, 50, 24);
-
-    mainLabel.reset (new Label ("Main Label",
-                                TRANS("Main")));
-    addAndMakeVisible (mainLabel.get());
-    mainLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    mainLabel->setJustificationType (Justification::centredTop);
-    mainLabel->setEditable (false, false, false);
-    mainLabel->setColour (TextEditor::textColourId, Colours::black);
-    mainLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    mainLabel->setBounds (68, 8, 50, 24);
-
-    layerLabel.reset (new Label ("Layer Label",
-                                 TRANS("Layer")));
-    addAndMakeVisible (layerLabel.get());
-    layerLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    layerLabel->setJustificationType (Justification::centredTop);
-    layerLabel->setEditable (false, false, false);
-    layerLabel->setColour (TextEditor::textColourId, Colours::black);
-    layerLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    layerLabel->setBounds (128, 8, 50, 24);
-
-    songLabel.reset (new Label ("Song Label",
-                                TRANS("Song")));
-    addAndMakeVisible (songLabel.get());
-    songLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    songLabel->setJustificationType (Justification::centredTop);
-    songLabel->setEditable (false, false, false);
-    songLabel->setColour (TextEditor::textColourId, Colours::black);
-    songLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    songLabel->setBounds (188, 8, 50, 24);
-
-    micLabel.reset (new Label ("Mic Label",
-                               TRANS("Mic")));
-    addAndMakeVisible (micLabel.get());
-    micLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    micLabel->setJustificationType (Justification::centredTop);
-    micLabel->setEditable (false, false, false);
-    micLabel->setColour (TextEditor::textColourId, Colours::black);
-    micLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    micLabel->setBounds (248, 8, 50, 24);
-
-    auxInLabel.reset (new Label ("AuxIn Label",
-                                 TRANS("Aux In")));
-    addAndMakeVisible (auxInLabel.get());
-    auxInLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    auxInLabel->setJustificationType (Justification::centredTop);
-    auxInLabel->setEditable (false, false, false);
-    auxInLabel->setColour (TextEditor::textColourId, Colours::black);
-    auxInLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    auxInLabel->setBounds (308, 8, 50, 24);
-
-    leftSlider.reset (new Slider ("Left Slider"));
-    addAndMakeVisible (leftSlider.get());
-    leftSlider->setRange (0, 127, 1);
-    leftSlider->setSliderStyle (Slider::LinearVertical);
-    leftSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    leftSlider->addListener (this);
-
-    mainSlider.reset (new Slider ("Main Slider"));
-    addAndMakeVisible (mainSlider.get());
-    mainSlider->setRange (0, 127, 1);
-    mainSlider->setSliderStyle (Slider::LinearVertical);
-    mainSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    mainSlider->addListener (this);
-
-    layerSlider.reset (new Slider ("Layer Slider"));
-    addAndMakeVisible (layerSlider.get());
-    layerSlider->setRange (0, 127, 1);
-    layerSlider->setSliderStyle (Slider::LinearVertical);
-    layerSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    layerSlider->addListener (this);
-
-    songSlider.reset (new Slider ("Song Slider"));
-    addAndMakeVisible (songSlider.get());
-    songSlider->setRange (0, 127, 1);
-    songSlider->setSliderStyle (Slider::LinearVertical);
-    songSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    songSlider->addListener (this);
-
-    micSlider.reset (new Slider ("Mic Slider"));
-    addAndMakeVisible (micSlider.get());
-    micSlider->setRange (0, 127, 1);
-    micSlider->setSliderStyle (Slider::LinearVertical);
-    micSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    micSlider->addListener (this);
-
-    auxInSlider.reset (new Slider ("AuxIn Slider"));
-    addAndMakeVisible (auxInSlider.get());
-    auxInSlider->setRange (0, 127, 1);
-    auxInSlider->setSliderStyle (Slider::LinearVertical);
-    auxInSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    auxInSlider->addListener (this);
-
+    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chLeft, "Left", true));
+    addAndMakeVisible (leftChannel.get());
+    mainChannel.reset (new ChannelComponent (pianoController, PianoController::chMain, "Main", false));
+    addAndMakeVisible (mainChannel.get());
+    layerChannel.reset (new ChannelComponent (pianoController, PianoController::chLayer, "Layer", false));
+    addAndMakeVisible (layerChannel.get());
+    songChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Song", false));
+    addAndMakeVisible (songChannel.get());
+    micChannel.reset (new ChannelComponent (pianoController, PianoController::chMic, "Mic", false));
+    addAndMakeVisible (micChannel.get());
+    auxInChannel.reset (new ChannelComponent (pianoController, PianoController::chAuxIn, "Aux In", false));
+    addAndMakeVisible (auxInChannel.get());
 
     //[UserPreSize]
     //[/UserPreSize]
 
-    setSize (366, 264);
+    setSize (436, 560);
 
 
     //[Constructor] You can add your own custom stuff here..
-    pianoController.AddListener(this);
-    updateSongState();
     //[/Constructor]
 }
 
 BalanceComponent::~BalanceComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
-    pianoController.RemoveListener(this);
     //[/Destructor_pre]
 
-    leftLabel = nullptr;
-    mainLabel = nullptr;
-    layerLabel = nullptr;
-    songLabel = nullptr;
-    micLabel = nullptr;
-    auxInLabel = nullptr;
-    leftSlider = nullptr;
-    mainSlider = nullptr;
-    layerSlider = nullptr;
-    songSlider = nullptr;
-    micSlider = nullptr;
-    auxInSlider = nullptr;
+    leftChannel = nullptr;
+    mainChannel = nullptr;
+    layerChannel = nullptr;
+    songChannel = nullptr;
+    micChannel = nullptr;
+    auxInChannel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -195,75 +90,19 @@ void BalanceComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    leftSlider->setBounds (8, 40, 50, getHeight() - 40);
-    mainSlider->setBounds (68, 40, 50, getHeight() - 40);
-    layerSlider->setBounds (128, 40, 50, getHeight() - 40);
-    songSlider->setBounds (188, 40, 50, getHeight() - 40);
-    micSlider->setBounds (248, 40, 50, getHeight() - 40);
-    auxInSlider->setBounds (308, 40, 50, getHeight() - 40);
+    leftChannel->setBounds (8, 0, 72, getHeight() - 0);
+    mainChannel->setBounds (78, 0, 72, getHeight() - 0);
+    layerChannel->setBounds (148, 0, 72, getHeight() - 0);
+    songChannel->setBounds (218, 0, 72, getHeight() - 0);
+    micChannel->setBounds (288, 0, 72, getHeight() - 0);
+    auxInChannel->setBounds (358, 0, 72, getHeight() - 0);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
-}
-
-void BalanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
-{
-    //[UsersliderValueChanged_Pre]
-    //[/UsersliderValueChanged_Pre]
-
-    if (sliderThatWasMoved == leftSlider.get())
-    {
-        //[UserSliderCode_leftSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chLeft, leftSlider->getValue());
-        //[/UserSliderCode_leftSlider]
-    }
-    else if (sliderThatWasMoved == mainSlider.get())
-    {
-        //[UserSliderCode_mainSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chMain, mainSlider->getValue());
-        //[/UserSliderCode_mainSlider]
-    }
-    else if (sliderThatWasMoved == layerSlider.get())
-    {
-        //[UserSliderCode_layerSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chLayer, layerSlider->getValue());
-        //[/UserSliderCode_layerSlider]
-    }
-    else if (sliderThatWasMoved == songSlider.get())
-    {
-        //[UserSliderCode_songSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chMidiMaster, songSlider->getValue());
-        //[/UserSliderCode_songSlider]
-    }
-    else if (sliderThatWasMoved == micSlider.get())
-    {
-        //[UserSliderCode_micSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chMic, micSlider->getValue());
-        //[/UserSliderCode_micSlider]
-    }
-    else if (sliderThatWasMoved == auxInSlider.get())
-    {
-        //[UserSliderCode_auxInSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::chAuxIn, auxInSlider->getValue());
-        //[/UserSliderCode_auxInSlider]
-    }
-
-    //[UsersliderValueChanged_Post]
-    //[/UsersliderValueChanged_Post]
 }
 
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void BalanceComponent::updateSongState()
-{
-	leftSlider->setValue(pianoController.GetVolume(PianoController::chLeft), NotificationType::dontSendNotification);
-	mainSlider->setValue(pianoController.GetVolume(PianoController::chMain), NotificationType::dontSendNotification);
-	layerSlider->setValue(pianoController.GetVolume(PianoController::chLayer), NotificationType::dontSendNotification);
-	songSlider->setValue(pianoController.GetVolume(PianoController::chMidiMaster), NotificationType::dontSendNotification);
-	micSlider->setValue(pianoController.GetVolume(PianoController::chMic), NotificationType::dontSendNotification);
-	auxInSlider->setValue(pianoController.GetVolume(PianoController::chAuxIn), NotificationType::dontSendNotification);
-}
-
 void BalanceComponent::showDialog(PianoController& pianoController)
 {
 	DialogWindow::LaunchOptions dialog;
@@ -287,71 +126,29 @@ void BalanceComponent::showDialog(PianoController& pianoController)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="BalanceComponent" componentName=""
-                 parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
-                 fixedSize="0" initialWidth="366" initialHeight="264">
+                 parentClasses="public Component" constructorParams="PianoController&amp; pianoController"
+                 variableInitialisers="pianoController(pianoController)" snapPixels="8"
+                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
+                 initialWidth="436" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
-  <LABEL name="Left Label" id="bb1cad2ba1283943" memberName="leftLabel"
-         virtualName="" explicitFocusOrder="0" pos="8 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Left" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <LABEL name="Main Label" id="ed8c54c71261d2ff" memberName="mainLabel"
-         virtualName="" explicitFocusOrder="0" pos="68 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Main" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <LABEL name="Layer Label" id="a9eb5bfd0406b350" memberName="layerLabel"
-         virtualName="" explicitFocusOrder="0" pos="128 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Layer" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <LABEL name="Song Label" id="19b588b7e3e3c762" memberName="songLabel"
-         virtualName="" explicitFocusOrder="0" pos="188 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Song" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <LABEL name="Mic Label" id="dc48ad248a60d8bb" memberName="micLabel"
-         virtualName="" explicitFocusOrder="0" pos="248 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Mic" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <LABEL name="AuxIn Label" id="6d30436cc5a96a61" memberName="auxInLabel"
-         virtualName="" explicitFocusOrder="0" pos="308 8 50 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Aux In" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
-  <SLIDER name="Left Slider" id="9ebc7097d295b7c9" memberName="leftSlider"
-          virtualName="" explicitFocusOrder="0" pos="8 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
-  <SLIDER name="Main Slider" id="2d1e3b364abcc81b" memberName="mainSlider"
-          virtualName="" explicitFocusOrder="0" pos="68 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
-  <SLIDER name="Layer Slider" id="bf3995f54a85f1a2" memberName="layerSlider"
-          virtualName="" explicitFocusOrder="0" pos="128 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
-  <SLIDER name="Song Slider" id="caa681bfb755af7c" memberName="songSlider"
-          virtualName="" explicitFocusOrder="0" pos="188 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
-  <SLIDER name="Mic Slider" id="aa06cf9cdd804fbf" memberName="micSlider"
-          virtualName="" explicitFocusOrder="0" pos="248 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
-  <SLIDER name="AuxIn Slider" id="4bfcc4e67ad3baa8" memberName="auxInSlider"
-          virtualName="" explicitFocusOrder="0" pos="308 40 50 40M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
+  <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
+             virtualName="" explicitFocusOrder="0" pos="8 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chLeft, &quot;Left&quot;, true"/>
+  <JUCERCOMP name="Main Channel" id="74e25a6d700b5cc9" memberName="mainChannel"
+             virtualName="" explicitFocusOrder="0" pos="78 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chMain, &quot;Main&quot;, false"/>
+  <JUCERCOMP name="Layer Channel" id="ef551064ccb187e2" memberName="layerChannel"
+             virtualName="" explicitFocusOrder="0" pos="148 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chLayer, &quot;Layer&quot;, false"/>
+  <JUCERCOMP name="Song Channel" id="ea486fd33cd44e31" memberName="songChannel"
+             virtualName="" explicitFocusOrder="0" pos="218 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false"/>
+  <JUCERCOMP name="Mic Channel" id="8f4c373ee8ae253f" memberName="micChannel"
+             virtualName="" explicitFocusOrder="0" pos="288 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chMic, &quot;Mic&quot;, false"/>
+  <JUCERCOMP name="AuxIn Channel" id="7ffff5d33c7b27f" memberName="auxInChannel"
+             virtualName="" explicitFocusOrder="0" pos="358 0 72 0M" sourceFile="ChannelComponent.cpp"
+             constructorParams="pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

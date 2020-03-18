@@ -22,15 +22,8 @@
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
 #include "PianoController.h"
-#include "ChannelComponent.h"
 //[/Headers]
 
-#include "ChannelComponent.h"
-#include "ChannelComponent.h"
-#include "ChannelComponent.h"
-#include "ChannelComponent.h"
-#include "ChannelComponent.h"
-#include "ChannelComponent.h"
 
 
 //==============================================================================
@@ -41,39 +34,46 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class BalanceComponent  : public Component
+class ChannelComponent  : public Component,
+                          public PianoController::Listener,
+                          public Slider::Listener
 {
 public:
     //==============================================================================
-    BalanceComponent (PianoController& pianoController);
-    ~BalanceComponent() override;
+    ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels);
+    ~ChannelComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-	static void showDialog(PianoController& pianoController);
+    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSongState();}); }
+	void updateSongState();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
+    void sliderValueChanged (Slider* sliderThatWasMoved) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     PianoController& pianoController;
+    PianoController::Channel channel;
+    String title;
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<ChannelComponent> leftChannel;
-    std::unique_ptr<ChannelComponent> mainChannel;
-    std::unique_ptr<ChannelComponent> layerChannel;
-    std::unique_ptr<ChannelComponent> songChannel;
-    std::unique_ptr<ChannelComponent> micChannel;
-    std::unique_ptr<ChannelComponent> auxInChannel;
+    std::unique_ptr<Label> titleLabel;
+    std::unique_ptr<Slider> volumeSlider;
+    std::unique_ptr<Slider> panSlider;
+    std::unique_ptr<Label> panLabel;
+    std::unique_ptr<Label> reverbLabel;
+    std::unique_ptr<Slider> reverbSlider;
+    std::unique_ptr<Label> volumeLabel;
 
 
     //==============================================================================
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BalanceComponent)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (ChannelComponent)
 };
 
 //[EndFile] You can add extra defines here...
