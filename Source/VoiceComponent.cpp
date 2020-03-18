@@ -269,19 +269,22 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == mainTitleButton.get())
     {
         //[UserButtonCode_mainTitleButton] -- add your button handler code here..
-        pianoController.SetVoiceActive(PianoController::vsMain, !pianoController.GetVoiceActive(PianoController::vsMain));
+        pianoController.SetActive(PianoController::chMain,
+        	!pianoController.GetActive(PianoController::chMain));
         //[/UserButtonCode_mainTitleButton]
     }
     else if (buttonThatWasClicked == leftTitleButton.get())
     {
         //[UserButtonCode_leftTitleButton] -- add your button handler code here..
-        pianoController.SetVoiceActive(PianoController::vsLeft, !pianoController.GetVoiceActive(PianoController::vsLeft));
+        pianoController.SetActive(PianoController::chLeft,
+        	!pianoController.GetActive(PianoController::chLeft));
         //[/UserButtonCode_leftTitleButton]
     }
     else if (buttonThatWasClicked == layerTitleButton.get())
     {
         //[UserButtonCode_layerTitleButton] -- add your button handler code here..
-        pianoController.SetVoiceActive(PianoController::vsLayer, !pianoController.GetVoiceActive(PianoController::vsLayer));
+        pianoController.SetActive(PianoController::chLayer,
+        	!pianoController.GetActive(PianoController::chLayer));
         //[/UserButtonCode_layerTitleButton]
     }
 
@@ -294,13 +297,13 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void VoiceComponent::updateVoiceState()
 {
-	mainVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::vsMain)));
-	layerVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::vsLayer)));
-	leftVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::vsLeft)));
+	mainVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chMain)));
+	layerVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chLayer)));
+	leftVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chLeft)));
 
-	mainTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsMain), NotificationType::dontSendNotification);
-	layerTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsLayer), NotificationType::dontSendNotification);
-	leftTitleButton->setToggleState(pianoController.GetVoiceActive(PianoController::vsLeft), NotificationType::dontSendNotification);
+	mainTitleButton->setToggleState(pianoController.GetActive(PianoController::chMain), NotificationType::dontSendNotification);
+	layerTitleButton->setToggleState(pianoController.GetActive(PianoController::chLayer), NotificationType::dontSendNotification);
+	leftTitleButton->setToggleState(pianoController.GetActive(PianoController::chLeft), NotificationType::dontSendNotification);
 
 	updateEnabledControls();
 }
@@ -343,13 +346,13 @@ void VoiceComponent::buildVoiceTree()
 
 void VoiceComponent::voiceItemClicked(Voice* voice)
 {
-	PianoController::VoiceSlot slot =
-		layerIndicatorLabel->isVisible() ? PianoController::vsLayer :
-		leftIndicatorLabel->isVisible() ? PianoController::vsLeft :
-		PianoController::vsMain;
+	PianoController::Channel channel =
+		layerIndicatorLabel->isVisible() ? PianoController::chLayer :
+		leftIndicatorLabel->isVisible() ? PianoController::chLeft :
+		PianoController::chMain;
 
-	pianoController.SetVoiceActive(slot, true);
-	pianoController.SetVoice(slot, voice->path);
+	pianoController.SetActive(channel, true);
+	pianoController.SetVoice(channel, voice->path);
 }
 
 void VoiceComponent::voiceButtonClicked(Button* button)
@@ -359,9 +362,9 @@ void VoiceComponent::voiceButtonClicked(Button* button)
 	leftIndicatorLabel->setVisible(button == leftVoiceButton.get());
 
 	String voice = button == layerVoiceButton.get() ?
-		pianoController.GetVoice(PianoController::vsLayer) :
-		button == leftVoiceButton.get() ? pianoController.GetVoice(PianoController::vsLeft) :
-		pianoController.GetVoice(PianoController::vsMain);
+		pianoController.GetVoice(PianoController::chLayer) :
+		button == leftVoiceButton.get() ? pianoController.GetVoice(PianoController::chLeft) :
+		pianoController.GetVoice(PianoController::chMain);
 
 	scrollToVoice(voice);
 }

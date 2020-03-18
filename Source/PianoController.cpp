@@ -77,14 +77,19 @@ static const char* CSP_VOICE_SELECT = "02 00 00 01 NN 01 00 ";
 static const char* CSP_VOICE_SELECT_EVENTS = "02 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE = "00 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE2 = "00 01 02 00 00 01";
-static const char* CSP_VOICE_ENABLE = "0c 00 01 01 NN 01 00 00 01 ";
-static const char* CSP_VOICE_ENABLE_MAIN_STATE = "00 00 0c 00 01 01 00 01 00 00 01";
-static const char* CSP_VOICE_ENABLE_LAYER_STATE = "00 00 0c 00 01 01 01 01 00 00 01";
-static const char* CSP_VOICE_ENABLE_LEFT_STATE = "00 00 0c 00 01 01 02 01 00 00 01";
-static const char* CSP_VOICE_ENABLE_EVENTS = "02 00 0c 00 01 01";
+static const char* CSP_CHANNEL_ENABLE = "0c 00 01 01 NN 01 00 00 01 ";
+static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 0c 00 01 01";
+static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 0c 00 01 01";
 
-static const int BalanceSlotId[PianoController::BalanceSlot::bsMax - PianoController::BalanceSlot::bsMin + 1] =
-	{0, 1, 2, 0x40, 0x41, 0x44, 0x50, 0x51};
+static const std::vector<PianoController::Channel> ValidChannelIds = {
+	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
+	PianoController::chMidi1, PianoController::chMidi2, PianoController::chMidi3,
+	PianoController::chMidi4, PianoController::chMidi5, PianoController::chMidi6,
+	PianoController::chMidi7, PianoController::chMidi8, PianoController::chMidi9,
+	PianoController::chMidi10, PianoController::chMidi11, PianoController::chMidi12,
+	PianoController::chMidi13, PianoController::chMidi14, PianoController::chMidi15,
+	PianoController::chMidi16, PianoController::chMic, PianoController::chAuxIn,
+	PianoController::chWave, PianoController::chMidiMaster, PianoController::chStyle };
 
 void Sleep(int milliseconds)
 {
@@ -214,7 +219,7 @@ void PianoController::Connect()
 	//   voice info
 	SendCspMessage(CSP_VOICE_SELECT_EVENTS, false);
 	//   voice slot enabled/disabled
-	SendCspMessage(CSP_VOICE_ENABLE_EVENTS, false);
+	SendCspMessage(CSP_CHANNEL_ENABLE_EVENTS, false);
 	//   song name info (after a song is loaded)
 	SendCspMessage(CSP_SONG_NAME_EVENTS, false);
 
@@ -233,10 +238,10 @@ void PianoController::Connect()
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
 
-	for (int slot = BalanceSlot::bsMin; slot <= BalanceSlot::bsMax; slot++)
+	for (Channel ch : ValidChannelIds)
 	{
-		SetVolume((BalanceSlot)slot, MinVolume);
-		SetVolume((BalanceSlot)slot, DefaultVolume);
+		SetVolume(ch, MinVolume);
+		SetVolume(ch, DefaultVolume);
 	}
 
 	SetTempo(MinTempo);
@@ -245,16 +250,16 @@ void PianoController::Connect()
 	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
 
-	SetVoiceActive(vsMain, true);
-	SetVoiceActive(vsLayer, false);
-	SetVoiceActive(vsLeft, false);
+	SetActive(chMain, true);
+	SetActive(chLayer, false);
+	SetActive(chLeft, false);
 
 	// By trying to set an invalid voice we cause the piano to fire
 	// event "CSP_VOICE_SELECT_STATE2" containing info about current voice.
 	// That's how we know which voice is selected without changing it
-	SetVoice(vsMain, "");
-	SetVoice(vsLayer, "");
-	SetVoice(vsLeft, "");
+	SetVoice(chMain, "");
+	SetVoice(chLayer, "");
+	SetVoice(chLeft, "");
 
 	NotifyChanged();
 }
@@ -366,9 +371,9 @@ void PianoController::SetPosition(const Position position)
 	SendCspMessage(String(CSP_POSITION) + WordToHex(position.measure) + " " + WordToHex(position.beat));
 }
 
-void PianoController::SetVolume(BalanceSlot slot, int volume)
+void PianoController::SetVolume(Channel ch, int volume)
 {
-	String command = String(CSP_VOLUME).replace("NN", ByteToHex(BalanceSlotId[slot])) + ByteToHex(volume);
+	String command = String(CSP_VOLUME).replace("NN", ByteToHex(ch)) + ByteToHex(volume);
 	SendCspMessage(command);
 }
 
@@ -484,14 +489,14 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		}
 		else if (IsCspMessage(message, CSP_VOLUME_STATE))
 		{
-			int slotId = message.getSysExData()[12];
-			for (int slot = BalanceSlot::bsMin; slot <= BalanceSlot::bsMax; slot++)
-			{
-				if (BalanceSlotId[slot] == slotId)
-				{
-					m_volume[slot] = message.getSysExData()[17];
-				}
-			}
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].volume = message.getSysExData()[17];
+			NotifyChanged();
+		}
+		else if (IsCspMessage(message, CSP_CHANNEL_ENABLE_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].enabled = message.getSysExData()[17] == 1;
 			NotifyChanged();
 		}
 		else if (IsCspMessage(message, CSP_TEMPO_STATE))
@@ -527,14 +532,6 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			ProcessVoiceEvent(message);
 			NotifyChanged();
 		}
-		else if (IsCspMessage(message, CSP_VOICE_ENABLE_MAIN_STATE) ||
-			IsCspMessage(message, CSP_VOICE_ENABLE_LAYER_STATE) ||
-			IsCspMessage(message, CSP_VOICE_ENABLE_LEFT_STATE))
-		{
-			VoiceSlot slot = (VoiceSlot)message.getSysExData()[12];
-			m_voiceActive[slot] = message.getSysExData()[17] == 1;
-			NotifyChanged();
-		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))
 		{
 			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
@@ -566,23 +563,23 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 	}
 }
 
-void PianoController::SetVoice(VoiceSlot slot, const String& voice)
+void PianoController::SetVoice(Channel ch, const String& voice)
 {
-	String command = String(CSP_VOICE_SELECT).replace("NN", ByteToHex(slot)) + TextToHex(voice);
+	String command = String(CSP_VOICE_SELECT).replace("NN", ByteToHex(ch)) + TextToHex(voice);
 	SendCspMessage(command);
 }
 
 void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 {
-	VoiceSlot slot = (VoiceSlot)message.getSysExData()[12];
+	Channel ch = (Channel)message.getSysExData()[12];
 	int off = message.getSysExData()[7] == 1 ? 17 : 15;
 	String voice = BytesToText(message.getSysExData() + off, message.getSysExDataSize() - off);
-	m_voice[slot] = voice;
+	m_channels[ch].voice = voice;
 }
 
-void PianoController::SetVoiceActive(VoiceSlot slot, bool active)
+void PianoController::SetActive(Channel ch, bool active)
 {
-	String command = String(CSP_VOICE_ENABLE).replace("NN", ByteToHex(slot)) +
+	String command = String(CSP_CHANNEL_ENABLE).replace("NN", ByteToHex(ch)) +
 		(active ? "01" : "00");
 	SendCspMessage(command);
 }

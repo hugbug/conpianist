@@ -213,37 +213,37 @@ void BalanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == leftSlider.get())
     {
         //[UserSliderCode_leftSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsLeft, leftSlider->getValue());
+        pianoController.SetVolume(PianoController::chLeft, leftSlider->getValue());
         //[/UserSliderCode_leftSlider]
     }
     else if (sliderThatWasMoved == mainSlider.get())
     {
         //[UserSliderCode_mainSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsMain, mainSlider->getValue());
+        pianoController.SetVolume(PianoController::chMain, mainSlider->getValue());
         //[/UserSliderCode_mainSlider]
     }
     else if (sliderThatWasMoved == layerSlider.get())
     {
         //[UserSliderCode_layerSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsLayer, layerSlider->getValue());
+        pianoController.SetVolume(PianoController::chLayer, layerSlider->getValue());
         //[/UserSliderCode_layerSlider]
     }
     else if (sliderThatWasMoved == songSlider.get())
     {
         //[UserSliderCode_songSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsMidi, songSlider->getValue());
+        pianoController.SetVolume(PianoController::chMidiMaster, songSlider->getValue());
         //[/UserSliderCode_songSlider]
     }
     else if (sliderThatWasMoved == micSlider.get())
     {
         //[UserSliderCode_micSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsMic, micSlider->getValue());
+        pianoController.SetVolume(PianoController::chMic, micSlider->getValue());
         //[/UserSliderCode_micSlider]
     }
     else if (sliderThatWasMoved == auxInSlider.get())
     {
         //[UserSliderCode_auxInSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsAuxIn, auxInSlider->getValue());
+        pianoController.SetVolume(PianoController::chAuxIn, auxInSlider->getValue());
         //[/UserSliderCode_auxInSlider]
     }
 
@@ -256,12 +256,12 @@ void BalanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void BalanceComponent::updateSongState()
 {
-	leftSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsLeft), NotificationType::dontSendNotification);
-	mainSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMain), NotificationType::dontSendNotification);
-	layerSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsLayer), NotificationType::dontSendNotification);
-	songSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMidi), NotificationType::dontSendNotification);
-	micSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMic), NotificationType::dontSendNotification);
-	auxInSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsAuxIn), NotificationType::dontSendNotification);
+	leftSlider->setValue(pianoController.GetVolume(PianoController::chLeft), NotificationType::dontSendNotification);
+	mainSlider->setValue(pianoController.GetVolume(PianoController::chMain), NotificationType::dontSendNotification);
+	layerSlider->setValue(pianoController.GetVolume(PianoController::chLayer), NotificationType::dontSendNotification);
+	songSlider->setValue(pianoController.GetVolume(PianoController::chMidiMaster), NotificationType::dontSendNotification);
+	micSlider->setValue(pianoController.GetVolume(PianoController::chMic), NotificationType::dontSendNotification);
+	auxInSlider->setValue(pianoController.GetVolume(PianoController::chAuxIn), NotificationType::dontSendNotification);
 }
 
 void BalanceComponent::showDialog(PianoController& pianoController)

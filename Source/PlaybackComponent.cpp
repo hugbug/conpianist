@@ -422,7 +422,7 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == volumeSlider.get())
     {
         //[UserSliderCode_volumeSlider] -- add your slider handling code here..
-        pianoController.SetVolume(PianoController::BalanceSlot::bsMidi, volumeSlider->getValue());
+        pianoController.SetVolume(PianoController::chMidiMaster, volumeSlider->getValue());
         //[/UserSliderCode_volumeSlider]
     }
     else if (sliderThatWasMoved == tempoSlider.get())
@@ -569,9 +569,9 @@ void PlaybackComponent::updateSongState()
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 	playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
 
-	volumeLabel->setText(String(pianoController.GetVolume(PianoController::BalanceSlot::bsMidi)),
+	volumeLabel->setText(String(pianoController.GetVolume(PianoController::chMidiMaster)),
 	 	NotificationType::dontSendNotification);
-	volumeSlider->setValue(pianoController.GetVolume(PianoController::BalanceSlot::bsMidi),
+	volumeSlider->setValue(pianoController.GetVolume(PianoController::chMidiMaster),
 		NotificationType::dontSendNotification);
 
 	tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
@@ -625,7 +625,7 @@ void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
 		event.eventComponent == volumeTitleLabel.get() ||
 		event.eventComponent == volumeLabel.get())
 	{
-		pianoController.SetVolume(PianoController::BalanceSlot::bsMidi, PianoController::DefaultVolume);
+		pianoController.SetVolume(PianoController::chMidiMaster, PianoController::DefaultVolume);
 	}
 	else if (event.eventComponent == tempoSlider.get() ||
 		event.eventComponent == tempoTitleLabel.get() ||

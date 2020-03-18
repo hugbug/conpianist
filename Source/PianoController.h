@@ -39,25 +39,29 @@ public:
 		Position end;
 	};
 
-	enum VoiceSlot
+	enum Channel
 	{
-		vsMain = 0,
-		vsLayer = 1,
-		vsLeft = 2
+		chMain = 0x00,
+		chLayer = 0x01,
+		chLeft = 0x02,
+		chMidi1 = 0x10,
+		chMidi2, chMidi3, chMidi4, chMidi5, chMidi6, chMidi7, chMidi8,
+		chMidi9, chMidi10, chMidi11, chMidi12, chMidi13, chMidi14, chMidi15,
+		chMidi16 = 0x1F,
+		chMic = 0x40,
+		chAuxIn = 0x41,
+		chWave = 0x44,
+		chMidiMaster = 0x50,
+		chStyle = 0x51
 	};
 
-	enum BalanceSlot
+	struct ChannelInfo
 	{
-		bsMain,
-		bsLayer,
-		bsLeft,
-		bsMic,
-		bsAuxIn,
-		bsWav,
-		bsMidi,
-		bsStyle,
-		bsMin = bsMain,
-		bsMax = bsStyle
+		bool enabled = false;
+		int volume = 0; // 0..127
+		int pan = 0; // 0..127
+		int reverb = 0; // 0..127
+		String voice;
 	};
 
 	class Listener
@@ -100,8 +104,8 @@ public:
 	Position GetLoopStart() { return m_loopStart; }
 	void SetLoopStart(const Position loopStart);
 	void ResetLoop();
-	int GetVolume(BalanceSlot slot) { return m_volume[slot]; }
-	void SetVolume(BalanceSlot slot, int volume);
+	int GetVolume(Channel ch) { return m_channels[ch].volume; }
+	void SetVolume(Channel ch, int volume);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();
@@ -113,10 +117,10 @@ public:
 	void SetLeftPart(bool enable);
 	bool GetRightPart() { return m_rightPart; }
 	void SetRightPart(bool enable);
-	const String& GetVoice(VoiceSlot slot) { return m_voice[slot]; }
-	void SetVoice(VoiceSlot slot, const String& voice);
-	bool GetVoiceActive(VoiceSlot slot) { return m_voiceActive[slot]; }
-	void SetVoiceActive(VoiceSlot slot, bool active);
+	const String& GetVoice(Channel ch) { return m_channels[ch].voice; }
+	void SetVoice(Channel ch, const String& voice);
+	bool GetActive(Channel ch) { return m_channels[ch].enabled; }
+	void SetActive(Channel ch, bool active);
 	const String& GetSongFilename() { return m_songFilename; }
 
 	void SendMidiMessage(const MidiMessage& message);
@@ -150,13 +154,11 @@ private:
 	bool m_backingPart = false;
 	bool m_leftPart = false;
 	bool m_rightPart = false;
-	int m_volume[BalanceSlot::bsMax - BalanceSlot::bsMin + 1]{0,0,0,0,0,0,0,0};
 	int m_tempo = 0;
 	int m_transpose = 0;
 	Position m_loopStart{0,0};
 	Loop m_loop{{0,0},{0,0}};
-	String m_voice[3];
-	bool m_voiceActive[3]{true, false, false};
+	ChannelInfo m_channels[127];
 	String m_songFilename;
 
 	void SendSysExMessage(const String& command);
