@@ -250,9 +250,20 @@ void PianoController::Connect()
 	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
 
+	// set internal active for channels
+	m_channels[chMain].enabled = true;
+	m_channels[chLayer].enabled = false;
+	m_channels[chLeft].enabled = false;
+	m_channels[chMidiMaster].enabled = true;
+	m_channels[chMic].enabled = true;
+	m_channels[chAuxIn].enabled = true;
+
 	SetActive(chMain, true);
 	SetActive(chLayer, false);
 	SetActive(chLeft, false);
+	SetActive(chMidiMaster, true);
+	SetActive(chMic, true);
+	SetActive(chAuxIn, true);
 
 	// By trying to set an invalid voice we cause the piano to fire
 	// event "CSP_VOICE_SELECT_STATE2" containing info about current voice.

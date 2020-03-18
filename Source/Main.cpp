@@ -33,8 +33,8 @@ public:
 #if TARGET_OS_IPHONE
 		Desktop::getInstance().setGlobalScaleFactor(1.2);
 #endif
+		Desktop::getInstance().setDefaultLookAndFeel(&lookAndFeel);
         mainWindow.reset(new MainWindow (getApplicationName()));
-        mainWindow->setLookAndFeel(&lookAndFeel);
 #if TARGET_OS_IPHONE
 		mainWindow->setFullScreen(true);
 #endif

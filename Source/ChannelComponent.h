@@ -36,7 +36,8 @@
 */
 class ChannelComponent  : public Component,
                           public PianoController::Listener,
-                          public Slider::Listener
+                          public Slider::Listener,
+                          public Button::Listener
 {
 public:
     //==============================================================================
@@ -52,6 +53,7 @@ public:
     void paint (Graphics& g) override;
     void resized() override;
     void sliderValueChanged (Slider* sliderThatWasMoved) override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
 
 
 
@@ -63,13 +65,13 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<Label> titleLabel;
     std::unique_ptr<Slider> volumeSlider;
     std::unique_ptr<Slider> panSlider;
     std::unique_ptr<Label> panLabel;
     std::unique_ptr<Label> reverbLabel;
     std::unique_ptr<Slider> reverbSlider;
     std::unique_ptr<Label> volumeLabel;
+    std::unique_ptr<TextButton> titleButton;
 
 
     //==============================================================================

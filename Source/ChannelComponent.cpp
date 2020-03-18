@@ -33,17 +33,6 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    titleLabel.reset (new Label ("Ttitle Label",
-                                 TRANS("Ch. 1")));
-    addAndMakeVisible (titleLabel.get());
-    titleLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    titleLabel->setJustificationType (Justification::centredTop);
-    titleLabel->setEditable (false, false, false);
-    titleLabel->setColour (TextEditor::textColourId, Colours::black);
-    titleLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    titleLabel->setBounds (0, 8, 70, 40);
-
     volumeSlider.reset (new Slider ("Volume Slider"));
     addAndMakeVisible (volumeSlider.get());
     volumeSlider->setRange (0, 127, 1);
@@ -58,7 +47,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
     panSlider->addListener (this);
 
-    panSlider->setBounds (0, 76, 70, 76);
+    panSlider->setBounds (0, 80, 70, 76);
 
     panLabel.reset (new Label ("Pan Label",
                                TRANS("Pan")));
@@ -69,7 +58,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panLabel->setColour (TextEditor::textColourId, Colours::black);
     panLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    panLabel->setBounds (0, 48, 70, 24);
+    panLabel->setBounds (0, 52, 70, 24);
 
     reverbLabel.reset (new Label ("Reverb Label",
                                   TRANS("Reverb")));
@@ -100,20 +89,29 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     volumeLabel->setColour (TextEditor::textColourId, Colours::black);
     volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    volumeLabel->setBounds (0, 276, 70, 24);
+    volumeLabel->setBounds (0, 272, 70, 24);
+
+    titleButton.reset (new TextButton ("Title Button"));
+    addAndMakeVisible (titleButton.get());
+    titleButton->setButtonText (TRANS("Ch. 1"));
+    titleButton->addListener (this);
+
+    titleButton->setBounds (2, 8, 66, 28);
 
 
     //[UserPreSize]
-    titleLabel->setText(title, NotificationType::dontSendNotification);
-	panLabel->setVisible(showLabels);
-	reverbLabel->setVisible(showLabels);
-	volumeLabel->setVisible(showLabels);
     //[/UserPreSize]
 
     setSize (70, 560);
 
 
     //[Constructor] You can add your own custom stuff here..
+    titleButton->getProperties().set("toggle", "yes");
+    titleButton->setButtonText(title);
+	panLabel->setVisible(showLabels);
+	reverbLabel->setVisible(showLabels);
+	volumeLabel->setVisible(showLabels);
+
     pianoController.AddListener(this);
     updateSongState();
     //[/Constructor]
@@ -125,13 +123,13 @@ ChannelComponent::~ChannelComponent()
     pianoController.RemoveListener(this);
     //[/Destructor_pre]
 
-    titleLabel = nullptr;
     volumeSlider = nullptr;
     panSlider = nullptr;
     panLabel = nullptr;
     reverbLabel = nullptr;
     reverbSlider = nullptr;
     volumeLabel = nullptr;
+    titleButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -155,7 +153,7 @@ void ChannelComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    volumeSlider->setBounds (0, 304, 70, getHeight() - 310);
+    volumeSlider->setBounds (0, 300, 70, getHeight() - 301);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -186,12 +184,38 @@ void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     //[/UsersliderValueChanged_Post]
 }
 
+void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
+{
+    //[UserbuttonClicked_Pre]
+    //[/UserbuttonClicked_Pre]
+
+    if (buttonThatWasClicked == titleButton.get())
+    {
+        //[UserButtonCode_titleButton] -- add your button handler code here..
+        pianoController.SetActive(channel, !pianoController.GetActive(channel));
+        //[/UserButtonCode_titleButton]
+    }
+
+    //[UserbuttonClicked_Post]
+    //[/UserbuttonClicked_Post]
+}
+
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void ChannelComponent::updateSongState()
 {
+	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
+
+	panSlider->setEnabled(pianoController.GetActive(channel));
+	reverbSlider->setEnabled(pianoController.GetActive(channel));
+	volumeSlider->setEnabled(pianoController.GetActive(channel));
+
 	volumeSlider->setValue(pianoController.GetVolume(channel), NotificationType::dontSendNotification);
+
+	panSlider->setColour(Slider::thumbColourId, Colour(panSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
+	reverbSlider->setColour(Slider::thumbColourId, Colour(reverbSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
+	volumeSlider->setColour(Slider::thumbColourId, Colour(volumeSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
 }
 //[/MiscUserCode]
 
@@ -212,23 +236,18 @@ BEGIN_JUCER_METADATA
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
-  <LABEL name="Ttitle Label" id="bb1cad2ba1283943" memberName="titleLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 8 70 40" edTextCol="ff000000"
-         edBkgCol="0" labelText="Ch. 1" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="12"/>
   <SLIDER name="Volume Slider" id="9ebc7097d295b7c9" memberName="volumeSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 304 70 310M" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="0 300 70 301M" min="0.0"
           max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="Pan Slider" id="6dc8f196b2d9dabf" memberName="panSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 76 70 76" min="-64.0"
+          virtualName="" explicitFocusOrder="0" pos="0 80 70 76" min="-64.0"
           max="63.0" int="1.0" style="RotaryHorizontalDrag" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <LABEL name="Pan Label" id="83fd07e9ba9100c1" memberName="panLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 48 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 52 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Pan" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
@@ -243,10 +262,14 @@ BEGIN_JUCER_METADATA
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <LABEL name="Volume Label" id="3a0483b1c68cf176" memberName="volumeLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 276 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 272 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Volume" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
+  <TEXTBUTTON name="Title Button" id="3c4e14578c159f0c" memberName="titleButton"
+              virtualName="" explicitFocusOrder="0" pos="2 8 66 28" posRelativeX="f4f376ddb622016f"
+              posRelativeY="56427593ca278ddd" buttonText="Ch. 1" connectedEdges="0"
+              needsCallback="1" radioGroupId="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
