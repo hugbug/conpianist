@@ -90,12 +90,12 @@ void BalanceComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    leftChannel->setBounds (8, 0, 72, getHeight() - 0);
-    mainChannel->setBounds (78, 0, 72, getHeight() - 0);
-    layerChannel->setBounds (148, 0, 72, getHeight() - 0);
-    songChannel->setBounds (218, 0, 72, getHeight() - 0);
-    micChannel->setBounds (288, 0, 72, getHeight() - 0);
-    auxInChannel->setBounds (358, 0, 72, getHeight() - 0);
+    leftChannel->setBounds (8, 0, 70, getHeight() - 0);
+    mainChannel->setBounds (78, 0, 70, getHeight() - 0);
+    layerChannel->setBounds (148, 0, 70, getHeight() - 0);
+    songChannel->setBounds (218, 0, 70, getHeight() - 0);
+    micChannel->setBounds (288, 0, 70, getHeight() - 0);
+    auxInChannel->setBounds (358, 0, 70, getHeight() - 0);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -132,22 +132,22 @@ BEGIN_JUCER_METADATA
                  initialWidth="436" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
-             virtualName="" explicitFocusOrder="0" pos="8 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="8 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chLeft, &quot;Left&quot;, true"/>
   <JUCERCOMP name="Main Channel" id="74e25a6d700b5cc9" memberName="mainChannel"
-             virtualName="" explicitFocusOrder="0" pos="78 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="78 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chMain, &quot;Main&quot;, false"/>
   <JUCERCOMP name="Layer Channel" id="ef551064ccb187e2" memberName="layerChannel"
-             virtualName="" explicitFocusOrder="0" pos="148 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="148 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chLayer, &quot;Layer&quot;, false"/>
   <JUCERCOMP name="Song Channel" id="ea486fd33cd44e31" memberName="songChannel"
-             virtualName="" explicitFocusOrder="0" pos="218 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="218 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false"/>
   <JUCERCOMP name="Mic Channel" id="8f4c373ee8ae253f" memberName="micChannel"
-             virtualName="" explicitFocusOrder="0" pos="288 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="288 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chMic, &quot;Mic&quot;, false"/>
   <JUCERCOMP name="AuxIn Channel" id="7ffff5d33c7b27f" memberName="auxInChannel"
-             virtualName="" explicitFocusOrder="0" pos="358 0 72 0M" sourceFile="ChannelComponent.cpp"
+             virtualName="" explicitFocusOrder="0" pos="358 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false"/>
 </JUCER_COMPONENT>
 

@@ -25,6 +25,7 @@
 #include "PlaybackComponent.h"
 #include "VoiceComponent.h"
 #include "ScoreComponent.h"
+#include "MixerComponent.h"
 #include "KeyboardComponent.h"
 #include "LocalMidiConnector.h"
 #include "RtpMidiConnector.h"
@@ -79,6 +80,7 @@ private:
     std::unique_ptr<PlaybackComponent> playbackComponent;
     std::unique_ptr<VoiceComponent> voiceComponent;
     std::unique_ptr<ScoreComponent> scoreComponent;
+    std::unique_ptr<MixerComponent> mixerComponent;
     std::unique_ptr<KeyboardComponent> keyboardComponent;
 	std::unique_ptr<LocalMidiConnector> localMidiConnector;
 	std::unique_ptr<RtpMidiConnector> rtpMidiConnector;
@@ -93,15 +95,16 @@ private:
     std::unique_ptr<Component> playbackPanel;
     std::unique_ptr<Component> largeContentPanel;
     std::unique_ptr<ImageButton> muteButton;
-    std::unique_ptr<Label> statusLabel;
-    std::unique_ptr<ImageButton> menuButton;
     std::unique_ptr<ImageButton> zoomInButton;
     std::unique_ptr<ImageButton> zoomOutButton;
     std::unique_ptr<Component> keyboardPanel;
     std::unique_ptr<ImageButton> keyboardButton;
-    std::unique_ptr<TextButton> scoreButton;
-    std::unique_ptr<TextButton> voiceButton;
     std::unique_ptr<ImageButton> balanceButton;
+    std::unique_ptr<TextButton> voiceButton;
+    std::unique_ptr<TextButton> scoreButton;
+    std::unique_ptr<Label> statusLabel;
+    std::unique_ptr<TextButton> mixerButton;
+    std::unique_ptr<ImageButton> menuButton;
 
 
     //==============================================================================
