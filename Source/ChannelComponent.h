@@ -48,6 +48,7 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void PianoStateChanged() override { MessageManager::callAsync([=](){updateSongState();}); }
 	void updateSongState();
+    void mouseDoubleClick(const MouseEvent& event) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;

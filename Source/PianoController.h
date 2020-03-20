@@ -106,10 +106,13 @@ public:
 	void ResetLoop();
 	int GetVolume(Channel ch) { return m_channels[ch].volume; }
 	void SetVolume(Channel ch, int volume);
+	void ResetVolume(Channel ch);
 	int GetPan(Channel ch) { return m_channels[ch].pan; }
 	void SetPan(Channel ch, int pan);
+	void ResetPan(Channel ch);
 	int GetReverb(Channel ch) { return m_channels[ch].reverb; }
 	void SetReverb(Channel ch, int reverb);
+	void ResetReverb(Channel ch);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();

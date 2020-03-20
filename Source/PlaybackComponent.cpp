@@ -625,7 +625,7 @@ void PlaybackComponent::mouseDoubleClick(const MouseEvent& event)
 		event.eventComponent == volumeTitleLabel.get() ||
 		event.eventComponent == volumeLabel.get())
 	{
-		pianoController.SetVolume(PianoController::chMidiMaster, PianoController::DefaultVolume);
+		pianoController.ResetVolume(PianoController::chMidiMaster);
 	}
 	else if (event.eventComponent == tempoSlider.get() ||
 		event.eventComponent == tempoTitleLabel.get() ||

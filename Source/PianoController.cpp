@@ -62,12 +62,15 @@ static const char* CSP_SONG_NAME_EVENTS = "02 00 04 00 01 01";
 static const char* CSP_VOLUME = "0c 00 00 01 NN 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
+static const char* CSP_VOLUME_RESET = "04 01 0c 00 00 01 NN 01 00";
 static const char* CSP_PAN = "0c 00 03 01 NN 01 00 00 01 ";
 static const char* CSP_PAN_STATE = "00 00 0c 00 03 01";
 static const char* CSP_PAN_EVENTS = "02 00 0c 00 03 01";
+static const char* CSP_PAN_RESET = "04 01 0c 00 03 01 NN 01 00";
 static const char* CSP_REVERB = "0c 00 04 01 NN 01 00 00 01 ";
 static const char* CSP_REVERB_STATE = "00 00 0c 00 04 01";
 static const char* CSP_REVERB_EVENTS = "02 00 0c 00 04 01";
+static const char* CSP_REVERB_RESET = "04 01 0c 00 04 01 NN 01 00";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
@@ -252,12 +255,15 @@ void PianoController::Connect()
 	{
 		SetVolume(ch, MinVolume);
 		SetVolume(ch, DefaultVolume);
+		ResetVolume(ch);
 
 		SetPan(ch, MinPan);
 		SetPan(ch, DefaultPan);
+		ResetPan(ch);
 
 		SetReverb(ch, MinReverb);
 		SetReverb(ch, DefaultReverb);
+		ResetReverb(ch);
 
 		// Sleep is not nice, we should wait for confirmation messages instead.
 		// Without waiting the piano may miss some commands because there are too many.
@@ -408,16 +414,34 @@ void PianoController::SetVolume(Channel ch, int volume)
 	SendCspMessage(command);
 }
 
+void PianoController::ResetVolume(Channel ch)
+{
+	String command = String(CSP_VOLUME_RESET).replace("NN", ByteToHex(ch));
+	SendCspMessage(command, false);
+}
+
 void PianoController::SetPan(Channel ch, int pan)
 {
 	String command = String(CSP_PAN).replace("NN", ByteToHex(ch)) + ByteToHex(pan + PanBase);
 	SendCspMessage(command);
 }
 
+void PianoController::ResetPan(Channel ch)
+{
+	String command = String(CSP_PAN_RESET).replace("NN", ByteToHex(ch));
+	SendCspMessage(command, false);
+}
+
 void PianoController::SetReverb(Channel ch, int reverb)
 {
 	String command = String(CSP_REVERB).replace("NN", ByteToHex(ch)) + ByteToHex(reverb);
 	SendCspMessage(command);
+}
+
+void PianoController::ResetReverb(Channel ch)
+{
+	String command = String(CSP_REVERB_RESET).replace("NN", ByteToHex(ch));
+	SendCspMessage(command, false);
 }
 
 void PianoController::SetTempo(int tempo)

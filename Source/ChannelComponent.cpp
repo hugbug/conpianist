@@ -112,6 +112,10 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 	reverbLabel->setVisible(showLabels);
 	volumeLabel->setVisible(showLabels);
 
+    panSlider->addMouseListener(this, false);
+    reverbSlider->addMouseListener(this, false);
+    volumeSlider->addMouseListener(this, false);
+
     pianoController.AddListener(this);
     updateSongState();
     //[/Constructor]
@@ -221,6 +225,23 @@ void ChannelComponent::updateSongState()
 	reverbSlider->setColour(Slider::thumbColourId, Colour(reverbSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
 	volumeSlider->setColour(Slider::thumbColourId, Colour(volumeSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
 }
+
+void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
+{
+	if (event.eventComponent == panSlider.get())
+	{
+		pianoController.ResetPan(channel);
+	}
+	else if (event.eventComponent == reverbSlider.get())
+	{
+		pianoController.ResetReverb(channel);
+	}
+	else if (event.eventComponent == volumeSlider.get())
+	{
+		pianoController.ResetVolume(channel);
+	}
+}
+
 //[/MiscUserCode]
 
 
