@@ -27,8 +27,8 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels)
-    : pianoController(pianoController), channel(channel), title(title)
+ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb)
+    : pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -172,11 +172,13 @@ void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == panSlider.get())
     {
         //[UserSliderCode_panSlider] -- add your slider handling code here..
+		pianoController.SetPan(channel, panSlider->getValue());
         //[/UserSliderCode_panSlider]
     }
     else if (sliderThatWasMoved == reverbSlider.get())
     {
         //[UserSliderCode_reverbSlider] -- add your slider handling code here..
+		pianoController.SetReverb(channel, reverbSlider->getValue());
         //[/UserSliderCode_reverbSlider]
     }
 
@@ -207,10 +209,12 @@ void ChannelComponent::updateSongState()
 {
 	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
 
-	panSlider->setEnabled(pianoController.GetActive(channel));
-	reverbSlider->setEnabled(pianoController.GetActive(channel));
+	panSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
+	reverbSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
 	volumeSlider->setEnabled(pianoController.GetActive(channel));
 
+	panSlider->setValue(pianoController.GetPan(channel), NotificationType::dontSendNotification);
+	reverbSlider->setValue(pianoController.GetReverb(channel), NotificationType::dontSendNotification);
 	volumeSlider->setValue(pianoController.GetVolume(channel), NotificationType::dontSendNotification);
 
 	panSlider->setColour(Slider::thumbColourId, Colour(panSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
@@ -231,8 +235,8 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ChannelComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels"
-                 variableInitialisers="pianoController(pianoController), channel(channel), title(title)"
+                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb"
+                 variableInitialisers="pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>

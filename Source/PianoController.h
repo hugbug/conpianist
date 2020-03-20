@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -106,6 +106,10 @@ public:
 	void ResetLoop();
 	int GetVolume(Channel ch) { return m_channels[ch].volume; }
 	void SetVolume(Channel ch, int volume);
+	int GetPan(Channel ch) { return m_channels[ch].pan; }
+	void SetPan(Channel ch, int pan);
+	int GetReverb(Channel ch) { return m_channels[ch].reverb; }
+	void SetReverb(Channel ch, int reverb);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();
@@ -136,6 +140,13 @@ public:
 	static const int MaxTranspose = +12;
 	static const int DefaultTranspose = 0;
 	static const int TransposeBase = 0x40;
+	static const int MinPan = -64;
+	static const int MaxPan = -63;
+	static const int DefaultPan = 0;
+	static const int PanBase = 0x40;
+	static const int MinReverb = 0;
+	static const int MaxReverb = 127;
+	static const int DefaultReverb = 0;
 
 private:
 	MidiConnector* m_midiConnector;

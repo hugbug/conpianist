@@ -33,17 +33,17 @@ BalanceComponent::BalanceComponent (PianoController& pianoController)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chLeft, "Left", true));
+    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chLeft, "Left", true, true));
     addAndMakeVisible (leftChannel.get());
-    mainChannel.reset (new ChannelComponent (pianoController, PianoController::chMain, "Main", false));
+    mainChannel.reset (new ChannelComponent (pianoController, PianoController::chMain, "Main", false, true));
     addAndMakeVisible (mainChannel.get());
-    layerChannel.reset (new ChannelComponent (pianoController, PianoController::chLayer, "Layer", false));
+    layerChannel.reset (new ChannelComponent (pianoController, PianoController::chLayer, "Layer", false, true));
     addAndMakeVisible (layerChannel.get());
-    songChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Song", false));
+    songChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Song", false, true));
     addAndMakeVisible (songChannel.get());
-    micChannel.reset (new ChannelComponent (pianoController, PianoController::chMic, "Mic", false));
+    micChannel.reset (new ChannelComponent (pianoController, PianoController::chMic, "Mic", false, true));
     addAndMakeVisible (micChannel.get());
-    auxInChannel.reset (new ChannelComponent (pianoController, PianoController::chAuxIn, "Aux In", false));
+    auxInChannel.reset (new ChannelComponent (pianoController, PianoController::chAuxIn, "Aux In", false, false));
     addAndMakeVisible (auxInChannel.get());
 
     //[UserPreSize]
@@ -133,22 +133,22 @@ BEGIN_JUCER_METADATA
   <BACKGROUND backgroundColour="ff323e44"/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chLeft, &quot;Left&quot;, true"/>
+             constructorParams="pianoController, PianoController::chLeft, &quot;Left&quot;, true, true"/>
   <JUCERCOMP name="Main Channel" id="74e25a6d700b5cc9" memberName="mainChannel"
              virtualName="" explicitFocusOrder="0" pos="78 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMain, &quot;Main&quot;, false"/>
+             constructorParams="pianoController, PianoController::chMain, &quot;Main&quot;, false, true"/>
   <JUCERCOMP name="Layer Channel" id="ef551064ccb187e2" memberName="layerChannel"
              virtualName="" explicitFocusOrder="0" pos="148 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chLayer, &quot;Layer&quot;, false"/>
+             constructorParams="pianoController, PianoController::chLayer, &quot;Layer&quot;, false, true"/>
   <JUCERCOMP name="Song Channel" id="ea486fd33cd44e31" memberName="songChannel"
              virtualName="" explicitFocusOrder="0" pos="218 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false"/>
+             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false, true"/>
   <JUCERCOMP name="Mic Channel" id="8f4c373ee8ae253f" memberName="micChannel"
              virtualName="" explicitFocusOrder="0" pos="288 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMic, &quot;Mic&quot;, false"/>
+             constructorParams="pianoController, PianoController::chMic, &quot;Mic&quot;, false, true"/>
   <JUCERCOMP name="AuxIn Channel" id="7ffff5d33c7b27f" memberName="auxInChannel"
              virtualName="" explicitFocusOrder="0" pos="358 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false"/>
+             constructorParams="pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false, false"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

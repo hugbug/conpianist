@@ -36,7 +36,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     channelViewport.reset (new Viewport ("Channel Viewport"));
     addAndMakeVisible (channelViewport.get());
 
-    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Master", true));
+    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Master", true, true));
     addAndMakeVisible (leftChannel.get());
     channelPanel.reset (new Component());
     addAndMakeVisible (channelPanel.get());
@@ -49,7 +49,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     {
     	std::unique_ptr<ChannelComponent> comp;
     	comp.reset(new ChannelComponent(pianoController, ch,
-    		String("Ch. ") + String(ch - PianoController::chMidi1 + 1), false));
+    		String("Ch. ") + String(ch - PianoController::chMidi1 + 1), false, true));
     	channelPanel->addAndMakeVisible(comp.get());
 		channels.push_back(std::move(comp));
 	}
@@ -145,7 +145,7 @@ BEGIN_JUCER_METADATA
             contentClass="" constructorParams=""/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 8M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true"/>
+             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true, true"/>
   <GENERICCOMPONENT name="Channels" id="256e91213f333b3c" memberName="channelPanel"
                     virtualName="" explicitFocusOrder="0" pos="96 0 280 8M" class="Component"
                     params=""/>

@@ -62,6 +62,12 @@ static const char* CSP_SONG_NAME_EVENTS = "02 00 04 00 01 01";
 static const char* CSP_VOLUME = "0c 00 00 01 NN 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01";
 static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
+static const char* CSP_PAN = "0c 00 03 01 NN 01 00 00 01 ";
+static const char* CSP_PAN_STATE = "00 00 0c 00 03 01";
+static const char* CSP_PAN_EVENTS = "02 00 0c 00 03 01";
+static const char* CSP_REVERB = "0c 00 04 01 NN 01 00 00 01 ";
+static const char* CSP_REVERB_STATE = "00 00 0c 00 04 01";
+static const char* CSP_REVERB_EVENTS = "02 00 0c 00 04 01";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
@@ -210,6 +216,10 @@ void PianoController::Connect()
   	SendCspMessage(CSP_STREAM_LIGHTS_SPEED_EVENTS, false);
 	//   volume info
 	SendCspMessage(CSP_VOLUME_EVENTS, false);
+	//   pan info
+	SendCspMessage(CSP_PAN_EVENTS, false);
+	//   reverb info
+	SendCspMessage(CSP_REVERB_EVENTS, false);
 	//   tempo info
 	SendCspMessage(CSP_TEMPO_EVENTS, false);
 	//   transpose info
@@ -242,6 +252,16 @@ void PianoController::Connect()
 	{
 		SetVolume(ch, MinVolume);
 		SetVolume(ch, DefaultVolume);
+
+		SetPan(ch, MinPan);
+		SetPan(ch, DefaultPan);
+
+		SetReverb(ch, MinReverb);
+		SetReverb(ch, DefaultReverb);
+
+		// Sleep is not nice, we should wait for confirmation messages instead.
+		// Without waiting the piano may miss some commands because there are too many.
+		Sleep(20);
 	}
 
 	SetTempo(MinTempo);
@@ -388,6 +408,18 @@ void PianoController::SetVolume(Channel ch, int volume)
 	SendCspMessage(command);
 }
 
+void PianoController::SetPan(Channel ch, int pan)
+{
+	String command = String(CSP_PAN).replace("NN", ByteToHex(ch)) + ByteToHex(pan + PanBase);
+	SendCspMessage(command);
+}
+
+void PianoController::SetReverb(Channel ch, int reverb)
+{
+	String command = String(CSP_REVERB).replace("NN", ByteToHex(ch)) + ByteToHex(reverb);
+	SendCspMessage(command);
+}
+
 void PianoController::SetTempo(int tempo)
 {
 	SendCspMessage(String(CSP_TEMPO) + WordToHex(tempo));
@@ -502,6 +534,18 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].volume = message.getSysExData()[17];
+			NotifyChanged();
+		}
+		else if (IsCspMessage(message, CSP_PAN_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].pan = message.getSysExData()[17] - PanBase;
+			NotifyChanged();
+		}
+		else if (IsCspMessage(message, CSP_REVERB_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].reverb = message.getSysExData()[17];
 			NotifyChanged();
 		}
 		else if (IsCspMessage(message, CSP_CHANNEL_ENABLE_STATE))
