@@ -29,7 +29,7 @@ class VoiceTreeItem : public TreeViewItem
 {
 public:
 	VoiceTreeItem(Voice& voice) : m_voice(&voice),
-		m_title(VoiceComponent::voiceTitle(m_voice->path)) {}
+		m_title(Presets::FindVoice(m_voice->path).title) {}
 	VoiceTreeItem(const String& title) : m_title(title) {}
 
 	bool mightContainSubItems() override
@@ -230,15 +230,15 @@ void VoiceComponent::resized()
 
     voicesTree->setBounds (8, (-8) + 104, getWidth() - 16, getHeight() - 98);
     targetGroup->setBounds (0, -8, getWidth() - 0, 104);
-    leftVoiceButton->setBounds (0 + 16, (-8) + 55, proportionOfWidth (0.3023f), 28);
-    mainVoiceButton->setBounds (0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3023f) / 2), (-8) + 55, proportionOfWidth (0.3023f), 28);
-    layerVoiceButton->setBounds (0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3023f), (-8) + 55, proportionOfWidth (0.3023f), 28);
-    mainTitleButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3023f) / 2)) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    leftTitleButton->setBounds ((0 + 16) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    layerTitleButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3023f)) + proportionOfWidth (0.3023f) / 2 - (80 / 2), (-8) + 16, 80, 28);
-    leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
-    mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3023f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
-    layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3023f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3023f), 3);
+    leftVoiceButton->setBounds (0 + 16, (-8) + 55, proportionOfWidth (0.3029f), 28);
+    mainVoiceButton->setBounds (0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2), (-8) + 55, proportionOfWidth (0.3029f), 28);
+    layerVoiceButton->setBounds (0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f), (-8) + 55, proportionOfWidth (0.3029f), 28);
+    mainTitleButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + proportionOfWidth (0.3029f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    leftTitleButton->setBounds ((0 + 16) + proportionOfWidth (0.3029f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    layerTitleButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + proportionOfWidth (0.3029f) / 2 - (80 / 2), (-8) + 16, 80, 28);
+    leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
+    mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3029f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
+    layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3029f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -310,27 +310,13 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 
 void VoiceComponent::updateVoiceState()
 {
-	mainVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chMain)));
-	layerVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chLayer)));
-	leftVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chLeft)));
+	mainVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chMain)).title);
+	layerVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chLayer)).title);
+	leftVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chLeft)).title);
 
 	mainTitleButton->setToggleState(pianoController.GetActive(PianoController::chMain), NotificationType::dontSendNotification);
 	layerTitleButton->setToggleState(pianoController.GetActive(PianoController::chLayer), NotificationType::dontSendNotification);
 	leftTitleButton->setToggleState(pianoController.GetActive(PianoController::chLeft), NotificationType::dontSendNotification);
-}
-
-String VoiceComponent::voiceTitle(String preset)
-{
-	int begin = preset.lastIndexOf("/");
-	int end = preset.indexOf(begin, ".");
-	if (begin > -1 && end > -1)
-	{
-		return preset.substring(begin + 1, end);
-	}
-	else
-	{
-		return preset;
-	}
 }
 
 void VoiceComponent::buildVoiceTree()

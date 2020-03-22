@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "Presets.h"
 //[/Headers]
 
 #include "ChannelComponent.h"
@@ -47,7 +48,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
     panSlider->addListener (this);
 
-    panSlider->setBounds (0, 80, 70, 76);
+    panSlider->setBounds (0, 96, 70, 76);
 
     panLabel.reset (new Label ("Pan Label",
                                TRANS("Pan")));
@@ -58,7 +59,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panLabel->setColour (TextEditor::textColourId, Colours::black);
     panLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    panLabel->setBounds (0, 52, 70, 24);
+    panLabel->setBounds (0, 68, 70, 24);
 
     reverbLabel.reset (new Label ("Reverb Label",
                                   TRANS("Reverb")));
@@ -69,7 +70,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbLabel->setColour (TextEditor::textColourId, Colours::black);
     reverbLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    reverbLabel->setBounds (0, 160, 70, 24);
+    reverbLabel->setBounds (0, 168, 70, 24);
 
     reverbSlider.reset (new Slider ("Reverb Slider"));
     addAndMakeVisible (reverbSlider.get());
@@ -78,7 +79,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
     reverbSlider->addListener (this);
 
-    reverbSlider->setBounds (0, 188, 70, 76);
+    reverbSlider->setBounds (0, 196, 70, 76);
 
     volumeLabel.reset (new Label ("Volume Label",
                                   TRANS("Volume")));
@@ -93,10 +94,32 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 
     titleButton.reset (new TextButton ("Title Button"));
     addAndMakeVisible (titleButton.get());
-    titleButton->setButtonText (TRANS("Ch. 1"));
+    titleButton->setButtonText (String());
     titleButton->addListener (this);
 
-    titleButton->setBounds (2, 8, 66, 28);
+    titleButton->setBounds (2, 8, 66, 52);
+
+    titleLabel.reset (new Label ("Title Label",
+                                 TRANS("Ch. 1")));
+    addAndMakeVisible (titleLabel.get());
+    titleLabel->setFont (Font (15.60f, Font::plain).withTypefaceStyle ("Regular"));
+    titleLabel->setJustificationType (Justification::centred);
+    titleLabel->setEditable (false, false, false);
+    titleLabel->setColour (TextEditor::textColourId, Colours::black);
+    titleLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    titleLabel->setBounds (2, 9, 66, 22);
+
+    voiceLabel.reset (new Label ("Voice Label",
+                                 TRANS("String Ensemble")));
+    addAndMakeVisible (voiceLabel.get());
+    voiceLabel->setFont (Font (14.00f, Font::plain).withTypefaceStyle ("Regular"));
+    voiceLabel->setJustificationType (Justification::centred);
+    voiceLabel->setEditable (false, false, false);
+    voiceLabel->setColour (TextEditor::textColourId, Colours::black);
+    voiceLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    voiceLabel->setBounds (2, 33, 66, 22);
 
 
     //[UserPreSize]
@@ -107,11 +130,13 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 
     //[Constructor] You can add your own custom stuff here..
     titleButton->getProperties().set("toggle", "yes");
-    titleButton->setButtonText(title);
+    titleLabel->setText(title, NotificationType::dontSendNotification);
 	panLabel->setVisible(showLabels);
 	reverbLabel->setVisible(showLabels);
 	volumeLabel->setVisible(showLabels);
 
+    titleLabel->addMouseListener(this, false);
+    voiceLabel->addMouseListener(this, false);
     panSlider->addMouseListener(this, false);
     reverbSlider->addMouseListener(this, false);
     volumeSlider->addMouseListener(this, false);
@@ -134,6 +159,8 @@ ChannelComponent::~ChannelComponent()
     reverbSlider = nullptr;
     volumeLabel = nullptr;
     titleButton = nullptr;
+    titleLabel = nullptr;
+    voiceLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -213,6 +240,8 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
 	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
 
+    voiceLabel->setText(Presets::FindVoice(pianoController.GetVoice(channel)).category2, NotificationType::dontSendNotification);
+
 	panSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
 	reverbSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
 	volumeSlider->setEnabled(pianoController.GetActive(channel));
@@ -242,6 +271,14 @@ void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
 	}
 }
 
+void ChannelComponent::mouseDown(const MouseEvent& event)
+{
+	if (event.eventComponent == titleLabel.get() || event.eventComponent == voiceLabel.get())
+	{
+        pianoController.SetActive(channel, !pianoController.GetActive(channel));
+	}
+}
+
 //[/MiscUserCode]
 
 
@@ -267,22 +304,22 @@ BEGIN_JUCER_METADATA
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="Pan Slider" id="6dc8f196b2d9dabf" memberName="panSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 80 70 76" min="-64.0"
+          virtualName="" explicitFocusOrder="0" pos="0 96 70 76" min="-64.0"
           max="63.0" int="1.0" style="RotaryHorizontalDrag" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <LABEL name="Pan Label" id="83fd07e9ba9100c1" memberName="panLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 52 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 68 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Pan" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <LABEL name="Reverb Label" id="5ba2a16ed7ba194a" memberName="reverbLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 160 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 168 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Reverb" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <SLIDER name="Reverb Slider" id="ebd0ba792eb80390" memberName="reverbSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 188 70 76" min="0.0"
+          virtualName="" explicitFocusOrder="0" pos="0 196 70 76" min="0.0"
           max="127.0" int="1.0" style="RotaryHorizontalDrag" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
@@ -292,9 +329,19 @@ BEGIN_JUCER_METADATA
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <TEXTBUTTON name="Title Button" id="3c4e14578c159f0c" memberName="titleButton"
-              virtualName="" explicitFocusOrder="0" pos="2 8 66 28" posRelativeX="f4f376ddb622016f"
-              posRelativeY="56427593ca278ddd" buttonText="Ch. 1" connectedEdges="0"
+              virtualName="" explicitFocusOrder="0" pos="2 8 66 52" posRelativeX="f4f376ddb622016f"
+              posRelativeY="56427593ca278ddd" buttonText="" connectedEdges="0"
               needsCallback="1" radioGroupId="0"/>
+  <LABEL name="Title Label" id="8ce81ddb03d15af6" memberName="titleLabel"
+         virtualName="" explicitFocusOrder="0" pos="2 9 66 22" edTextCol="ff000000"
+         edBkgCol="0" labelText="Ch. 1" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.6"
+         kerning="0.0" bold="0" italic="0" justification="36"/>
+  <LABEL name="Voice Label" id="f5cfadfb4d3d78c7" memberName="voiceLabel"
+         virtualName="" explicitFocusOrder="0" pos="2 33 66 22" edTextCol="ff000000"
+         edBkgCol="0" labelText="String Ensemble" editableSingleClick="0"
+         editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
+         fontsize="14.0" kerning="0.0" bold="0" italic="0" justification="36"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

@@ -23,8 +23,12 @@
 
 struct Voice
 {
+	Voice(int num, String path, String type);
+
+	int num;
 	String path;
 	String type;
+	String title;
 	String category1;
 	String category2;
 };
@@ -35,4 +39,5 @@ class Presets
 {
 public:
 	static VoiceList& Voices();
+	static Voice& FindVoice(String voice);
 };

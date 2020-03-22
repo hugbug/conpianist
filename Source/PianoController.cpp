@@ -89,6 +89,8 @@ static const char* CSP_VOICE_SELECT_STATE2 = "00 01 02 00 00 01";
 static const char* CSP_CHANNEL_ENABLE = "0c 00 01 01 NN 01 00 00 01 ";
 static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 0c 00 01 01";
 static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 0c 00 01 01";
+static const char* CSP_CHANNEL_VOICE_STATE = "00 00 02 00 01 01";
+static const char* CSP_CHANNEL_VOICE_EVENTS = "02 00 02 00 01 01";
 
 static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
@@ -231,8 +233,10 @@ void PianoController::Connect()
 	SendCspMessage(CSP_LOOP_EVENTS, false);
 	//   voice info
 	SendCspMessage(CSP_VOICE_SELECT_EVENTS, false);
-	//   voice slot enabled/disabled
+	//   channel enabled/disabled
 	SendCspMessage(CSP_CHANNEL_ENABLE_EVENTS, false);
+	//   midi channel voice
+	SendCspMessage(CSP_CHANNEL_VOICE_EVENTS, false);
 	//   song name info (after a song is loaded)
 	SendCspMessage(CSP_SONG_NAME_EVENTS, false);
 
@@ -578,6 +582,16 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].enabled = message.getSysExData()[17] == 1;
 			NotifyChanged(apActive, ch);
+		}
+		else if (IsCspMessage(message, CSP_CHANNEL_VOICE_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].voice = String(
+				(message.getSysExData()[17] << 7 * 3) +
+				(message.getSysExData()[18] << 7 * 2) +
+				(message.getSysExData()[19] << 7) +
+				 message.getSysExData()[20]);
+			NotifyChanged(apVoice, ch);
 		}
 		else if (IsCspMessage(message, CSP_TEMPO_STATE))
 		{

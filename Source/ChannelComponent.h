@@ -50,6 +50,7 @@ public:
 		{ if (ch == channel) MessageManager::callAsync([=](){updateChannelState(ap);}); }
 	void updateChannelState(PianoController::Aspect aspect);
     void mouseDoubleClick(const MouseEvent& event) override;
+    void mouseDown(const MouseEvent& event) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -75,6 +76,8 @@ private:
     std::unique_ptr<Slider> reverbSlider;
     std::unique_ptr<Label> volumeLabel;
     std::unique_ptr<TextButton> titleButton;
+    std::unique_ptr<Label> titleLabel;
+    std::unique_ptr<Label> voiceLabel;
 
 
     //==============================================================================
