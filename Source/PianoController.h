@@ -41,6 +41,7 @@ public:
 
 	enum Channel
 	{
+		chNone = -1,
 		chMain = 0x00,
 		chLayer = 0x01,
 		chLeft = 0x02,
@@ -64,12 +65,31 @@ public:
 		String voice;
 	};
 
+	enum Aspect
+	{
+		apConnection,
+		apLocalControl,
+		apSongLoaded,
+		apPosition,
+		apPlayback,
+		apGuide,
+		apStreamLights,
+		apLoop,
+		apTranspose,
+		apTempo,
+		apPart,
+		apVolume,
+		apPan,
+		apReverb,
+		apActive,
+		apVoice
+	};
+
 	class Listener
 	{
 	public:
 		virtual ~Listener() {}
-		virtual void PianoStateChanged() {}
-		virtual void PianoSongLoaded() {}
+		virtual void PianoStateChanged(Aspect aspect, Channel channel) {}
 		virtual void PianoNoteMessage(const MidiMessage& message) {}
 	};
 
@@ -180,6 +200,5 @@ private:
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
 	void ProcessVoiceEvent(const MidiMessage& message);
 
-	void NotifyChanged();
-	void NotifySongLoaded();
+	void NotifyChanged(Aspect aspect, Channel channel = chNone);
 };

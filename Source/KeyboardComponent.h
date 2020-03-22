@@ -53,7 +53,8 @@ public:
 	void PianoNoteMessage(const MidiMessage& message) override;
     void changeListenerCallback(ChangeBroadcaster* source) override;
 	void applySettings();
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateKeyboardState();}); }
+    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override
+    	{ if (aspect == PianoController::apConnection) MessageManager::callAsync([=](){updateKeyboardState();}); }
     void updateKeyboardState();
 	void updateEnabledControls();
     //[/UserMethods]

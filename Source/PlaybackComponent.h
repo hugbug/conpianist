@@ -48,8 +48,9 @@ public:
     //[UserMethods]     -- You can add your own custom methods in this section.
     void chooseSong();
     void loadSong(const File& file);
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSongState(); updateSettingsState();}); }
-	void updateSongState();
+    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
+	void updatePlaybackState(PianoController::Aspect aspect);
+	void updateChannelState();
 	void updateSettingsState();
 	void updateEnabledControls();
 	void mouseUp(const MouseEvent& event) override;

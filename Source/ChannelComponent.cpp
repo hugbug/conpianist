@@ -117,7 +117,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     volumeSlider->addMouseListener(this, false);
 
     pianoController.AddListener(this);
-    updateSongState();
+    updateChannelState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -209,7 +209,7 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void ChannelComponent::updateSongState()
+void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
 	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
 

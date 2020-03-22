@@ -553,41 +553,79 @@ void PlaybackComponent::loadSong(const File& file)
 	lengthLabel->setText("999", NotificationType::dontSendNotification);
 }
 
-void PlaybackComponent::updateSongState()
+void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
-	int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
-	lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
+	if (aspect == PianoController::apPosition || aspect == PianoController::apPlayback ||
+		aspect == PianoController::apTempo || aspect == PianoController::apTranspose ||
+		aspect == PianoController::apLoop)
+	{
+		MessageManager::callAsync([=](){updatePlaybackState(aspect);});
+	}
+	else if (aspect == PianoController::apVolume && channel == PianoController::chMidiMaster)
+	{
+		MessageManager::callAsync([=](){updateChannelState();});
+	}
+	else if (aspect == PianoController::apGuide || aspect == PianoController::apStreamLights ||
+		aspect == PianoController::apPart)
+	{
+		MessageManager::callAsync([=](){updateSettingsState();});
+	}
+	else if (aspect == PianoController::apConnection)
+	{
+		MessageManager::callAsync([=](){updateEnabledControls();});
+	}
 
-	positionSlider->setRange(1, songLength, 1);
-	positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
-		NotificationType::dontSendNotification);
-	positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
+}
 
-	playButton->setImages(false, true, true, ImageCache::getFromMemory(
-			pianoController.GetPlaying() ? BinaryData::buttonpause_png : BinaryData::buttonplay_png,
-			pianoController.GetPlaying() ? BinaryData::buttonpause_pngSize : BinaryData::buttonplay_pngSize),
+void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
+{
+	if (aspect == PianoController::apPosition)
+	{
+		int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
+		lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
+
+		positionSlider->setRange(1, songLength, 1);
+		positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
+			NotificationType::dontSendNotification);
+		positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
+	}
+	else if (aspect == PianoController::apPlayback)
+	{
+		playButton->setImages(false, true, true, ImageCache::getFromMemory(
+				pianoController.GetPlaying() ? BinaryData::buttonpause_png : BinaryData::buttonplay_png,
+				pianoController.GetPlaying() ? BinaryData::buttonpause_pngSize : BinaryData::buttonplay_pngSize),
+				1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
+		playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
+	}
+	else if (aspect == PianoController::apTempo)
+	{
+		tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
+		tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
+	}
+	else if (aspect == PianoController::apTranspose)
+	{
+		transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
+			String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
+		transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
+	}
+	else if (aspect == PianoController::apLoop)
+	{
+		bool loopSet = pianoController.GetLoop().begin.measure > 0;
+		bool loopHalf = pianoController.GetLoopStart().measure > 0;
+		loopButton->setImages(false, true, true, ImageCache::getFromMemory(
+			loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
+			loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-	playButton->setTooltip(pianoController.GetPlaying() ? "Pause" : "Play");
+		loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
+	}
+}
 
+void PlaybackComponent::updateChannelState()
+{
 	volumeLabel->setText(String(pianoController.GetVolume(PianoController::chMidiMaster)),
 	 	NotificationType::dontSendNotification);
 	volumeSlider->setValue(pianoController.GetVolume(PianoController::chMidiMaster),
 		NotificationType::dontSendNotification);
-
-	tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
-	tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
-
-	transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
-		String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
-	transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);
-
-	bool loopSet = pianoController.GetLoop().begin.measure > 0;
-	bool loopHalf = pianoController.GetLoopStart().measure > 0;
-	loopButton->setImages(false, true, true, ImageCache::getFromMemory(
-		loopHalf ? BinaryData::buttonabloophalf_png : BinaryData::buttonabloop_png,
-		loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
-		1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-	loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
 }
 
 void PlaybackComponent::updateSettingsState()
@@ -599,8 +637,6 @@ void PlaybackComponent::updateSettingsState()
 	backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-
-	updateEnabledControls();
 }
 
 void PlaybackComponent::updateEnabledControls()

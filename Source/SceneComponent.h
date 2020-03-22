@@ -56,7 +56,7 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void changeListenerCallback(ChangeBroadcaster* source) override;
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSettingsState();}); }
+    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 	void updateSettingsState();
 	void showMenu();
 	void timerCallback() override;

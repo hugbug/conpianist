@@ -46,7 +46,7 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateVoiceState();}); }
+    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
     void updateVoiceState();
     static String voiceTitle(String preset);
     void buildVoiceTree();

@@ -295,6 +295,19 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
+{
+	if (aspect == PianoController::apConnection)
+	{
+		MessageManager::callAsync([=](){updateEnabledControls();});
+	}
+	else if ((aspect == PianoController::apVoice || aspect == PianoController::apActive) and
+		(channel == PianoController::chMain || channel == PianoController::chLayer || channel == PianoController::chLeft))
+	{
+		MessageManager::callAsync([=](){updateVoiceState();});
+	}
+}
+
 void VoiceComponent::updateVoiceState()
 {
 	mainVoiceButton->setButtonText(voiceTitle(pianoController.GetVoice(PianoController::chMain)));
@@ -304,8 +317,6 @@ void VoiceComponent::updateVoiceState()
 	mainTitleButton->setToggleState(pianoController.GetActive(PianoController::chMain), NotificationType::dontSendNotification);
 	layerTitleButton->setToggleState(pianoController.GetActive(PianoController::chLayer), NotificationType::dontSendNotification);
 	leftTitleButton->setToggleState(pianoController.GetActive(PianoController::chLeft), NotificationType::dontSendNotification);
-
-	updateEnabledControls();
 }
 
 String VoiceComponent::voiceTitle(String preset)

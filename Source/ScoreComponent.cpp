@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,8 +44,7 @@ public:
 	void mouseDrag(const MouseEvent& event) override;
 	void mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details) override;
 
-	void PianoStateChanged() override { MessageManager::callAsync([=](){UpdateSongState();}); }
-	void PianoSongLoaded() override { MessageManager::callAsync([=](){LoadSong();}); }
+	void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 
 private:
 	lomse::LomseDoorway m_lomse;
@@ -315,6 +314,18 @@ unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
 	if (event.mods.isAltDown()) mouseFlags |= k_kbd_alt;
 	if (event.mods.isCtrlDown()) mouseFlags |= k_kbd_ctrl;
 	return mouseFlags;
+}
+
+void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
+{
+	if (aspect == PianoController::apPosition)
+	{
+		MessageManager::callAsync([=](){UpdateSongState();});
+	}
+	else if (aspect == PianoController::apSongLoaded)
+	{
+		MessageManager::callAsync([=](){LoadSong();});
+	}
 }
 
 void LomseScoreComponent::UpdateSongState()

@@ -344,6 +344,14 @@ void SceneComponent::changeListenerCallback(ChangeBroadcaster* source)
 	}
 }
 
+void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
+{
+	if (aspect == PianoController::apConnection || aspect == PianoController::apLocalControl)
+	{
+		MessageManager::callAsync([=](){updateSettingsState();});
+	}
+}
+
 void SceneComponent::updateSettingsState()
 {
 	if (pianoController.IsConnected())

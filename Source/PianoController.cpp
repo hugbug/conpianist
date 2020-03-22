@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -297,14 +297,15 @@ void PianoController::Connect()
 	SetVoice(chMain, "");
 	SetVoice(chLayer, "");
 	SetVoice(chLeft, "");
-
-	NotifyChanged();
 }
 
 void PianoController::Disconnect()
 {
-	m_connected = false;
-	NotifyChanged();
+	if (m_connected)
+	{
+		m_connected = false;
+		NotifyChanged(apConnection);
+	}
 }
 
 void PianoController::SetLocalControl(bool enabled)
@@ -312,7 +313,7 @@ void PianoController::SetLocalControl(bool enabled)
 	m_localControl = enabled;
 	MidiMessage localControlMessage = MidiMessage::controllerEvent(1, 122, enabled ? 127 : 0);
 	m_midiConnector->SendMessage(localControlMessage);
-	NotifyChanged();
+	NotifyChanged(apLocalControl);
 }
 
 bool PianoController::UploadSong(const File& file)
@@ -491,7 +492,7 @@ void PianoController::ResetLoop()
 void PianoController::SetLoopStart(const Position loopStart)
 {
 	m_loopStart = loopStart;
-	NotifyChanged();
+	NotifyChanged(apLoop);
 }
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
@@ -511,82 +512,82 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		{
 			m_position = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
 				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
-			NotifyChanged();
+			NotifyChanged(apPosition);
 		}
 		else if (IsCspMessage(message, CSP_LENGTH_STATE))
 		{
 			m_length = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
 				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
-			NotifyChanged();
+			NotifyChanged(apPosition);
 		}
 		else if (IsCspMessage(message, CSP_PLAY_STATE))
 		{
 			m_playing = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apPlayback);
 		}
 		else if (IsCspMessage(message, CSP_GUIDE_STATE))
 		{
 			m_guide = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apGuide);
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
 		{
 			m_streamLights = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apStreamLights);
 		}
 		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_SPEED_STATE))
 		{
 			m_streamLightsFast = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apStreamLights);
 		}
 		else if (IsCspMessage(message, CSP_BACKING_PART_STATE))
 		{
 			m_backingPart = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apPart);
 		}
 		else if (IsCspMessage(message, CSP_LEFT_PART_STATE))
 		{
 			m_leftPart = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apPart);
 		}
 		else if (IsCspMessage(message, CSP_RIGHT_PART_STATE))
 		{
 			m_rightPart = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apPart);
 		}
 		else if (IsCspMessage(message, CSP_VOLUME_STATE))
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].volume = message.getSysExData()[17];
-			NotifyChanged();
+			NotifyChanged(apVolume, ch);
 		}
 		else if (IsCspMessage(message, CSP_PAN_STATE))
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].pan = message.getSysExData()[17] - PanBase;
-			NotifyChanged();
+			NotifyChanged(apPan, ch);
 		}
 		else if (IsCspMessage(message, CSP_REVERB_STATE))
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].reverb = message.getSysExData()[17];
-			NotifyChanged();
+			NotifyChanged(apReverb, ch);
 		}
 		else if (IsCspMessage(message, CSP_CHANNEL_ENABLE_STATE))
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].enabled = message.getSysExData()[17] == 1;
-			NotifyChanged();
+			NotifyChanged(apActive, ch);
 		}
 		else if (IsCspMessage(message, CSP_TEMPO_STATE))
 		{
 			m_tempo = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
-			NotifyChanged();
+			NotifyChanged(apTempo);
 		}
 		else if (IsCspMessage(message, CSP_TRANSPOSE_STATE))
 		{
 			m_transpose = (int)(message.getSysExData()[17]) - TransposeBase;
-			NotifyChanged();
+			NotifyChanged(apTranspose);
 		}
 		else if (IsCspMessage(message, CSP_LOOP_STATE))
 		{
@@ -603,13 +604,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			{
 				m_loop = {{0,0},{0,0}};
 			}
-			NotifyChanged();
+			NotifyChanged(apLoop);
 		}
 		else if (IsCspMessage(message, CSP_VOICE_SELECT_STATE) ||
 			IsCspMessage(message, CSP_VOICE_SELECT_STATE2))
 		{
 			ProcessVoiceEvent(message);
-			NotifyChanged();
 		}
 		else if (IsCspMessage(message, CSP_MODEL_STATE))
 		{
@@ -625,12 +625,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			//TODO: make thread safe
 			m_version = str;
 			m_connected = true;
-			NotifyChanged();
+			NotifyChanged(apConnection);
 		}
 		else if (IsCspMessage(message, CSP_SONG_NAME_STATE))
 		{
 			m_position = {1,1};
-			NotifySongLoaded();
+			NotifyChanged(apSongLoaded);
 		}
 	}
 	else if (message.isNoteOnOrOff())
@@ -654,6 +654,7 @@ void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 	int off = message.getSysExData()[7] == 1 ? 17 : 15;
 	String voice = BytesToText(message.getSysExData() + off, message.getSysExDataSize() - off);
 	m_channels[ch].voice = voice;
+	NotifyChanged(apVoice, ch);
 }
 
 void PianoController::SetActive(Channel ch, bool active)
@@ -683,19 +684,10 @@ void PianoController::SendMidiMessage(const MidiMessage& message)
 	m_midiConnector->SendMessage(message);
 }
 
-void PianoController::NotifyChanged()
+void PianoController::NotifyChanged(Aspect aspect, Channel channel)
 {
 	for (auto listener : m_listeners)
 	{
-		listener->PianoStateChanged();
+		listener->PianoStateChanged(aspect, channel);
 	}
 }
-
-void PianoController::NotifySongLoaded()
-{
-	for (auto listener : m_listeners)
-	{
-		listener->PianoSongLoaded();
-	}
-}
-

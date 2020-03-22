@@ -46,8 +46,9 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void PianoStateChanged() override { MessageManager::callAsync([=](){updateSongState();}); }
-	void updateSongState();
+    void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
+		{ if (ch == channel) MessageManager::callAsync([=](){updateChannelState(ap);}); }
+	void updateChannelState(PianoController::Aspect aspect);
     void mouseDoubleClick(const MouseEvent& event) override;
     //[/UserMethods]
 
