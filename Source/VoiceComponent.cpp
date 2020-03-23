@@ -28,8 +28,7 @@
 class VoiceTreeItem : public TreeViewItem
 {
 public:
-	VoiceTreeItem(Voice& voice) : m_voice(&voice),
-		m_title(Presets::FindVoice(m_voice->path).title) {}
+	VoiceTreeItem(Voice& voice) : m_voice(&voice), m_title(voice.title) {}
 	VoiceTreeItem(const String& title) : m_title(title) {}
 
 	bool mightContainSubItems() override
@@ -310,9 +309,9 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 
 void VoiceComponent::updateVoiceState()
 {
-	mainVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chMain)).title);
-	layerVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chLayer)).title);
-	leftVoiceButton->setButtonText(Presets::FindVoice(pianoController.GetVoice(PianoController::chLeft)).title);
+	mainVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chMain)));
+	layerVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chLayer)));
+	leftVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chLeft)));
 
 	mainTitleButton->setToggleState(pianoController.GetActive(PianoController::chMain), NotificationType::dontSendNotification);
 	layerTitleButton->setToggleState(pianoController.GetActive(PianoController::chLayer), NotificationType::dontSendNotification);

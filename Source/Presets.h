@@ -39,5 +39,5 @@ class Presets
 {
 public:
 	static VoiceList& Voices();
-	static Voice& FindVoice(String voice);
+	static String voiceTitle(String voice);
 };

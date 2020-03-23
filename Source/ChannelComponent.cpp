@@ -240,7 +240,8 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
 	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
 
-    voiceLabel->setText(Presets::FindVoice(pianoController.GetVoice(channel)).category2, NotificationType::dontSendNotification);
+    voiceLabel->setText(Presets::voiceTitle(pianoController.GetVoice(channel)), NotificationType::dontSendNotification);
+    voiceLabel->setTooltip(voiceLabel->getText());
 
 	panSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
 	reverbSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
