@@ -28,11 +28,14 @@ public:
 	void Save();
 	void Load();
 
-	String pianoIp = "192.168.1.3";
+	String pianoIp = "192.168.0.150";
 	String midiPort;
 	float zoomUi = 1.0;
 	Rectangle<int> windowPos;
 	bool keyboardVisible = false;
 	int keyboardChannel = 1;
 	String resourcesPath;
+
+private:
+	PropertiesFile::Options opt;
 };

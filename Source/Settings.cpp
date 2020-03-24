@@ -28,85 +28,42 @@ Settings::Settings()
 #else
 	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory(). getFullPathName() + "/Resources";
 #endif
+
+	opt.storageFormat = PropertiesFile::StorageFormat::storeAsXML;
+	opt.applicationName = "ConPianist";
+	opt.osxLibrarySubFolder = "Application Support";
+	opt.filenameSuffix = "settings";
 }
 
 void Settings::Save()
 {
-	XmlElement state("ConPianistState");
-	state.createNewChildElement("PianoIp")->addTextElement(pianoIp);
-	state.createNewChildElement("MidiPort")->addTextElement(midiPort);
-	state.createNewChildElement("ZoomUi")->addTextElement(String(zoomUi));
-	state.createNewChildElement("Window.X")->addTextElement(String(windowPos.getX()));
-	state.createNewChildElement("Window.Y")->addTextElement(String(windowPos.getY()));
-	state.createNewChildElement("Window.Width")->addTextElement(String(windowPos.getWidth()));
-	state.createNewChildElement("Window.Height")->addTextElement(String(windowPos.getHeight()));
-	state.createNewChildElement("Keyboard.Visible")->addTextElement(keyboardVisible ? "1" : "0");
-	state.createNewChildElement("Keyboard.Channel")->addTextElement(String(keyboardChannel));
+	PropertiesFile prop(opt);
 
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	state.writeTo(stateFile);
+	prop.setValue("PianoIp", pianoIp);
+	prop.setValue("MidiPort", midiPort);
+	prop.setValue("ZoomUi", zoomUi);
+	prop.setValue("Window.X", windowPos.getX());
+	prop.setValue("Window.Y", windowPos.getY());
+	prop.setValue("Window.Width", windowPos.getWidth());
+	prop.setValue("Window.Height", windowPos.getHeight());
+	prop.setValue("Keyboard.Visible", keyboardVisible);
+	prop.setValue("Keyboard.Channel", keyboardChannel);
 
+	prop.save();
 	sendChangeMessage();
 }
 
 void Settings::Load()
 {
-	File stateFile = (File::getSpecialLocation(File::userHomeDirectory)).getFullPathName() + "/.conpianist";
-	if (!stateFile.exists())
-	{
-		return;
-	}
+	PropertiesFile prop(opt);
 
-	std::unique_ptr<XmlElement> savedState = XmlDocument::parse(stateFile);
-	if (!savedState)
-	{
-		return;
-	}
-
-	XmlElement* el;
-
-	if ((el = savedState->getChildByName("PianoIp")))
-	{
-		pianoIp = el->getAllSubText();
-	}
-
-	if ((el = savedState->getChildByName("MidiPort")))
-	{
-		midiPort = el->getAllSubText();
-	}
-
-	if ((el = savedState->getChildByName("ZoomUi")))
-	{
-		zoomUi = el->getAllSubText().getFloatValue();
-	}
-
-	if ((el = savedState->getChildByName("Window.X")))
-	{
-		windowPos.setX(el->getAllSubText().getIntValue());
-	}
-
-	if ((el = savedState->getChildByName("Window.Y")))
-	{
-		windowPos.setY(el->getAllSubText().getIntValue());
-	}
-
-	if ((el = savedState->getChildByName("Window.Width")))
-	{
-		windowPos.setWidth(el->getAllSubText().getIntValue());
-	}
-
-	if ((el = savedState->getChildByName("Window.Height")))
-	{
-		windowPos.setHeight(el->getAllSubText().getIntValue());
-	}
-
-	if ((el = savedState->getChildByName("Keyboard.Visible")))
-	{
-		keyboardVisible = el->getAllSubText().getIntValue() != 0;
-	}
-
-	if ((el = savedState->getChildByName("Keyboard.Channel")))
-	{
-		keyboardChannel = el->getAllSubText().getIntValue();
-	}
+	pianoIp = prop.getValue("PianoIp", pianoIp);
+	midiPort = prop.getValue("MidiPort", midiPort);
+	zoomUi = prop.getDoubleValue("ZoomUi", zoomUi);
+	windowPos.setX(prop.getIntValue("Window.X", windowPos.getX()));
+	windowPos.setY(prop.getIntValue("Window.Y", windowPos.getY()));
+	windowPos.setWidth(prop.getIntValue("Window.Width", windowPos.getWidth()));
+	windowPos.setHeight(prop.getIntValue("Window.Height", windowPos.getHeight()));
+	keyboardVisible = prop.getIntValue("Keyboard.Visible", keyboardVisible);
+	keyboardChannel = prop.getIntValue("Keyboard.Channel", keyboardChannel);
 }
