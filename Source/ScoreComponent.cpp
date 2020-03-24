@@ -31,7 +31,8 @@
 
 using namespace lomse;
 
-class LomseScoreComponent : public ScoreComponent, public PianoController::Listener
+class LomseScoreComponent : public ScoreComponent, public PianoController::Listener,
+	public Button::Listener
 {
 public:
 	LomseScoreComponent(PianoController& pianoController, Settings& settings);
@@ -43,6 +44,7 @@ public:
 	void mouseMove(const MouseEvent& event) override;
 	void mouseDrag(const MouseEvent& event) override;
 	void mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details) override;
+    void buttonClicked (Button* buttonThatWasClicked) override;
 
 	void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 
@@ -60,6 +62,7 @@ private:
 	PianoController::Position loopStart{0,0};
 	FragmentMark* loopStartMark = nullptr;
 	FragmentMark* loopEndMark = nullptr;
+    std::unique_ptr<Button> loadButton;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -67,6 +70,9 @@ private:
 	unsigned GetMouseFlags(const MouseEvent& event);
 	void UpdateTempoLine(bool scroll);
 	void UpdateABMarks(bool force);
+	void BuildControls();
+	void LoadScore(const File& file);
+	void LoadScore(const URL& url);
 
 	// Piano controller callbacks
 	void UpdateSongState();
@@ -115,7 +121,17 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	//set required callbacks
 	m_lomse.set_notify_callback(this, LomseEventWrapper);
 
+	BuildControls();
+
 	pianoController.AddListener(this);
+}
+
+void LomseScoreComponent::BuildControls()
+{
+    loadButton.reset(new TextButton("Load Button"));
+    addAndMakeVisible(loadButton.get());
+    loadButton->setButtonText("Load Score");
+    loadButton->addListener(this);
 }
 
 void LomseScoreComponent::LoadDocument(String filename)
@@ -236,6 +252,8 @@ void LomseScoreComponent::resized()
 	{
 		PrepareImage();
 	}
+
+	loadButton->setBounds(getWidth() / 2 - 50, 30, 100, 30);
 }
 
 void LomseScoreComponent::paint(Graphics& g)
@@ -247,14 +265,35 @@ void LomseScoreComponent::paint(Graphics& g)
 	else
 	{
 		String text =
-			"To display score for a song put the score-file in MusicXML format near MIDI-file. "
+			"To automatically load score for a song put the score-file in MusicXML format near MIDI-file. "
 			"The score-file should have the same name as MIDI-file and extension .musicxml or .xml.";
 		g.setColour(Colour(167,172,176));
 		g.setFont(16);
-		juce::Rectangle<int> rec = getBounds();
-		rec.reduce(20, 20);
+		juce::Rectangle<int> rec(20, 80, getWidth() - 40, getHeight() - 100);
 		g.drawFittedText(text, rec, Justification::centredTop, 100, 1);
 	}
+}
+
+void LomseScoreComponent::buttonClicked(Button* buttonThatWasClicked)
+{
+	File initialLocation = File::getSpecialLocation(File::userHomeDirectory);
+	initialLocation = initialLocation.getFullPathName() + "/Midi";
+	String songName = File(m_pianoController.GetSongFilename()).getFileNameWithoutExtension();
+	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
+	FileChooser chooser(title, initialLocation, "*.xml;*.musicxml");
+    if (chooser.browseForFileToOpen())
+    {
+    	URL url = chooser.getURLResult();
+		MessageManager::callAsync([=](){LoadScore(url);});
+    }
+}
+
+void LomseScoreComponent::LoadScore(const URL& url)
+{
+	// generate access token on sandboxed platforms (iOS)
+	std::unique_ptr<juce::InputStream> inp(url.createInputStream(false));
+
+	LoadScore(url.getLocalFile());
 }
 
 void LomseScoreComponent::mouseDown(const MouseEvent& event)
@@ -396,23 +435,35 @@ void LomseScoreComponent::LoadSong()
 {
 	m_presenter = nullptr;
 
-	File scoreFilename = File(m_pianoController.GetSongFilename()).withFileExtension(".musicxml");
-	if (scoreFilename.existsAsFile())
+	File file = File(m_pianoController.GetSongFilename()).withFileExtension(".musicxml");
+	if (!file.existsAsFile())
 	{
-		LoadDocument(scoreFilename.getFullPathName());
+		file = File(m_pianoController.GetSongFilename()).withFileExtension(".xml");
+	}
+
+	if (file.existsAsFile() && file.getSize() > 0)
+	{
+		LoadScore(file);
+		return;
 	}
 	else
 	{
-		scoreFilename = File(m_pianoController.GetSongFilename()).withFileExtension(".xml");
-		if (scoreFilename.existsAsFile())
-		{
-			LoadDocument(scoreFilename.getFullPathName());
-		}
+		loadButton->setVisible(m_presenter == nullptr);
+		repaint();
 	}
+}
+
+void LomseScoreComponent::LoadScore(const File& file)
+{
+	m_presenter = nullptr;
+
+	LoadDocument(file.getFullPathName());
 
 	if (m_presenter)
 	{
 		PrepareImage();
 	}
+
+	loadButton->setVisible(m_presenter == nullptr);
 	repaint();
 }
