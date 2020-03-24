@@ -47,7 +47,7 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void chooseSong();
-    void loadSong(const File& file);
+    void loadSong(const URL& url);
     void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 	void updatePlaybackState(PianoController::Aspect aspect);
 	void updateChannelState();

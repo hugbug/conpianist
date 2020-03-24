@@ -526,17 +526,20 @@ void PlaybackComponent::chooseSong()
 	FileChooser chooser ("Please select the song you want to load...", initialLocation, "*.mid");
     if (chooser.browseForFileToOpen())
     {
-        File file(chooser.getResult());
+    	URL url = chooser.getURLResult();
 		songLabel->setText(TRANS("Loading..."), NotificationType::dontSendNotification);
-		MessageManager::callAsync([=] () { loadSong(file); });
+		MessageManager::callAsync([=](){loadSong(url);});
     }
 }
 
-void PlaybackComponent::loadSong(const File& file)
+void PlaybackComponent::loadSong(const URL& url)
 {
+	// generate access token on sandboxed platforms (iOS)
+	std::unique_ptr<InputStream> inp(url.createInputStream(false));
+
+	File file(url.getLocalFile());
 	MidiFile midiFile;
-	FileInputStream inp(file);
-	if (!midiFile.readFrom(inp))
+	if (!midiFile.readFrom(*inp))
 	{
 		songLabel->setText(TRANS("Error reading file"), NotificationType::dontSendNotification);
 		return;
