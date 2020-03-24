@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,9 @@
 
 Settings::Settings()
 {
-#ifdef __APPLE__
+#if TARGET_OS_IPHONE
+	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getFullPathName();
+#elif __APPLE__
 	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getFullPathName() + "/Contents/Resources";
 #else
 	resourcesPath = File::getSpecialLocation(File::currentApplicationFile).getParentDirectory(). getFullPathName() + "/Resources";
