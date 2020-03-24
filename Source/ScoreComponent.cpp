@@ -55,7 +55,6 @@ private:
 	std::unique_ptr<juce::Image> m_image;
 	PianoController& m_pianoController;
 	Settings& m_settings;
-	int m_resolution;
 	float m_scale = 1;
 	int m_scoreId = 0;
 	PianoController::Loop loop{{0,0},{0,0}};
@@ -96,8 +95,8 @@ ScoreComponent* ScoreComponent::Create(PianoController& pianoController, Setting
 LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Settings& settings) :
 	m_pianoController(pianoController), m_settings(settings)
 {
-	m_scale = m_settings.zoomUi;
-	m_resolution = int(96 * m_scale);
+	m_scale = m_settings.zoomUi * Desktop::getInstance().getDisplays().getMainDisplay().scale;
+	int resolution = int(96 * m_scale);
 
 	lomse::logger.set_logging_mode(lomse::Logger::k_trace_mode);
 
@@ -114,7 +113,7 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	bool reverse_y_axis = false;
 
 	//initialize the Lomse library with these values
-	m_lomse.init_library(pixel_format, m_resolution, reverse_y_axis);
+	m_lomse.init_library(pixel_format, resolution, reverse_y_axis);
 
 	m_lomse.set_default_fonts_path((m_settings.resourcesPath + "/fonts/").toStdString());
 
