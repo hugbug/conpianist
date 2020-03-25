@@ -32,6 +32,7 @@ public:
 
 #if TARGET_OS_IPHONE
 		Desktop::getInstance().setGlobalScaleFactor(1.2);
+		CreateSharedDocumenstDirectory();
 #endif
 		Desktop::getInstance().setDefaultLookAndFeel(&lookAndFeel);
         mainWindow.reset(new MainWindow (getApplicationName()));
@@ -61,6 +62,18 @@ public:
         // this method is invoked, and the commandLine parameter tells you what
         // the other instance's command-line arguments were.
     }
+
+	void CreateSharedDocumenstDirectory()
+	{
+		// Create app Documents directory, for use in "Files" app
+		File docPath = File::getSpecialLocation(File::userDocumentsDirectory);
+		DirectoryIterator iter(docPath, false);
+		if (!iter.next())
+		{
+			File docFlag = docPath.getChildFile("Put your midi files here");
+			std::unique_ptr<FileOutputStream> outp(docFlag.createOutputStream());
+		}
+	}
 
     //==============================================================================
     /*
