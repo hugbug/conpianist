@@ -10,6 +10,8 @@
       <FILE id="oUYthh" name="lomse.cpp" compile="1" resource="0" file="Library/Lomse/build/lomse.cpp"/>
     </GROUP>
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
+      <FILE id="RrB2f9" name="app-icon-ios.svg" compile="0" resource="0"
+            file="Graphics/app-icon-ios.svg"/>
       <FILE id="dJQtiu" name="app-icon.svg" compile="0" resource="0" file="Graphics/app-icon.svg"/>
       <FILE id="BqPmsM" name="button-abloop-half.png" compile="0" resource="1"
             file="Graphics/button-abloop-half.png"/>
@@ -154,8 +156,8 @@
       </MODULEPATHS>
     </VS2015>
     <XCODE_IPHONE targetFolder="Builds/iOS" externalLibraries="freetype" extraCompilerFlags="-I../../../ExternalLibraries/include"
-                  extraLinkerFlags="-L../../../ExternalLibraries/lib" bigIcon="dJQtiu"
-                  smallIcon="dJQtiu" customXcodeResourceFolders="Resources/fonts"
+                  extraLinkerFlags="-L../../../ExternalLibraries/lib" bigIcon="RrB2f9"
+                  smallIcon="RrB2f9" customXcodeResourceFolders="Resources/fonts"
                   UIFileSharingEnabled="1" UISupportsDocumentBrowser="1">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
