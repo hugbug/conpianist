@@ -100,6 +100,7 @@ public:
 	const String& GetRemoteIp() { return m_remoteIp; }
 	void Connect();
 	void Disconnect();
+	void Reset();
 	bool UploadSong(const File& file);
 	void Play();
 	void Pause();

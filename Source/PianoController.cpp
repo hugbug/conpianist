@@ -203,7 +203,10 @@ void PianoController::Connect()
 {
 	SendCspMessage(CSP_DUMP_MODEL, false);
 	SendCspMessage(CSP_DUMP_VERSION, false);
+}
 
+void PianoController::Reset()
+{
 	// Activate feedback events from piano:
 	//   song length info after a song is loaded
 	SendCspMessage(CSP_LENGTH_EVENTS, false);
