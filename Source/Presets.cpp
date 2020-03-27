@@ -2723,6 +2723,68 @@ namespace
 		{7085568, 7082241},
 		{6819072, 6819073},
 	};
+
+	ReverbEffectList reverbEffects = {
+		{"Real Large Hall","Real reverb simulating the acoustics of a large sized hall",1,32},
+		{"Real Medium Hall","Real reverb simulating the acoustics of a medium sized hall",1,33},
+		{"Real Bright Hall","Real reverb simulating the acoustics of a bright sounding hall",1,34},
+		{"Basic Hall","Reverb simulating the acoustics of a hall Standard setting",1,21},
+		{"Light Hall","Reverb simulating the acoustics of a hall Light setting",1,22},
+		{"Ballad Hall","Reverb simulating the acoustics of a hall For ballad type music",1,19},
+		{"Piano Hall","Reverb simulating the acoustics of a hall For piano sound",1,20},
+		{"Hall 1","Reverb simulating the acoustics of a hall",1,0},
+		{"Hall 2","Reverb simulating the acoustics of a hall",1,16},
+		{"Hall 3","Reverb simulating the acoustics of a hall",1,17},
+		{"Hall 4","Reverb simulating the acoustics of a hall",1,18},
+		{"Hall 5","Reverb simulating the acoustics of a hall",1,1},
+		{"Vocal Hall 1","Reverb suitable for vocals",1,27},
+		{"Vocal Hall 2","Reverb suitable for vocals",1,28},
+		{"Recital Hall","Reverb simulating the acoustics of a medium sized recital hall For piano sound",1,24},
+		{"Concert Hall","Reverb simulating the acoustics of a large sized hall For piano sound",1,4},
+		{"Cathedral","Reverb simulating the acoustics of a cathedral For piano sound",1,5},
+		{"Real Room","Real reverb simulating the acoustics of a room",2,32},
+		{"Real Power Room","Real reverb simulating the acoustics of a room with powerful room reflections",2,33},
+		{"Acoustic Room","Reverb simulating the acoustics of a room Standard setting",2,20},
+		{"Drums Room","Reverb simulating the acoustics of a room For drum sounds",2,21},
+		{"Chamber","Reverb simulating the acoustics of a chamber For piano sound",2,24},
+		{"Stage","Reverb suitable for a solo instrument",3,16},
+		{"Club","Reverb simulating the acoustics of a club For piano sound",3,24},
+		{"Real Large Plate","Real reverb simulating a large plate reverb unit",4,32},
+		{"Real Medium Plate","Real reverb simulating a medium sized plate reverb unit",4,33},
+		{"Real Rattle Plate","Real reverb simulating a plate reverb unit with spring rattle",4,34},
+		{"Plate","Reverb simulating a plate reverb unit",4,16},
+		{"Piano Plate","Reverb simulating a plate reverb unit For piano sound",4,24},
+		{"Hall M","Reverb simulating the acoustics of a hall",1,6},
+		{"Hall L","Reverb simulating the acoustics of a hall",1,7},
+		{"Atmosphere Hall","A unique long reverb with atmosphere",1,23},
+		{"Large Hall","Reverb simulating the acoustics of a hall",1,2},
+		{"Medium Hall","Reverb simulating the acoustics of a hall",1,3},
+		{"Percussion Room","Reverb simulating the acoustics of a room For percussion sounds",2,22},
+		{"Room 1","Reverb simulating the acoustics of a room",2,16},
+		{"Room 2","Reverb simulating the acoustics of a room",2,17},
+		{"Room 3","Reverb simulating the acoustics of a room",2,18},
+		{"Room 4","Reverb simulating the acoustics of a room",2,19},
+		{"Room 5","Reverb simulating the acoustics of a room",2,0},
+		{"Room 6","Reverb simulating the acoustics of a room",2,1},
+		{"Room 7","Reverb simulating the acoustics of a room",2,2},
+		{"Room S","Reverb simulating the acoustics of a room",2,5},
+		{"Room M","Reverb simulating the acoustics of a room",2,6},
+		{"Room L","Reverb simulating the acoustics of a room",2,7},
+		{"Warm Room","Reverb simulating the acoustics of a warm room",2,3},
+		{"White Room","A unique short reverb with a bit of initial delay",16,0},
+		{"Woody Room","Reverb simulating the acoustics of a wood-built room",2,4},
+		{"Stage 2","Reverb suitable for a solo instrument",3,17},
+		{"Stage 3","Reverb suitable for a solo instrument",3,0},
+		{"Stage 4","Reverb suitable for a solo instrument",3,1},
+		{"Plate 2","Reverb simulating a plate reverb unit",4,17},
+		{"Plate 3","Reverb simulating a plate reverb unit",4,0},
+		{"GM Plate","Reverb simulating a plate reverb unit",4,7},
+		{"Rich Plate","Reverb simulating a rich plate reverb unit",4,1},
+		{"Tunnel","Simulates a cylindrical space expanding to left and right",17,0},
+		{"Canyon","A hypothetical acoustic space which extends without limit",18,0},
+		{"Basement","A bit of initial delay followed by reverb with a unique resonance",19,0},
+		{"No Effect", "No effect",0,0}
+	};
 }
 
 Voice::Voice(int num, String path, String type)
@@ -2742,7 +2804,12 @@ VoiceList& Presets::Voices()
 	return voices;
 }
 
-String Presets::voiceTitle(String voice)
+ReverbEffectList& Presets::ReverbEffects()
+{
+	return reverbEffects;
+}
+
+String Presets::VoiceTitle(String voice)
 {
 	if (voice == "")
 	{
@@ -2786,4 +2853,17 @@ String Presets::voiceTitle(String voice)
 
 	// unknown path
 	return voice;
+}
+
+String Presets::ReverbEffectTitle(int num)
+{
+	for (ReverbEffect& re : reverbEffects)
+	{
+		if (re.num == num)
+		{
+			return re.title;
+		}
+	}
+
+	return "Unknown Effect";
 }

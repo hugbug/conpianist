@@ -35,9 +35,23 @@ struct Voice
 
 using VoiceList = std::vector<Voice>;
 
+struct ReverbEffect
+{
+	ReverbEffect(String title, String description, int msb, int lsb) :
+		num((msb << 8) + lsb), title(title), description(description) {}
+
+	int num;
+	String title;
+	String description;
+};
+
+using ReverbEffectList = std::vector<ReverbEffect>;
+
 class Presets
 {
 public:
 	static VoiceList& Voices();
-	static String voiceTitle(String voice);
+	static String VoiceTitle(String voice);
+	static ReverbEffectList& ReverbEffects();
+	static String ReverbEffectTitle(int num);
 };

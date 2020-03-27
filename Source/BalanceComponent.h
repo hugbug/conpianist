@@ -41,7 +41,9 @@
     Describe your class and how it works here!
                                                                     //[/Comments]
 */
-class BalanceComponent  : public Component
+class BalanceComponent  : public Component,
+                          public PianoController::Listener,
+                          public ComboBox::Listener
 {
 public:
     //==============================================================================
@@ -50,11 +52,16 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
+		{ if (ap == PianoController::apConnection || ap == PianoController::apReverbEffect)
+			MessageManager::callAsync([=](){updateReverbEffectState();}); }
+	void updateReverbEffectState();
 	static void showDialog(PianoController& pianoController);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
+    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
 
 
@@ -70,6 +77,7 @@ private:
     std::unique_ptr<ChannelComponent> songChannel;
     std::unique_ptr<ChannelComponent> micChannel;
     std::unique_ptr<ChannelComponent> auxInChannel;
+    std::unique_ptr<ComboBox> effectComboBox;
 
 
     //==============================================================================

@@ -78,6 +78,9 @@ static const char* CSP_TEMPO_RESET = "04 01 08 00 00 01 00 01 00";
 static const char* CSP_TRANSPOSE = "0a 00 00 01 02 01 00 00 01 ";
 static const char* CSP_TRANSPOSE_STATE = "00 00 0a 00 00 01 02 01 00 00 01";
 static const char* CSP_TRANSPOSE_EVENTS = "02 00 0a 00 00 01";
+static const char* CSP_REVERB_EFFECT = "0c 01 00 01 00 01 00 00 03 00 ";
+static const char* CSP_REVERB_EFFECT_STATE = "00 00 0c 01 00 01 00 01 00 00 03 00";
+static const char* CSP_REVERB_EFFECT_EVENTS = "02 00 0c 01 00 01";
 static const char* CSP_LOOP = "04 00 0d 01 00 01 00 00 09 01 ";
 static const char* CSP_LOOP_STATE = "00 00 04 00 0d 01 00 01 00 00 09";
 static const char* CSP_LOOP_EVENTS = "02 00 04 00 0d 01";
@@ -232,6 +235,8 @@ void PianoController::Reset()
 	SendCspMessage(CSP_TEMPO_EVENTS, false);
 	//   transpose info
 	SendCspMessage(CSP_TRANSPOSE_EVENTS, false);
+	//   reverb effect info
+	SendCspMessage(CSP_REVERB_EFFECT_EVENTS, false);
 	//   A->B loop info
 	SendCspMessage(CSP_LOOP_EVENTS, false);
 	//   voice info
@@ -282,6 +287,7 @@ void PianoController::Reset()
 	ResetTempo();
 	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
+	SetReverbEffect(DefaultReverbEffect);
 
 	// set internal active for channels
 	m_channels[chMain].enabled = true;
@@ -467,6 +473,11 @@ void PianoController::SetTranspose(int transpose)
 	SendCspMessage(String(CSP_TRANSPOSE) + ByteToHex(transpose + TransposeBase));
 }
 
+void PianoController::SetReverbEffect(int effect)
+{
+	SendCspMessage(String(CSP_REVERB_EFFECT) + WordToHex(effect));
+}
+
 void PianoController::SetBackingPart(bool enable)
 {
 	SendCspMessage(enable ? CSP_BACKING_PART_ON : CSP_BACKING_PART_OFF);
@@ -501,6 +512,7 @@ void PianoController::SetLoopStart(const Position loopStart)
 	m_loopStart = loopStart;
 	NotifyChanged(apLoop);
 }
+
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
 {
@@ -605,6 +617,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		{
 			m_transpose = (int)(message.getSysExData()[17]) - TransposeBase;
 			NotifyChanged(apTranspose);
+		}
+		else if (IsCspMessage(message, CSP_REVERB_EFFECT_STATE))
+		{
+			m_reverbEffect = (message.getSysExData()[18] << 7) + message.getSysExData()[19];
+			NotifyChanged(apReverbEffect);
 		}
 		else if (IsCspMessage(message, CSP_LOOP_STATE))
 		{

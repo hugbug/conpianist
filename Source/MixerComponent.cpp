@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "Presets.h"
 //[/Headers]
 
 #include "MixerComponent.h"
@@ -42,6 +43,20 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     addAndMakeVisible (channelPanel.get());
     channelPanel->setName ("Channels");
 
+    effectComboBox.reset (new ComboBox ("Reverb Effect Combo Box"));
+    addAndMakeVisible (effectComboBox.get());
+    effectComboBox->setTooltip (TRANS("Reverb Effect"));
+    effectComboBox->setEditableText (false);
+    effectComboBox->setJustificationType (Justification::centredLeft);
+    effectComboBox->setTextWhenNothingSelected (TRANS("Reverb Effect"));
+    effectComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    effectComboBox->addItem (TRANS("Real Large Hall"), 1);
+    effectComboBox->addItem (TRANS("Real Medium Hall"), 2);
+    effectComboBox->addItem (TRANS("Concert Hall"), 3);
+    effectComboBox->addListener (this);
+
+    effectComboBox->setBounds (74, 175, 176, 24);
+
 
     //[UserPreSize]
     for (PianoController::Channel ch = PianoController::chMidi1; ch <= PianoController::chMidi16;
@@ -60,6 +75,14 @@ MixerComponent::MixerComponent (PianoController& pianoController)
 
 
     //[Constructor] You can add your own custom stuff here..
+	effectComboBox->clear();
+	for (ReverbEffect& re : Presets::ReverbEffects())
+	{
+		effectComboBox->addItem(re.title, re.num + 1000000);
+	}
+
+    pianoController.AddListener(this);
+    updateReverbEffectState();
     //[/Constructor]
 }
 
@@ -71,6 +94,7 @@ MixerComponent::~MixerComponent()
     channelViewport = nullptr;
     leftChannel = nullptr;
     channelPanel = nullptr;
+    effectComboBox = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -116,9 +140,33 @@ void MixerComponent::resized()
     //[/UserResized]
 }
 
+void MixerComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+    //[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == effectComboBox.get())
+    {
+        //[UserComboBoxCode_effectComboBox] -- add your combo box handling code here..
+        pianoController.SetReverbEffect(effectComboBox->getSelectedId() - 1000000);
+        //[/UserComboBoxCode_effectComboBox]
+    }
+
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
+}
+
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void MixerComponent::updateReverbEffectState()
+{
+	effectComboBox->setSelectedId(pianoController.GetReverbEffect() + 1000000, NotificationType::dontSendNotification);
+	if (effectComboBox->getSelectedId() != pianoController.GetReverbEffect() + 1000000)
+	{
+		effectComboBox->setSelectedItemIndex(-1); // unknown effect
+	}
+}
 //[/MiscUserCode]
 
 
@@ -149,6 +197,10 @@ BEGIN_JUCER_METADATA
   <GENERICCOMPONENT name="Channels" id="256e91213f333b3c" memberName="channelPanel"
                     virtualName="" explicitFocusOrder="0" pos="96 0 280 8M" class="Component"
                     params=""/>
+  <COMBOBOX name="Reverb Effect Combo Box" id="486cacdf50ec1ba7" memberName="effectComboBox"
+            virtualName="" explicitFocusOrder="0" pos="74 175 176 24" tooltip="Reverb Effect"
+            editable="0" layout="33" items="Real Large Hall&#10;Real Medium Hall&#10;Concert Hall"
+            textWhenNonSelected="Reverb Effect" textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

@@ -77,6 +77,7 @@ public:
 		apLoop,
 		apTranspose,
 		apTempo,
+		apReverbEffect,
 		apPart,
 		apVolume,
 		apPan,
@@ -149,6 +150,8 @@ public:
 	void SetVoice(Channel ch, const String& voice);
 	bool GetActive(Channel ch) { return m_channels[ch].enabled; }
 	void SetActive(Channel ch, bool active);
+	int GetReverbEffect() { return m_reverbEffect; }
+	void SetReverbEffect(int effect);
 	const String& GetSongFilename() { return m_songFilename; }
 
 	void SendMidiMessage(const MidiMessage& message);
@@ -171,6 +174,7 @@ public:
 	static const int MinReverb = 0;
 	static const int MaxReverb = 127;
 	static const int DefaultReverb = 0;
+	static const int DefaultReverbEffect = 0x0118; // Recital Hall
 
 private:
 	MidiConnector* m_midiConnector;
@@ -194,6 +198,7 @@ private:
 	Position m_loopStart{0,0};
 	Loop m_loop{{0,0},{0,0}};
 	ChannelInfo m_channels[127];
+	int m_reverbEffect = 0;
 	String m_songFilename;
 
 	void SendSysExMessage(const String& command);

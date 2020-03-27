@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "Presets.h"
 //[/Headers]
 
 #include "BalanceComponent.h"
@@ -45,6 +46,20 @@ BalanceComponent::BalanceComponent (PianoController& pianoController)
     addAndMakeVisible (micChannel.get());
     auxInChannel.reset (new ChannelComponent (pianoController, PianoController::chAuxIn, "Aux In", false, false));
     addAndMakeVisible (auxInChannel.get());
+    effectComboBox.reset (new ComboBox ("Reverb Effect Combo Box"));
+    addAndMakeVisible (effectComboBox.get());
+    effectComboBox->setTooltip (TRANS("Reverb Effect"));
+    effectComboBox->setEditableText (false);
+    effectComboBox->setJustificationType (Justification::centredLeft);
+    effectComboBox->setTextWhenNothingSelected (TRANS("Reverb Effect"));
+    effectComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
+    effectComboBox->addItem (TRANS("Real Large Hall"), 1);
+    effectComboBox->addItem (TRANS("Real Medium Hall"), 2);
+    effectComboBox->addItem (TRANS("Concert Hall"), 3);
+    effectComboBox->addListener (this);
+
+    effectComboBox->setBounds (74, 175, 176, 24);
+
 
     //[UserPreSize]
     //[/UserPreSize]
@@ -53,12 +68,21 @@ BalanceComponent::BalanceComponent (PianoController& pianoController)
 
 
     //[Constructor] You can add your own custom stuff here..
+	effectComboBox->clear();
+	for (ReverbEffect& re : Presets::ReverbEffects())
+	{
+		effectComboBox->addItem(re.title, re.num + 1000000);
+	}
+
+    pianoController.AddListener(this);
+    updateReverbEffectState();
     //[/Constructor]
 }
 
 BalanceComponent::~BalanceComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
+    pianoController.RemoveListener(this);
     //[/Destructor_pre]
 
     leftChannel = nullptr;
@@ -67,6 +91,7 @@ BalanceComponent::~BalanceComponent()
     songChannel = nullptr;
     micChannel = nullptr;
     auxInChannel = nullptr;
+    effectComboBox = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -100,9 +125,34 @@ void BalanceComponent::resized()
     //[/UserResized]
 }
 
+void BalanceComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
+{
+    //[UsercomboBoxChanged_Pre]
+    //[/UsercomboBoxChanged_Pre]
+
+    if (comboBoxThatHasChanged == effectComboBox.get())
+    {
+        //[UserComboBoxCode_effectComboBox] -- add your combo box handling code here..
+        pianoController.SetReverbEffect(effectComboBox->getSelectedId() - 1000000);
+        //[/UserComboBoxCode_effectComboBox]
+    }
+
+    //[UsercomboBoxChanged_Post]
+    //[/UsercomboBoxChanged_Post]
+}
+
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void BalanceComponent::updateReverbEffectState()
+{
+	effectComboBox->setSelectedId(pianoController.GetReverbEffect() + 1000000, NotificationType::dontSendNotification);
+	if (effectComboBox->getSelectedId() != pianoController.GetReverbEffect() + 1000000)
+	{
+		effectComboBox->setSelectedItemIndex(-1); // unknown effect
+	}
+}
+
 void BalanceComponent::showDialog(PianoController& pianoController)
 {
 	DialogWindow::LaunchOptions dialog;
@@ -126,10 +176,10 @@ void BalanceComponent::showDialog(PianoController& pianoController)
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="BalanceComponent" componentName=""
-                 parentClasses="public Component" constructorParams="PianoController&amp; pianoController"
-                 variableInitialisers="pianoController(pianoController)" snapPixels="8"
-                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
-                 initialWidth="436" initialHeight="560">
+                 parentClasses="public Component, public PianoController::Listener"
+                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
+                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
+                 fixedSize="0" initialWidth="436" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 0M" sourceFile="ChannelComponent.cpp"
@@ -149,6 +199,10 @@ BEGIN_JUCER_METADATA
   <JUCERCOMP name="AuxIn Channel" id="7ffff5d33c7b27f" memberName="auxInChannel"
              virtualName="" explicitFocusOrder="0" pos="358 0 70 0M" sourceFile="ChannelComponent.cpp"
              constructorParams="pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false, false"/>
+  <COMBOBOX name="Reverb Effect Combo Box" id="486cacdf50ec1ba7" memberName="effectComboBox"
+            virtualName="" explicitFocusOrder="0" pos="74 175 176 24" tooltip="Reverb Effect"
+            editable="0" layout="33" items="Real Large Hall&#10;Real Medium Hall&#10;Concert Hall"
+            textWhenNonSelected="Reverb Effect" textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

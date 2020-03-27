@@ -31,7 +31,6 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     : pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
-    //Desktop::getInstance().setGlobalScaleFactor(1);
     //[/Constructor_pre]
 
     songGroup.reset (new GroupComponent ("Song",

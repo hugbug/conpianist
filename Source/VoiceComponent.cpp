@@ -309,9 +309,9 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 
 void VoiceComponent::updateVoiceState()
 {
-	mainVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chMain)));
-	layerVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chLayer)));
-	leftVoiceButton->setButtonText(Presets::voiceTitle(pianoController.GetVoice(PianoController::chLeft)));
+	mainVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chMain)));
+	layerVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chLayer)));
+	leftVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chLeft)));
 
 	mainTitleButton->setToggleState(pianoController.GetActive(PianoController::chMain), NotificationType::dontSendNotification);
 	layerTitleButton->setToggleState(pianoController.GetActive(PianoController::chLayer), NotificationType::dontSendNotification);

@@ -39,6 +39,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     volumeSlider->setRange (0, 127, 1);
     volumeSlider->setSliderStyle (Slider::LinearVertical);
     volumeSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
+    volumeSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     volumeSlider->addListener (this);
 
     panSlider.reset (new Slider ("Pan Slider"));
@@ -46,9 +47,11 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panSlider->setRange (-64, 63, 1);
     panSlider->setSliderStyle (Slider::RotaryHorizontalDrag);
     panSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
+    panSlider->setColour (Slider::textBoxHighlightColourId, Colour (0x6642a2c8));
+    panSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     panSlider->addListener (this);
 
-    panSlider->setBounds (0, 96, 70, 76);
+    panSlider->setBounds (0, 100, 70, 76);
 
     panLabel.reset (new Label ("Pan Label",
                                TRANS("Pan")));
@@ -70,16 +73,17 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbLabel->setColour (TextEditor::textColourId, Colours::black);
     reverbLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    reverbLabel->setBounds (0, 168, 70, 24);
+    reverbLabel->setBounds (0, 174, 70, 24);
 
     reverbSlider.reset (new Slider ("Reverb Slider"));
     addAndMakeVisible (reverbSlider.get());
     reverbSlider->setRange (0, 127, 1);
     reverbSlider->setSliderStyle (Slider::RotaryHorizontalDrag);
     reverbSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
+    reverbSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     reverbSlider->addListener (this);
 
-    reverbSlider->setBounds (0, 196, 70, 76);
+    reverbSlider->setBounds (0, 206, 70, 76);
 
     volumeLabel.reset (new Label ("Volume Label",
                                   TRANS("Volume")));
@@ -90,7 +94,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     volumeLabel->setColour (TextEditor::textColourId, Colours::black);
     volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    volumeLabel->setBounds (0, 272, 70, 24);
+    volumeLabel->setBounds (0, 282, 70, 24);
 
     titleButton.reset (new TextButton ("Title Button"));
     addAndMakeVisible (titleButton.get());
@@ -184,7 +188,7 @@ void ChannelComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    volumeSlider->setBounds (0, 300, 70, getHeight() - 301);
+    volumeSlider->setBounds (0, 314, 70, getHeight() - 320);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -240,7 +244,7 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
 	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
 
-    voiceLabel->setText(Presets::voiceTitle(pianoController.GetVoice(channel)), NotificationType::dontSendNotification);
+    voiceLabel->setText(Presets::VoiceTitle(pianoController.GetVoice(channel)), NotificationType::dontSendNotification);
     voiceLabel->setTooltip(voiceLabel->getText());
 
 	panSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
@@ -300,32 +304,32 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
   <SLIDER name="Volume Slider" id="9ebc7097d295b7c9" memberName="volumeSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 300 70 301M" min="0.0"
-          max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
+          virtualName="" explicitFocusOrder="0" pos="0 314 70 320M" textboxoutline="80939d9f"
+          min="0.0" max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="Pan Slider" id="6dc8f196b2d9dabf" memberName="panSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 96 70 76" min="-64.0"
-          max="63.0" int="1.0" style="RotaryHorizontalDrag" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
+          virtualName="" explicitFocusOrder="0" pos="0 100 70 76" textboxhighlight="6642a2c8"
+          textboxoutline="80939d9f" min="-64.0" max="63.0" int="1.0" style="RotaryHorizontalDrag"
+          textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
+          textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="Pan Label" id="83fd07e9ba9100c1" memberName="panLabel"
          virtualName="" explicitFocusOrder="0" pos="0 68 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Pan" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <LABEL name="Reverb Label" id="5ba2a16ed7ba194a" memberName="reverbLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 168 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 174 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Reverb" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <SLIDER name="Reverb Slider" id="ebd0ba792eb80390" memberName="reverbSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 196 70 76" min="0.0"
-          max="127.0" int="1.0" style="RotaryHorizontalDrag" textBoxPos="TextBoxAbove"
-          textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
-          needsCallback="1"/>
+          virtualName="" explicitFocusOrder="0" pos="0 206 70 76" textboxoutline="80939d9f"
+          min="0.0" max="127.0" int="1.0" style="RotaryHorizontalDrag"
+          textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
+          textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="Volume Label" id="3a0483b1c68cf176" memberName="volumeLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 272 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 282 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Volume" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
