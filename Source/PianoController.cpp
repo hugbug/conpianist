@@ -89,11 +89,13 @@ static const char* CSP_VOICE_SELECT = "02 00 00 01 NN 01 00 ";
 static const char* CSP_VOICE_SELECT_EVENTS = "02 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE = "00 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE2 = "00 01 02 00 00 01";
-static const char* CSP_CHANNEL_ENABLE = "0c 00 01 01 NN 01 00 00 01 ";
-static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 0c 00 01 01";
-static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 0c 00 01 01";
+static const char* CSP_CHANNEL_ACTIVE = "0c 00 01 01 NN 01 00 00 01 ";
+static const char* CSP_CHANNEL_ACTIVE_STATE = "00 00 0c 00 01 01";
+static const char* CSP_CHANNEL_ACTIVE_EVENTS = "02 00 0c 00 01 01";
 static const char* CSP_CHANNEL_VOICE_STATE = "00 00 02 00 01 01";
 static const char* CSP_CHANNEL_VOICE_EVENTS = "02 00 02 00 01 01";
+static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 04 01 00 01";
+static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 04 01 00 01";
 
 static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
@@ -241,6 +243,8 @@ void PianoController::Reset()
 	SendCspMessage(CSP_LOOP_EVENTS, false);
 	//   voice info
 	SendCspMessage(CSP_VOICE_SELECT_EVENTS, false);
+	//   channel on/off
+	SendCspMessage(CSP_CHANNEL_ACTIVE_EVENTS, false);
 	//   channel enabled/disabled
 	SendCspMessage(CSP_CHANNEL_ENABLE_EVENTS, false);
 	//   midi channel voice
@@ -265,6 +269,9 @@ void PianoController::Reset()
 
 	for (Channel ch : ValidChannelIds)
 	{
+		m_channels[ch].enabled = ch < chMidi1 || ch > chMidi16;
+		m_channels[ch].active = false;
+
 		SetVolume(ch, MinVolume);
 		SetVolume(ch, DefaultVolume);
 		ResetVolume(ch);
@@ -290,12 +297,12 @@ void PianoController::Reset()
 	SetReverbEffect(DefaultReverbEffect);
 
 	// set internal active for channels
-	m_channels[chMain].enabled = true;
-	m_channels[chLayer].enabled = false;
-	m_channels[chLeft].enabled = false;
-	m_channels[chMidiMaster].enabled = true;
-	m_channels[chMic].enabled = true;
-	m_channels[chAuxIn].enabled = true;
+	m_channels[chMain].active = true;
+	m_channels[chLayer].active = false;
+	m_channels[chLeft].active = false;
+	m_channels[chMidiMaster].active = true;
+	m_channels[chMic].active = true;
+	m_channels[chAuxIn].active = true;
 
 	SetActive(chMain, true);
 	SetActive(chLayer, false);
@@ -592,11 +599,17 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			m_channels[ch].reverb = message.getSysExData()[17];
 			NotifyChanged(apReverb, ch);
 		}
+		else if (IsCspMessage(message, CSP_CHANNEL_ACTIVE_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].active = message.getSysExData()[17] == 1;
+			NotifyChanged(apActive, ch);
+		}
 		else if (IsCspMessage(message, CSP_CHANNEL_ENABLE_STATE))
 		{
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].enabled = message.getSysExData()[17] == 1;
-			NotifyChanged(apActive, ch);
+			NotifyChanged(apEnable, ch);
 		}
 		else if (IsCspMessage(message, CSP_CHANNEL_VOICE_STATE))
 		{
@@ -693,7 +706,7 @@ void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 
 void PianoController::SetActive(Channel ch, bool active)
 {
-	String command = String(CSP_CHANNEL_ENABLE).replace("NN", ByteToHex(ch)) +
+	String command = String(CSP_CHANNEL_ACTIVE).replace("NN", ByteToHex(ch)) +
 		(active ? "01" : "00");
 	SendCspMessage(command);
 }

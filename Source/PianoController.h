@@ -58,7 +58,8 @@ public:
 
 	struct ChannelInfo
 	{
-		bool enabled = false;
+		bool enabled = false; // channel is present in current song; only for Midi1..Midi16
+		bool active = false; // channel is active for playback
 		int volume = 0; // 0..127
 		int pan = 0; // 0..127
 		int reverb = 0; // 0..127
@@ -82,6 +83,7 @@ public:
 		apVolume,
 		apPan,
 		apReverb,
+		apEnable,
 		apActive,
 		apVoice
 	};
@@ -148,8 +150,9 @@ public:
 	void SetRightPart(bool enable);
 	const String& GetVoice(Channel ch) { return m_channels[ch].voice; }
 	void SetVoice(Channel ch, const String& voice);
-	bool GetActive(Channel ch) { return m_channels[ch].enabled; }
+	bool GetActive(Channel ch) { return m_channels[ch].active; }
 	void SetActive(Channel ch, bool active);
+	bool GetEnabled(Channel ch) { return m_channels[ch].enabled; }
 	int GetReverbEffect() { return m_reverbEffect; }
 	void SetReverbEffect(int effect);
 	const String& GetSongFilename() { return m_songFilename; }

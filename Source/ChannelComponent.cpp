@@ -229,7 +229,10 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == titleButton.get())
     {
         //[UserButtonCode_titleButton] -- add your button handler code here..
-        pianoController.SetActive(channel, !pianoController.GetActive(channel));
+        if (pianoController.GetActive(channel))
+        {
+        	pianoController.SetActive(channel, !pianoController.GetActive(channel));
+		}
         //[/UserButtonCode_titleButton]
     }
 
@@ -242,14 +245,21 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
-	titleButton->setToggleState(pianoController.GetActive(channel), NotificationType::dontSendNotification);
+	bool enabled = pianoController.GetEnabled(channel);
+	bool active = pianoController.GetActive(channel);
 
-    voiceLabel->setText(Presets::VoiceTitle(pianoController.GetVoice(channel)), NotificationType::dontSendNotification);
+	titleButton->setEnabled(enabled);
+	titleButton->setToggleState(enabled && active, NotificationType::dontSendNotification);
+
+    titleLabel->setColour(Label::textColourId, enabled ? Colours::white : Colour(0xff4e5b62));
+
+    voiceLabel->setText(enabled ? Presets::VoiceTitle(pianoController.GetVoice(channel)) : "",
+    	NotificationType::dontSendNotification);
     voiceLabel->setTooltip(voiceLabel->getText());
 
-	panSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
-	reverbSlider->setEnabled(pianoController.GetActive(channel) && canPanAndReverb);
-	volumeSlider->setEnabled(pianoController.GetActive(channel));
+	panSlider->setEnabled(enabled && active && canPanAndReverb);
+	reverbSlider->setEnabled(enabled && active && canPanAndReverb);
+	volumeSlider->setEnabled(enabled && active);
 
 	panSlider->setValue(pianoController.GetPan(channel), NotificationType::dontSendNotification);
 	reverbSlider->setValue(pianoController.GetReverb(channel), NotificationType::dontSendNotification);

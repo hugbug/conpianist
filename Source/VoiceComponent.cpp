@@ -300,7 +300,7 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	{
 		MessageManager::callAsync([=](){updateEnabledControls();});
 	}
-	else if ((aspect == PianoController::apVoice || aspect == PianoController::apActive) and
+	else if ((aspect == PianoController::apVoice || aspect == PianoController::apActive) &&
 		(channel == PianoController::chMain || channel == PianoController::chLayer || channel == PianoController::chLeft))
 	{
 		MessageManager::callAsync([=](){updateVoiceState();});
