@@ -71,7 +71,7 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     positionLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
     lengthLabel.reset (new Label ("Song Length Label",
-                                  TRANS("999")));
+                                  TRANS("001")));
     addAndMakeVisible (lengthLabel.get());
     lengthLabel->setTooltip (TRANS("Number of measures"));
     lengthLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
@@ -271,8 +271,15 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
 
     //[Constructor] You can add your own custom stuff here..
     updateEnabledControls();
+    updateChannelState();
+    updatePlaybackState(PianoController::apPosition);
+    updatePlaybackState(PianoController::apPlayback);
+    updatePlaybackState(PianoController::apTranspose);
+    updatePlaybackState(PianoController::apTempo);
+    updatePlaybackState(PianoController::apLoop);
     pianoController.AddListener(this);
     songLabel->addMouseListener(this, false);
+    songGroup->addMouseListener(this, true);
     backingPartButton->getProperties().set("toggle", "yes");
     leftPartButton->getProperties().set("toggle", "yes");
     rightPartButton->getProperties().set("toggle", "yes");
@@ -551,15 +558,13 @@ void PlaybackComponent::loadSong(const URL& url)
 	}
 
 	songLabel->setText(file.getFileNameWithoutExtension(), NotificationType::dontSendNotification);
-	positionLabel->setText("001", NotificationType::dontSendNotification);
-	lengthLabel->setText("999", NotificationType::dontSendNotification);
 }
 
 void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
-	if (aspect == PianoController::apPosition || aspect == PianoController::apPlayback ||
-		aspect == PianoController::apTempo || aspect == PianoController::apTranspose ||
-		aspect == PianoController::apLoop)
+	if (aspect == PianoController::apPosition || aspect == PianoController::apLength ||
+		aspect == PianoController::apPlayback || aspect == PianoController::apTempo ||
+		aspect == PianoController::apTranspose || aspect == PianoController::apLoop)
 	{
 		MessageManager::callAsync([=](){updatePlaybackState(aspect);});
 	}
@@ -572,21 +577,21 @@ void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoC
 	{
 		MessageManager::callAsync([=](){updateSettingsState();});
 	}
-	else if (aspect == PianoController::apConnection)
+
+	if (aspect == PianoController::apConnection || aspect == PianoController::apLength)
 	{
 		MessageManager::callAsync([=](){updateEnabledControls();});
 	}
-
 }
 
 void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
 {
-	if (aspect == PianoController::apPosition)
+	if (aspect == PianoController::apPosition || aspect == PianoController::apLength)
 	{
-		int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 999;
+		int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 001;
 		lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
 
-		positionSlider->setRange(1, songLength, 1);
+		positionSlider->setRange(1, std::max(songLength, 2), 1);
 		positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
 			NotificationType::dontSendNotification);
 		positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
@@ -645,13 +650,18 @@ void PlaybackComponent::updateEnabledControls()
 {
 	for (Component* co : getChildren())
 	{
-		co->setEnabled(pianoController.IsConnected());
+		co->setEnabled(pianoController.IsConnected() && pianoController.IsSongLoaded());
 	}
+
+	songGroup->setEnabled(pianoController.IsConnected());
+	songLabel->setEnabled(pianoController.IsConnected());
+	chooseSongButton->setEnabled(pianoController.IsConnected());
 }
 
 void PlaybackComponent::mouseUp(const MouseEvent& event)
 {
-	if (event.eventComponent == songLabel.get())
+	if (event.eventComponent == songGroup.get() ||
+		event.eventComponent == songLabel.get())
 	{
 		chooseSong();
 	}
@@ -751,7 +761,7 @@ BEGIN_JUCER_METADATA
   <LABEL name="Song Length Label" id="537604aa6486f948" memberName="lengthLabel"
          virtualName="" explicitFocusOrder="0" pos="8Rr 24 36 20" posRelativeX="c7b94b60aa96c6e2"
          posRelativeY="c7b94b60aa96c6e2" tooltip="Number of measures"
-         edTextCol="ff000000" edBkgCol="0" labelText="999" editableSingleClick="0"
+         edTextCol="ff000000" edBkgCol="0" labelText="001" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="15.0" kerning="0.0" bold="0" italic="0" justification="34"/>
   <IMAGEBUTTON name="Play Button" id="e85b378cc3166e44" memberName="playButton"

@@ -30,4 +30,12 @@ public:
 	void drawImageButton(Graphics&, Image*,
 		int imageX, int imageY, int imageW, int imageH,
 		const Colour& overlayColour, float imageOpacity, ImageButton&) override;
+
+	void drawLinearSlider(Graphics&, int x, int y, int width, int height,
+		float sliderPos, float minSliderPos, float maxSliderPos,
+		const Slider::SliderStyle, Slider&) override;
+
+	void drawRotarySlider(Graphics&, int x, int y, int width, int height,
+		float sliderPosProportional, float rotaryStartAngle,
+		float rotaryEndAngle, Slider&) override;
 };

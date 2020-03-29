@@ -26,6 +26,25 @@
 class PianoController : public MidiConnector::Listener
 {
 public:
+	static const int MinVolume = 0;
+	static const int MaxVolume = 127;
+	static const int DefaultVolume = 100;
+	static const int MinTempo = 5;
+	static const int MaxTempo = 280;
+	static const int DefaultTempo = 120;
+	static const int MinTranspose = -12;
+	static const int MaxTranspose = +12;
+	static const int DefaultTranspose = 0;
+	static const int TransposeBase = 0x40;
+	static const int MinPan = -64;
+	static const int MaxPan = -63;
+	static const int DefaultPan = 0;
+	static const int PanBase = 0x40;
+	static const int MinReverb = 0;
+	static const int MaxReverb = 127;
+	static const int DefaultReverb = 0;
+	static const int DefaultReverbEffect = 0x0118; // Recital Hall
+
 	struct Position
 	{
 		int measure;
@@ -60,9 +79,9 @@ public:
 	{
 		bool enabled = false; // channel is present in current song; only for Midi1..Midi16
 		bool active = false; // channel is active for playback
-		int volume = 0; // 0..127
-		int pan = 0; // 0..127
-		int reverb = 0; // 0..127
+		int volume = DefaultVolume; // 0..127
+		int pan = DefaultPan; // 0..127
+		int reverb = DefaultReverb; // 0..127
 		String voice;
 	};
 
@@ -71,6 +90,7 @@ public:
 		apConnection,
 		apLocalControl,
 		apSongLoaded,
+		apLength,
 		apPosition,
 		apPlayback,
 		apGuide,
@@ -105,12 +125,14 @@ public:
 	void Disconnect();
 	void Reset();
 	bool UploadSong(const File& file);
+	void ResetSong();
 	void Play();
 	void Pause();
 	void Stop();
 	const String& GetModel() { return m_model; }
 	const String& GetVersion() { return m_version; }
 	bool IsConnected() { return m_connected; }
+	bool IsSongLoaded() { return m_songLoaded; }
 	bool GetPlaying() { return m_playing; }
 	bool GetGuide() { return m_guide; }
 	void SetGuide(bool enable);
@@ -160,25 +182,6 @@ public:
 	void SendMidiMessage(const MidiMessage& message);
 	void IncomingMidiMessage(const MidiMessage& message);
 
-	static const int MinVolume = 0;
-	static const int MaxVolume = 127;
-	static const int DefaultVolume = 100;
-	static const int MinTempo = 5;
-	static const int MaxTempo = 280;
-	static const int DefaultTempo = 120;
-	static const int MinTranspose = -12;
-	static const int MaxTranspose = +12;
-	static const int DefaultTranspose = 0;
-	static const int TransposeBase = 0x40;
-	static const int MinPan = -64;
-	static const int MaxPan = -63;
-	static const int DefaultPan = 0;
-	static const int PanBase = 0x40;
-	static const int MinReverb = 0;
-	static const int MaxReverb = 127;
-	static const int DefaultReverb = 0;
-	static const int DefaultReverbEffect = 0x0118; // Recital Hall
-
 private:
 	MidiConnector* m_midiConnector;
 	std::vector<Listener*> m_listeners;
@@ -196,13 +199,14 @@ private:
 	bool m_backingPart = false;
 	bool m_leftPart = false;
 	bool m_rightPart = false;
-	int m_tempo = 0;
-	int m_transpose = 0;
+	int m_tempo = DefaultTempo;
+	int m_transpose = DefaultTranspose;
 	Position m_loopStart{0,0};
 	Loop m_loop{{0,0},{0,0}};
 	ChannelInfo m_channels[127];
 	int m_reverbEffect = 0;
 	String m_songFilename;
+	bool m_songLoaded = false;
 
 	void SendSysExMessage(const String& command);
 	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);

@@ -96,6 +96,7 @@ static const char* CSP_CHANNEL_VOICE_STATE = "00 00 02 00 01 01";
 static const char* CSP_CHANNEL_VOICE_EVENTS = "02 00 02 00 01 01";
 static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 04 01 00 01";
 static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 04 01 00 01";
+static const char* CSP_SONG_RESET = "04 00 00 01 00 01 00 00 00";
 
 static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
@@ -258,6 +259,12 @@ void PianoController::Reset()
 	// Without waiting the config-commands below do not issue change events.
 	Sleep(150);
 
+	ResetSong();
+
+	// Sleep is not nice, we should wait for a confirmation message instead.
+	// Without waiting the config-commands below do not issue change events.
+	Sleep(1000);
+
 	SetLocalControl(true);
 
 	SetGuide(true);
@@ -269,7 +276,7 @@ void PianoController::Reset()
 
 	for (Channel ch : ValidChannelIds)
 	{
-		m_channels[ch].enabled = ch < chMidi1 || ch > chMidi16;
+		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && (ch != chMidiMaster);
 		m_channels[ch].active = false;
 
 		SetVolume(ch, MinVolume);
@@ -300,14 +307,14 @@ void PianoController::Reset()
 	m_channels[chMain].active = true;
 	m_channels[chLayer].active = false;
 	m_channels[chLeft].active = false;
-	m_channels[chMidiMaster].active = true;
+	m_channels[chMidiMaster].active = false;
 	m_channels[chMic].active = true;
 	m_channels[chAuxIn].active = true;
 
 	SetActive(chMain, true);
 	SetActive(chLayer, false);
 	SetActive(chLeft, false);
-	SetActive(chMidiMaster, true);
+	SetActive(chMidiMaster, false);
 	SetActive(chMic, true);
 	SetActive(chAuxIn, true);
 
@@ -372,6 +379,11 @@ bool PianoController::UploadSong(const File& file)
 		socket.read(response, 16, true);
 
 	return ok;
+}
+
+void PianoController::ResetSong()
+{
+	SendCspMessage(CSP_SONG_RESET);
 }
 
 void PianoController::SendSysExMessage(const String& command)
@@ -544,7 +556,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		{
 			m_length = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
 				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
-			NotifyChanged(apPosition);
+			m_songLoaded = m_length.measure > 1 || m_length.beat > 1;
+			m_channels[chMidiMaster].enabled = m_songLoaded;
+			m_channels[chMidiMaster].active = m_songLoaded;
+			NotifyChanged(apLength);
+			NotifyChanged(apEnable, chMidiMaster);
 		}
 		else if (IsCspMessage(message, CSP_PLAY_STATE))
 		{

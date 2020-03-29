@@ -31,7 +31,7 @@ void ::LookAndFeel::drawButtonBackground(Graphics& gr, Button& btn, const Colour
 
 	if (((isMouseOverButton || isButtonDown) && !toggle) || (btn.getToggleState() && (toggle || tab)))
 	{
-		fill = Colour(toggle ? 0xFEEE6C0A : tab ? 0xff4e5b62 : 0xff3D484E);
+		fill = Colour(!enabled ? 0xff4e5b62 : toggle ? 0xFEEE6C0A : tab ? 0xff4e5b62 : 0xff3D484E);
 	}
 
 	Rectangle<int> r = btn.getLocalBounds();
@@ -55,8 +55,10 @@ void ::LookAndFeel::drawImageButton(Graphics& gr, Image* im,
 	int imageX, int imageY, int imageW, int imageH,
 	const Colour& overlayColour, float imageOpacity, ImageButton& btn)
 {
+	bool enabled = btn.isEnabled();
+
 	Rectangle<int> r = btn.getLocalBounds();
-	gr.setColour(Colour(0xFEEE6C0A));
+	gr.setColour(Colour(enabled ? 0xFEEE6C0A : 0x0));
 
 	if (btn.getToggleState())
 	{
@@ -65,4 +67,30 @@ void ::LookAndFeel::drawImageButton(Graphics& gr, Image* im,
 	}
 
 	LookAndFeel_V4::drawImageButton(gr, im, imageX, imageY, imageW, imageH, overlayColour, imageOpacity, btn);
+}
+
+void ::LookAndFeel::drawLinearSlider(Graphics& g, int x, int y, int width, int height,
+	float sliderPos, float minSliderPos, float maxSliderPos,
+	const Slider::SliderStyle style, Slider& slider)
+{
+	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2A8 : 0xFF48626D);
+	if (slider.findColour(Slider::thumbColourId) != thumbColor)
+	{
+		slider.setColour(Slider::thumbColourId, thumbColor);
+	}
+
+	LookAndFeel_V4::drawLinearSlider(g, x, y, width, height, sliderPos, minSliderPos, maxSliderPos, style, slider);
+}
+
+void ::LookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, int height,
+	float sliderPosProportional, float rotaryStartAngle,
+	float rotaryEndAngle, Slider& slider)
+{
+	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2A8 : 0xFF48626D);
+	if (slider.findColour(Slider::thumbColourId) != thumbColor)
+	{
+		slider.setColour(Slider::thumbColourId, thumbColor);
+	}
+
+	LookAndFeel_V4::drawRotarySlider(g, x, y, width, height, sliderPosProportional, rotaryStartAngle, rotaryEndAngle, slider);
 }

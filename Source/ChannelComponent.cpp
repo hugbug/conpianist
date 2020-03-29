@@ -251,11 +251,15 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 	titleButton->setEnabled(enabled);
 	titleButton->setToggleState(enabled && active, NotificationType::dontSendNotification);
 
-    titleLabel->setColour(Label::textColourId, enabled ? Colours::white : Colour(0xff4e5b62));
+	titleLabel->setEnabled(enabled);
 
-    voiceLabel->setText(enabled ? Presets::VoiceTitle(pianoController.GetVoice(channel)) : "",
-    	NotificationType::dontSendNotification);
-    voiceLabel->setTooltip(voiceLabel->getText());
+	voiceLabel->setText(enabled ? Presets::VoiceTitle(pianoController.GetVoice(channel)) : "",
+		NotificationType::dontSendNotification);
+	voiceLabel->setTooltip(voiceLabel->getText());
+
+	panLabel->setEnabled(pianoController.IsConnected());
+	reverbLabel->setEnabled(pianoController.IsConnected());
+	volumeLabel->setEnabled(pianoController.IsConnected());
 
 	panSlider->setEnabled(enabled && active && canPanAndReverb);
 	reverbSlider->setEnabled(enabled && active && canPanAndReverb);
@@ -264,10 +268,6 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 	panSlider->setValue(pianoController.GetPan(channel), NotificationType::dontSendNotification);
 	reverbSlider->setValue(pianoController.GetReverb(channel), NotificationType::dontSendNotification);
 	volumeSlider->setValue(pianoController.GetVolume(channel), NotificationType::dontSendNotification);
-
-	panSlider->setColour(Slider::thumbColourId, Colour(panSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
-	reverbSlider->setColour(Slider::thumbColourId, Colour(reverbSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
-	volumeSlider->setColour(Slider::thumbColourId, Colour(volumeSlider->isEnabled() ? 0xFF42A2A8 : 0xFF48626D));
 }
 
 void ChannelComponent::mouseDoubleClick(const MouseEvent& event)

@@ -146,6 +146,7 @@ void BalanceComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void BalanceComponent::updateReverbEffectState()
 {
+	effectComboBox->setEnabled(pianoController.IsConnected());
 	effectComboBox->setSelectedId(pianoController.GetReverbEffect() + 1000000, NotificationType::dontSendNotification);
 	if (effectComboBox->getSelectedId() != pianoController.GetReverbEffect() + 1000000)
 	{
