@@ -379,10 +379,10 @@ void SceneComponent::showMenu()
 	menu.addSectionHeader("SETTINGS");
 	menu.addItem(1, "Instrument");
 	menu.addSectionHeader("ABOUT");
-	menu.addItem(2, "Version " + JUCEApplication::getInstance()->getApplicationVersion());
+	menu.addItem(2, "Version " + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
 	menu.addItem(3, "Homepage");
 
-	const int result = menu.showAt(menuButton.get(), 0, 0, 0, menuButton->getHeight() * 1.3);
+	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
 
 	if (result == 1)
 	{

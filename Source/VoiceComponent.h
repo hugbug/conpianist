@@ -53,6 +53,7 @@ public:
     void voiceButtonClicked(Button* button);
     void scrollToVoice(const String& preset);
 	void updateEnabledControls();
+	void showMenu(Button* button, PianoController::Channel channel);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -79,6 +80,9 @@ private:
     std::unique_ptr<Label> leftIndicatorLabel;
     std::unique_ptr<Label> mainIndicatorLabel;
     std::unique_ptr<Label> layerIndicatorLabel;
+    std::unique_ptr<ImageButton> leftMenuButton;
+    std::unique_ptr<ImageButton> mainMenuButton;
+    std::unique_ptr<ImageButton> layerMenuButton;
 
 
     //==============================================================================

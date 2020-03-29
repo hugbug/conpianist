@@ -71,6 +71,9 @@ static const char* CSP_REVERB = "0c 00 04 01 NN 01 00 00 01 ";
 static const char* CSP_REVERB_STATE = "00 00 0c 00 04 01";
 static const char* CSP_REVERB_EVENTS = "02 00 0c 00 04 01";
 static const char* CSP_REVERB_RESET = "04 01 0c 00 04 01 NN 01 00";
+static const char* CSP_OCTAVE = "0c 00 12 01 NN 01 00 00 01 ";
+static const char* CSP_OCTAVE_STATE = "00 00 0c 00 12 01";
+static const char* CSP_OCTAVE_EVENTS = "02 00 0c 00 12 01";
 static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
 static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
@@ -234,6 +237,8 @@ void PianoController::Reset()
 	SendCspMessage(CSP_PAN_EVENTS, false);
 	//   reverb info
 	SendCspMessage(CSP_REVERB_EVENTS, false);
+	//   octave info
+	SendCspMessage(CSP_OCTAVE_EVENTS, false);
 	//   tempo info
 	SendCspMessage(CSP_TEMPO_EVENTS, false);
 	//   transpose info
@@ -302,6 +307,10 @@ void PianoController::Reset()
 	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
 	SetReverbEffect(DefaultReverbEffect);
+
+	SetOctave(chMain, 0);
+	SetOctave(chLayer, 0);
+	SetOctave(chLeft, 0);
 
 	// set internal active for channels
 	m_channels[chMain].active = true;
@@ -477,6 +486,12 @@ void PianoController::ResetReverb(Channel ch)
 	SendCspMessage(command, false);
 }
 
+void PianoController::SetOctave(Channel ch, int octave)
+{
+	String command = String(CSP_OCTAVE).replace("NN", ByteToHex(ch)) + ByteToHex(octave + OctaveBase);
+	SendCspMessage(command);
+}
+
 void PianoController::SetTempo(int tempo)
 {
 	SendCspMessage(String(CSP_TEMPO) + WordToHex(tempo));
@@ -614,6 +629,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			Channel ch = (Channel)message.getSysExData()[12];
 			m_channels[ch].reverb = message.getSysExData()[17];
 			NotifyChanged(apReverb, ch);
+		}
+		else if (IsCspMessage(message, CSP_OCTAVE_STATE))
+		{
+			Channel ch = (Channel)message.getSysExData()[12];
+			m_channels[ch].octave = message.getSysExData()[17] - OctaveBase;
+			NotifyChanged(apOctave, ch);
 		}
 		else if (IsCspMessage(message, CSP_CHANNEL_ACTIVE_STATE))
 		{

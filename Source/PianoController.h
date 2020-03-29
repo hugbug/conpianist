@@ -44,6 +44,10 @@ public:
 	static const int MaxReverb = 127;
 	static const int DefaultReverb = 0;
 	static const int DefaultReverbEffect = 0x0118; // Recital Hall
+	static const int MinOctave = -2;
+	static const int MaxOctave = +2;
+	static const int DefaultOctave = 0;
+	static const int OctaveBase = 0x40;
 
 	struct Position
 	{
@@ -82,6 +86,7 @@ public:
 		int volume = DefaultVolume; // 0..127
 		int pan = DefaultPan; // 0..127
 		int reverb = DefaultReverb; // 0..127
+		int octave = DefaultOctave; // -2..+2
 		String voice;
 	};
 
@@ -103,6 +108,7 @@ public:
 		apVolume,
 		apPan,
 		apReverb,
+		apOctave,
 		apEnable,
 		apActive,
 		apVoice
@@ -159,6 +165,8 @@ public:
 	int GetReverb(Channel ch) { return m_channels[ch].reverb; }
 	void SetReverb(Channel ch, int reverb);
 	void ResetReverb(Channel ch);
+	int GetOctave(Channel ch) { return m_channels[ch].octave; }
+	void SetOctave(Channel ch, int octave);
 	int GetTempo() { return m_tempo; }
 	void SetTempo(int tempo);
 	void ResetTempo();

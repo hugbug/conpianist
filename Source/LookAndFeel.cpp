@@ -58,7 +58,7 @@ void ::LookAndFeel::drawImageButton(Graphics& gr, Image* im,
 	bool enabled = btn.isEnabled();
 
 	Rectangle<int> r = btn.getLocalBounds();
-	gr.setColour(Colour(enabled ? 0xFEEE6C0A : 0x0));
+	gr.setColour(Colour(enabled ? 0xFEEE6C0A : 0xff4e5b62));
 
 	if (btn.getToggleState())
 	{

@@ -160,6 +160,36 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     layerIndicatorLabel->setColour (TextEditor::textColourId, Colours::black);
     layerIndicatorLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
+    leftMenuButton.reset (new ImageButton ("Left Menu Button"));
+    addAndMakeVisible (leftMenuButton.get());
+    leftMenuButton->setTooltip (TRANS("Context Menu"));
+    leftMenuButton->setButtonText (TRANS("Menu"));
+    leftMenuButton->addListener (this);
+
+    leftMenuButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
+    mainMenuButton.reset (new ImageButton ("Main Menu Button"));
+    addAndMakeVisible (mainMenuButton.get());
+    mainMenuButton->setTooltip (TRANS("Context Menu"));
+    mainMenuButton->setButtonText (TRANS("Menu"));
+    mainMenuButton->addListener (this);
+
+    mainMenuButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
+    layerMenuButton.reset (new ImageButton ("Layer Menu Button"));
+    addAndMakeVisible (layerMenuButton.get());
+    layerMenuButton->setTooltip (TRANS("Context Menu"));
+    layerMenuButton->setButtonText (TRANS("Menu"));
+    layerMenuButton->addListener (this);
+
+    layerMenuButton->setImages (false, true, true,
+                                ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                                Image(), 0.750f, Colour (0x00000000),
+                                Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     targetGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -203,6 +233,9 @@ VoiceComponent::~VoiceComponent()
     leftIndicatorLabel = nullptr;
     mainIndicatorLabel = nullptr;
     layerIndicatorLabel = nullptr;
+    leftMenuButton = nullptr;
+    mainMenuButton = nullptr;
+    layerMenuButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -238,6 +271,9 @@ void VoiceComponent::resized()
     leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
     mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3029f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
     layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3029f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
+    leftMenuButton->setBounds ((0 + 16) + 0, 8, 32, 28);
+    mainMenuButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + 0, 8, 32, 28);
+    layerMenuButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + 0, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -286,6 +322,24 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
         	!pianoController.GetActive(PianoController::chLayer));
         //[/UserButtonCode_layerTitleButton]
     }
+    else if (buttonThatWasClicked == leftMenuButton.get())
+    {
+        //[UserButtonCode_leftMenuButton] -- add your button handler code here..
+        showMenu(buttonThatWasClicked, PianoController::chLeft);
+        //[/UserButtonCode_leftMenuButton]
+    }
+    else if (buttonThatWasClicked == mainMenuButton.get())
+    {
+        //[UserButtonCode_mainMenuButton] -- add your button handler code here..
+        showMenu(buttonThatWasClicked, PianoController::chMain);
+        //[/UserButtonCode_mainMenuButton]
+    }
+    else if (buttonThatWasClicked == layerMenuButton.get())
+    {
+        //[UserButtonCode_layerMenuButton] -- add your button handler code here..
+        showMenu(buttonThatWasClicked, PianoController::chLayer);
+        //[/UserButtonCode_layerMenuButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -300,8 +354,12 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	{
 		MessageManager::callAsync([=](){updateEnabledControls();});
 	}
-	else if ((aspect == PianoController::apVoice || aspect == PianoController::apActive) &&
-		(channel == PianoController::chMain || channel == PianoController::chLayer || channel == PianoController::chLeft))
+	else if ((aspect == PianoController::apVoice ||
+		aspect == PianoController::apActive ||
+		aspect == PianoController::apOctave) &&
+		(channel == PianoController::chMain ||
+		channel == PianoController::chLayer ||
+		channel == PianoController::chLeft))
 	{
 		MessageManager::callAsync([=](){updateVoiceState();});
 	}
@@ -309,6 +367,18 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 
 void VoiceComponent::updateVoiceState()
 {
+	int octave = pianoController.GetOctave(PianoController::chMain);
+	mainTitleButton->setButtonText(String("Main") + (octave == 0 ? "" :
+		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+
+	octave = pianoController.GetOctave(PianoController::chLayer);
+	layerTitleButton->setButtonText(String("Layer") + (octave == 0 ? "" :
+		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+
+	octave = pianoController.GetOctave(PianoController::chLeft);
+	leftTitleButton->setButtonText(String("Left") + (octave == 0 ? "" :
+		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+
 	mainVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chMain)));
 	layerVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chLayer)));
 	leftVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chLeft)));
@@ -425,6 +495,25 @@ void VoiceComponent::updateEnabledControls()
 		co->setEnabled(pianoController.IsConnected());
 	}
 }
+
+void VoiceComponent::showMenu(Button* button, PianoController::Channel channel)
+{
+	PopupMenu menu;
+	menu.addSectionHeader("OCTAVE");
+	menu.addItem(100-2, "-2", true, pianoController.GetOctave(channel) == -2);
+	menu.addItem(100-1, "-1", true, pianoController.GetOctave(channel) == -1);
+	menu.addItem(100-0, " 0", true, pianoController.GetOctave(channel) == 0);
+	menu.addItem(100+1, "+1", true, pianoController.GetOctave(channel) == +1);
+	menu.addItem(100+2, "+2", true, pianoController.GetOctave(channel) == +2);
+
+	const int result = menu.showAt(button, 0, 0, 0, 35);
+
+	if (100-2 <= result && result <= 100+2)
+	{
+		int octave = result - 100;
+		pianoController.SetOctave(channel, octave);
+	}
+}
 //[/MiscUserCode]
 
 
@@ -495,6 +584,27 @@ BEGIN_JUCER_METADATA
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
+  <IMAGEBUTTON name="Left Menu Button" id="c87eaad1c0559e4c" memberName="leftMenuButton"
+               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <IMAGEBUTTON name="Main Menu Button" id="d7280e4dca735b29" memberName="mainMenuButton"
+               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="a44dda5da363325"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <IMAGEBUTTON name="Layer Menu Button" id="3fc472f3e7ad73d0" memberName="layerMenuButton"
+               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="e72441cfef2070c4"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
