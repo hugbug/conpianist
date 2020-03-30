@@ -23,6 +23,8 @@
 
 #include "MidiConnector.h"
 
+class PianoMessage;
+
 class PianoController : public MidiConnector::Listener
 {
 public:
@@ -216,8 +218,7 @@ private:
 	String m_songFilename;
 	bool m_songLoaded = false;
 
-	void SendSysExMessage(const String& command);
-	void SendCspMessage(const String& command, bool addDefaultCommandPrefix = true);
+	void SendCspMessage(const PianoMessage& message);
 	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
 	void ProcessVoiceEvent(const MidiMessage& message);
 

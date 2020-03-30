@@ -18,88 +18,34 @@
  */
 
 #include "PianoController.h"
+#include "PianoMessage.h"
 
 static const char* CSP_PREFIX = "43 73 01 52 25 26 ";
-static const char* CSP_COMMAND = "43 73 01 52 25 26 01 01 ";
-static const char* CSP_DUMP_MODEL = "01 00 0f 01 18 01 00 01 00";
 static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
-static const char* CSP_DUMP_VERSION = "01 00 0f 01 0b 01 00 01 00";
 static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
-static const char* CSP_GUIDE_ON = "04 03 00 01 00 01 00 00 01 01";
-static const char* CSP_GUIDE_OFF = "04 03 00 01 00 01 00 00 01 00";
 static const char* CSP_GUIDE_STATE = "00 00 04 03 00 01 00 01 00 00 01";
-static const char* CSP_GUIDE_EVENTS = "02 00 04 03 00 01";
-static const char* CSP_POSITION = "04 00 0a 01 00 01 00 00 04 ";
 static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
-static const char* CSP_POSITION_EVENTS = "02 00 04 00 0a 01";
 static const char* CSP_LENGTH_STATE = "00 00 04 00 1b 01 00 01 00 00 04";
-static const char* CSP_LENGTH_EVENTS = "02 00 04 00 1b 01";
 static const char* CSP_PLAY_STATE = "00 00 04 00 05 01 00 01 00 00 01";
-static const char* CSP_PLAY_EVENTS = "02 00 04 00 05 01";
-static const char* CSP_STREAM_LIGHTS_ON = "04 02 00 01 00 01 00 00 01 01";
-static const char* CSP_STREAM_LIGHTS_OFF = "04 02 00 01 00 01 00 00 01 00";
 static const char* CSP_STREAM_LIGHTS_STATE = "00 00 04 02 00 01 00 01 00 00 01";
-static const char* CSP_STREAM_LIGHTS_EVENTS = "02 00 04 02 00 01";
-static const char* CSP_STREAM_LIGHTS_FAST = "04 02 02 01 00 01 00 00 01 01";
-static const char* CSP_STREAM_LIGHTS_SLOW = "04 02 02 01 00 01 00 00 01 00";
 static const char* CSP_STREAM_LIGHTS_SPEED_STATE = "00 00 04 02 02 01 00 01 00 00 01";
-static const char* CSP_STREAM_LIGHTS_SPEED_EVENTS = "02 00 04 02 02 01";
-static const char* CSP_PLAY = "04 00 05 01 00 01 00 00 01 01";
-static const char* CSP_PAUSE = "04 00 05 01 00 01 00 00 01 02";
-static const char* CSP_STOP = "04 00 05 01 00 01 00 00 01 00";
-static const char* CSP_BACKING_PART_ON = "04 00 0e 01 02 01 00 00 01 01";
-static const char* CSP_BACKING_PART_OFF = "04 00 0e 01 02 01 00 00 01 00";
 static const char* CSP_BACKING_PART_STATE = "00 00 04 00 0e 01 02 01 00 00 01";
-static const char* CSP_LEFT_PART_ON = "04 00 0e 01 01 01 00 00 01 01";
-static const char* CSP_LEFT_PART_OFF = "04 00 0e 01 01 01 00 00 01 00";
 static const char* CSP_LEFT_PART_STATE = "00 00 04 00 0e 01 01 01 00 00 01";
-static const char* CSP_RIGHT_PART_ON = "04 00 0e 01 00 01 00 00 01 01";
-static const char* CSP_RIGHT_PART_OFF = "04 00 0e 01 00 01 00 00 01 00";
 static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
-static const char* CSP_PART_EVENTS = "02 00 04 00 0e 01";
 static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
-static const char* CSP_SONG_NAME_EVENTS = "02 00 04 00 01 01";
-static const char* CSP_VOLUME = "0c 00 00 01 NN 01 00 00 01 ";
 static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01";
-static const char* CSP_VOLUME_EVENTS = "02 00 0c 00 00 01";
-static const char* CSP_VOLUME_RESET = "04 01 0c 00 00 01 NN 01 00";
-static const char* CSP_PAN = "0c 00 03 01 NN 01 00 00 01 ";
 static const char* CSP_PAN_STATE = "00 00 0c 00 03 01";
-static const char* CSP_PAN_EVENTS = "02 00 0c 00 03 01";
-static const char* CSP_PAN_RESET = "04 01 0c 00 03 01 NN 01 00";
-static const char* CSP_REVERB = "0c 00 04 01 NN 01 00 00 01 ";
 static const char* CSP_REVERB_STATE = "00 00 0c 00 04 01";
-static const char* CSP_REVERB_EVENTS = "02 00 0c 00 04 01";
-static const char* CSP_REVERB_RESET = "04 01 0c 00 04 01 NN 01 00";
-static const char* CSP_OCTAVE = "0c 00 12 01 NN 01 00 00 01 ";
 static const char* CSP_OCTAVE_STATE = "00 00 0c 00 12 01";
-static const char* CSP_OCTAVE_EVENTS = "02 00 0c 00 12 01";
-static const char* CSP_TEMPO = "08 00 00 01 00 01 00 00 02 ";
 static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
-static const char* CSP_TEMPO_EVENTS = "02 00 08 00 00 01";
-static const char* CSP_TEMPO_RESET = "04 01 08 00 00 01 00 01 00";
-static const char* CSP_TRANSPOSE = "0a 00 00 01 02 01 00 00 01 ";
 static const char* CSP_TRANSPOSE_STATE = "00 00 0a 00 00 01 02 01 00 00 01";
-static const char* CSP_TRANSPOSE_EVENTS = "02 00 0a 00 00 01";
-static const char* CSP_REVERB_EFFECT = "0c 01 00 01 00 01 00 00 03 00 ";
 static const char* CSP_REVERB_EFFECT_STATE = "00 00 0c 01 00 01 00 01 00 00 03 00";
-static const char* CSP_REVERB_EFFECT_EVENTS = "02 00 0c 01 00 01";
-static const char* CSP_LOOP = "04 00 0d 01 00 01 00 00 09 01 ";
 static const char* CSP_LOOP_STATE = "00 00 04 00 0d 01 00 01 00 00 09";
-static const char* CSP_LOOP_EVENTS = "02 00 04 00 0d 01";
-static const char* CSP_LOOP_RESET = "04 00 0d 01 00 01 00 00 09 00 00 01 00 01 00 02 00 01";
-static const char* CSP_VOICE_SELECT = "02 00 00 01 NN 01 00 ";
-static const char* CSP_VOICE_SELECT_EVENTS = "02 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE = "00 00 02 00 00 01";
 static const char* CSP_VOICE_SELECT_STATE2 = "00 01 02 00 00 01";
-static const char* CSP_CHANNEL_ACTIVE = "0c 00 01 01 NN 01 00 00 01 ";
 static const char* CSP_CHANNEL_ACTIVE_STATE = "00 00 0c 00 01 01";
-static const char* CSP_CHANNEL_ACTIVE_EVENTS = "02 00 0c 00 01 01";
 static const char* CSP_CHANNEL_VOICE_STATE = "00 00 02 00 01 01";
-static const char* CSP_CHANNEL_VOICE_EVENTS = "02 00 02 00 01 01";
 static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 04 01 00 01";
-static const char* CSP_CHANNEL_ENABLE_EVENTS = "02 00 04 01 00 01";
-static const char* CSP_SONG_RESET = "04 00 00 01 00 01 00 00 00";
 
 static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
@@ -116,91 +62,6 @@ void Sleep(int milliseconds)
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
 }
 
-String ByteToHex(int value)
-{
-	return String::toHexString(value & 0x7f).paddedLeft('0', 2);
-}
-
-String WordToHex(int value)
-{
-	return ByteToHex(value >> 7 & 0x7f) + " " + ByteToHex(value & 0x7f);
-}
-
-String TextToHex(const String& text)
-{
-	String encoded = "";
-	int len = 0;
-	char highbits = 0;
-	String chunk = "";
-	for (int i = 0; i < text.length(); i++)
-	{
-		if (i % 7 == 0 && i > 0)
-		{
-			encoded += String(" ") + ByteToHex(highbits) + chunk;
-			len++;
-			chunk = "";
-			highbits = 0;
-		}
-		wchar_t ch = text[i];
-		highbits = (highbits << 1) + (ch > 0x7f ? 1 : 0);
-		chunk += " " + ByteToHex(ch);
-		len++;
-	}
-
-	if (!chunk.isEmpty())
-	{
-		encoded += String(" ") + ByteToHex(highbits) + chunk;
-		len++;
-	}
-
-	return WordToHex(len) + encoded;
-}
-
-String BytesToText(const uint8* buf, int size)
-{
-	if (size < 3)
-	{
-		return String();
-	}
-
-	int textSize = (buf[0] << 7) + buf[1];
-	if (size < textSize + 2)
-	{
-		return String();
-	}
-
-	String text;
-	buf += 2;
-	int highbits = 0;
-	int chunkSize = 0;
-	wchar_t chunk[7];
-
-	auto addChunk = [&]()
-		{
-			for (int a = 0; a < chunkSize; a++)
-			{
-				wchar_t ch = chunk[a];
-				ch += (highbits >> (chunkSize - a - 1) & 1) ? 0x80 : 0;
-				text += ch;
-			}
-		};
-
-	for (int i = 0; i < textSize; i++)
-	{
-		if (i % 8 == 0)
-		{
-			addChunk();
-			highbits = buf[i];
-			chunkSize = 0;
-			continue;
-		}
-
-		chunk[chunkSize++] = buf[i];
-	}
-	addChunk();
-
-	return text;
-}
 
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 {
@@ -210,53 +71,33 @@ void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 
 void PianoController::Connect()
 {
-	SendCspMessage(CSP_DUMP_MODEL, false);
-	SendCspMessage(CSP_DUMP_VERSION, false);
+	SendCspMessage(PianoMessage(Action::Get, Property::PianoModel));
+	SendCspMessage(PianoMessage(Action::Get, Property::FirmwareVersion));
 }
 
 void PianoController::Reset()
 {
-	// Activate feedback events from piano:
-	//   song length info after a song is loaded
-	SendCspMessage(CSP_LENGTH_EVENTS, false);
-	//   song position info
-	SendCspMessage(CSP_POSITION_EVENTS, false);
-	//   playback status (playing,paused,stop)
-  	SendCspMessage(CSP_PLAY_EVENTS, false);
-	//   playing parts on/off
-  	SendCspMessage(CSP_PART_EVENTS, false);
-	//   guide-mode on/off
-  	SendCspMessage(CSP_GUIDE_EVENTS, false);
-  	//   stream lights on/off
-  	SendCspMessage(CSP_STREAM_LIGHTS_EVENTS, false);
-  	//   stream lights slow/fast
-  	SendCspMessage(CSP_STREAM_LIGHTS_SPEED_EVENTS, false);
-	//   volume info
-	SendCspMessage(CSP_VOLUME_EVENTS, false);
-	//   pan info
-	SendCspMessage(CSP_PAN_EVENTS, false);
-	//   reverb info
-	SendCspMessage(CSP_REVERB_EVENTS, false);
-	//   octave info
-	SendCspMessage(CSP_OCTAVE_EVENTS, false);
-	//   tempo info
-	SendCspMessage(CSP_TEMPO_EVENTS, false);
-	//   transpose info
-	SendCspMessage(CSP_TRANSPOSE_EVENTS, false);
-	//   reverb effect info
-	SendCspMessage(CSP_REVERB_EFFECT_EVENTS, false);
-	//   A->B loop info
-	SendCspMessage(CSP_LOOP_EVENTS, false);
-	//   voice info
-	SendCspMessage(CSP_VOICE_SELECT_EVENTS, false);
-	//   channel on/off
-	SendCspMessage(CSP_CHANNEL_ACTIVE_EVENTS, false);
-	//   channel enabled/disabled
-	SendCspMessage(CSP_CHANNEL_ENABLE_EVENTS, false);
-	//   midi channel voice
-	SendCspMessage(CSP_CHANNEL_VOICE_EVENTS, false);
-	//   song name info (after a song is loaded)
-	SendCspMessage(CSP_SONG_NAME_EVENTS, false);
+	// Activate feedback events from piano
+	SendCspMessage(PianoMessage(Action::Events, Property::Length));
+	SendCspMessage(PianoMessage(Action::Events, Property::Position));
+	SendCspMessage(PianoMessage(Action::Events, Property::Play));
+	SendCspMessage(PianoMessage(Action::Events, Property::Part));
+	SendCspMessage(PianoMessage(Action::Events, Property::Guide));
+	SendCspMessage(PianoMessage(Action::Events, Property::StreamLights));
+	SendCspMessage(PianoMessage(Action::Events, Property::StreamLightsSpeed));
+	SendCspMessage(PianoMessage(Action::Events, Property::Volume));
+	SendCspMessage(PianoMessage(Action::Events, Property::Pan));
+	SendCspMessage(PianoMessage(Action::Events, Property::Reverb));
+	SendCspMessage(PianoMessage(Action::Events, Property::Octave));
+	SendCspMessage(PianoMessage(Action::Events, Property::Tempo));
+	SendCspMessage(PianoMessage(Action::Events, Property::Transpose));
+	SendCspMessage(PianoMessage(Action::Events, Property::ReverbEffect));
+	SendCspMessage(PianoMessage(Action::Events, Property::Loop));
+	SendCspMessage(PianoMessage(Action::Events, Property::VoicePreset));
+	SendCspMessage(PianoMessage(Action::Events, Property::Active));
+	SendCspMessage(PianoMessage(Action::Events, Property::Present));
+	SendCspMessage(PianoMessage(Action::Events, Property::VoiceMidi));
+	SendCspMessage(PianoMessage(Action::Events, Property::SongName));
 
 	Stop();
 
@@ -390,155 +231,147 @@ bool PianoController::UploadSong(const File& file)
 	return ok;
 }
 
+void PianoController::SendCspMessage(const PianoMessage& message)
+{
+	MidiMessage midiMessage = MidiMessage::createSysExMessage(message.GetData().getData(), (int)message.GetData().getSize());
+	m_midiConnector->SendMessage(midiMessage);
+}
+
 void PianoController::ResetSong()
 {
-	SendCspMessage(CSP_SONG_RESET);
-}
-
-void PianoController::SendSysExMessage(const String& command)
-{
-	MemoryBlock rawData;
-	rawData.loadFromHexString(command);
-	MidiMessage message = MidiMessage::createSysExMessage(rawData.getData(), (int)rawData.getSize());
-	m_midiConnector->SendMessage(message);
-}
-
-void PianoController::SendCspMessage(const String& command, bool addDefaultCommandPrefix)
-{
-	if (addDefaultCommandPrefix)
-	{
-		SendSysExMessage(CSP_COMMAND + command);
-	}
-	else
-	{
-		SendSysExMessage(String(CSP_PREFIX) + command);
-	}
+	SendCspMessage(PianoMessage(Action::Set, Property::SongReset));
 }
 
 void PianoController::Play()
 {
-	SendCspMessage(CSP_PLAY);
+	SendCspMessage(PianoMessage(Action::Set, Property::Play, 1));
 }
 
 void PianoController::Pause()
 {
-	SendCspMessage(CSP_PAUSE);
+	SendCspMessage(PianoMessage(Action::Set, Property::Play, 2));
 }
 
 void PianoController::Stop()
 {
-	SendCspMessage(CSP_STOP);
+	SendCspMessage(PianoMessage(Action::Set, Property::Play, 0));
 }
 
 void PianoController::SetGuide(bool enable)
 {
-	SendCspMessage(enable ? CSP_GUIDE_ON : CSP_GUIDE_OFF);
+	SendCspMessage(PianoMessage(Action::Set, Property::Guide, enable ? 1 : 0));
 }
 
 void PianoController::SetStreamLights(bool enable)
 {
-	SendCspMessage(enable ? CSP_STREAM_LIGHTS_ON : CSP_STREAM_LIGHTS_OFF);
+	SendCspMessage(PianoMessage(Action::Set, Property::StreamLights, enable ? 1 : 0));
 }
 
 void PianoController::SetStreamLightsFast(bool fast)
 {
-	SendCspMessage(fast ? CSP_STREAM_LIGHTS_FAST : CSP_STREAM_LIGHTS_SLOW);
+	SendCspMessage(PianoMessage(Action::Set, Property::StreamLightsSpeed, fast ? 1 : 0));
 }
 
 void PianoController::SetPosition(const Position position)
 {
-	SendCspMessage(String(CSP_POSITION) + WordToHex(position.measure) + " " + WordToHex(position.beat));
+	uint8_t data[4];
+	data[0] = (position.measure >> 7) & 0x7f;
+	data[1] = (position.measure >> 0) & 0x7f;
+	data[2] = (position.beat >> 7) & 0x7f;
+	data[3] = (position.beat >> 0) & 0x7f;
+	SendCspMessage(PianoMessage(Action::Set, Property::Position, 0, 4, data));
 }
 
 void PianoController::SetVolume(Channel ch, int volume)
 {
-	String command = String(CSP_VOLUME).replace("NN", ByteToHex(ch)) + ByteToHex(volume);
-	SendCspMessage(command);
+	SendCspMessage(PianoMessage(Action::Set, Property::Volume, ch, volume));
 }
 
 void PianoController::ResetVolume(Channel ch)
 {
-	String command = String(CSP_VOLUME_RESET).replace("NN", ByteToHex(ch));
-	SendCspMessage(command, false);
+	SendCspMessage(PianoMessage(Action::Reset, Property::Volume, ch, 0));
 }
 
 void PianoController::SetPan(Channel ch, int pan)
 {
-	String command = String(CSP_PAN).replace("NN", ByteToHex(ch)) + ByteToHex(pan + PanBase);
-	SendCspMessage(command);
+	SendCspMessage(PianoMessage(Action::Set, Property::Pan, ch, pan));
 }
 
 void PianoController::ResetPan(Channel ch)
 {
-	String command = String(CSP_PAN_RESET).replace("NN", ByteToHex(ch));
-	SendCspMessage(command, false);
+	SendCspMessage(PianoMessage(Action::Reset, Property::Pan, ch, 0));
 }
 
 void PianoController::SetReverb(Channel ch, int reverb)
 {
-	String command = String(CSP_REVERB).replace("NN", ByteToHex(ch)) + ByteToHex(reverb);
-	SendCspMessage(command);
+	SendCspMessage(PianoMessage(Action::Set, Property::Reverb, ch, reverb));
 }
 
 void PianoController::ResetReverb(Channel ch)
 {
-	String command = String(CSP_REVERB_RESET).replace("NN", ByteToHex(ch));
-	SendCspMessage(command, false);
+	SendCspMessage(PianoMessage(Action::Reset, Property::Reverb, ch, 0));
 }
 
 void PianoController::SetOctave(Channel ch, int octave)
 {
-	String command = String(CSP_OCTAVE).replace("NN", ByteToHex(ch)) + ByteToHex(octave + OctaveBase);
-	SendCspMessage(command);
+	SendCspMessage(PianoMessage(Action::Set, Property::Octave, ch, octave + OctaveBase));
 }
 
 void PianoController::SetTempo(int tempo)
 {
-	SendCspMessage(String(CSP_TEMPO) + WordToHex(tempo));
+	SendCspMessage(PianoMessage(Action::Set, Property::Tempo, tempo));
 }
 
 void PianoController::ResetTempo()
 {
-	SendCspMessage(CSP_TEMPO_RESET, false);
+	SendCspMessage(PianoMessage(Action::Reset, Property::Tempo));
 }
 
 void PianoController::SetTranspose(int transpose)
 {
-	SendCspMessage(String(CSP_TRANSPOSE) + ByteToHex(transpose + TransposeBase));
+	SendCspMessage(PianoMessage(Action::Set, Property::Transpose, 2, transpose + TransposeBase));
 }
 
 void PianoController::SetReverbEffect(int effect)
 {
-	SendCspMessage(String(CSP_REVERB_EFFECT) + WordToHex(effect));
+	SendCspMessage(PianoMessage(Action::Set, Property::ReverbEffect, 0, effect));
 }
 
 void PianoController::SetBackingPart(bool enable)
 {
-	SendCspMessage(enable ? CSP_BACKING_PART_ON : CSP_BACKING_PART_OFF);
+	SendCspMessage(PianoMessage(Action::Set, Property::Part, 2, enable ? 1 : 0));
 }
 
 void PianoController::SetLeftPart(bool enable)
 {
-	SendCspMessage(enable ? CSP_LEFT_PART_ON : CSP_LEFT_PART_OFF);
+	SendCspMessage(PianoMessage(Action::Set, Property::Part, 1, enable ? 1 : 0));
 }
 
 void PianoController::SetRightPart(bool enable)
 {
-	SendCspMessage(enable ? CSP_RIGHT_PART_ON : CSP_RIGHT_PART_OFF);
+	SendCspMessage(PianoMessage(Action::Set, Property::Part, 0, enable ? 1 : 0));
 }
 
 void PianoController::SetLoop(Loop loop)
 {
 	m_loopStart = {0,0};
-	SendCspMessage(String(CSP_LOOP) +
-		WordToHex(loop.begin.measure) + " " + WordToHex(loop.begin.beat) + " " +
-		WordToHex(loop.end.measure) + " " + WordToHex(loop.end.beat));
+	uint8_t data[9] = {1,
+		(uint8_t)((loop.begin.measure >> 7) & 0x7f),
+		(uint8_t)((loop.begin.measure >> 0) & 0x7f),
+		(uint8_t)((loop.begin.beat >> 7) & 0x7f),
+		(uint8_t)((loop.begin.beat >> 0) & 0x7f),
+		(uint8_t)((loop.end.measure >> 7) & 0x7f),
+		(uint8_t)((loop.end.measure >> 0) & 0x7f),
+		(uint8_t)((loop.end.beat >> 7) & 0x7f),
+		(uint8_t)((loop.end.beat >> 0) & 0x7f)};
+	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, 9, data));
 }
 
 void PianoController::ResetLoop()
 {
 	m_loopStart = {0,0};
-	SendCspMessage(CSP_LOOP_RESET);
+	uint8_t data[9] = {0,0,1,0,1,0,2,0,1};
+	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, 9, data));
 }
 
 void PianoController::SetLoopStart(const Position loopStart)
@@ -547,6 +380,15 @@ void PianoController::SetLoopStart(const Position loopStart)
 	NotifyChanged(apLoop);
 }
 
+void PianoController::SetVoice(Channel ch, const String& voice)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::VoicePreset, ch, voice));
+}
+
+void PianoController::SetActive(Channel ch, bool active)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::Active, ch, active ? 1 : 0));
+}
 
 bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
 {
@@ -726,12 +568,6 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 	}
 }
 
-void PianoController::SetVoice(Channel ch, const String& voice)
-{
-	String command = String(CSP_VOICE_SELECT).replace("NN", ByteToHex(ch)) + TextToHex(voice);
-	SendCspMessage(command);
-}
-
 void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 {
 	Channel ch = (Channel)message.getSysExData()[12];
@@ -739,13 +575,6 @@ void PianoController::ProcessVoiceEvent(const MidiMessage& message)
 	String voice = BytesToText(message.getSysExData() + off, message.getSysExDataSize() - off);
 	m_channels[ch].voice = voice;
 	NotifyChanged(apVoice, ch);
-}
-
-void PianoController::SetActive(Channel ch, bool active)
-{
-	String command = String(CSP_CHANNEL_ACTIVE).replace("NN", ByteToHex(ch)) +
-		(active ? "01" : "00");
-	SendCspMessage(command);
 }
 
 void PianoController::AddListener(Listener* listener)

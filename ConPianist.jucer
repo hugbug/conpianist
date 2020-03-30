@@ -47,6 +47,9 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="dvOqsg" name="PianoMessage.cpp" compile="1" resource="0"
+            file="Source/PianoMessage.cpp"/>
+      <FILE id="A7TUpP" name="PianoMessage.h" compile="0" resource="0" file="Source/PianoMessage.h"/>
       <FILE id="mKSQXG" name="MixerComponent.cpp" compile="1" resource="0"
             file="Source/MixerComponent.cpp"/>
       <FILE id="naZ410" name="MixerComponent.h" compile="0" resource="0"
