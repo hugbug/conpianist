@@ -356,7 +356,7 @@ unsigned LomseScoreComponent::GetMouseFlags(const MouseEvent& event)
 
 void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
-	if (aspect == PianoController::apPosition)
+	if (aspect == PianoController::apPosition || aspect == PianoController::apLoop)
 	{
 		MessageManager::callAsync([=](){UpdateSongState();});
 	}
