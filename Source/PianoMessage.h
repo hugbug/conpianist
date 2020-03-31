@@ -24,9 +24,16 @@
 struct Action
 {
 	Action(const char* signature);
+	Action(int signature) : signature(signature) {}
+	bool operator==(const Action& other) const { return other.signature == signature; }
+	bool operator!=(const Action& other) const { return other.signature != signature; }
+
 	int signature;
 
 	// ACTIONS
+
+	// Unknown Action (may occur only when parsing sysex)
+	const static Action Unknown;
 
 	// Request Property Value from Piano
 	const static Action Get;
@@ -50,10 +57,17 @@ struct Action
 struct Property
 {
 	Property(const char* signature, int length);
+	Property(int signature, int length) : signature(signature), length(length) {}
+	bool operator==(const Property& other) const { return other.signature == signature; }
+	bool operator!=(const Property& other) const { return other.signature != signature; }
+
 	int signature;
 	int length;
 
 	// PROPERTIES
+
+	// Unknown Property (may occur only when parsing sysex)
+	const static Property Unknown;
 
 	// Value: Piano Model Name (variable length)
 	const static Property PianoModel;
@@ -140,12 +154,22 @@ public:
 		PianoMessage(action, property, 0, 0) {}
 	PianoMessage(const Action action, const Property property, int value) :
 		PianoMessage(action, property, 0, value) {}
-	PianoMessage(const Action action, const Property property, int index, int length, const uint8_t* value);
+	PianoMessage(const Action action, const Property property, int index, const uint8_t* value, int size);
 	PianoMessage(const Action action, const Property property, int index, String value);
-	const MemoryBlock& GetData() const { return m_data; }
+	PianoMessage(const uint8_t* sysExData, int size);
+	const MemoryBlock& GetSysExData() const { return m_data; }
+	static const bool IsCspMessage(const uint8_t* sysExData, int size);
+	const Action GetAction();
+	const Property GetProperty();
+	const int GetIndex();
+	const int GetIntValue();
+	const String GetStrValue();
+	const int GetSize();
+	const uint8_t* GetRawValue();
 
 private: 
-	void Init(const Action action, const Property property, int index, int length, const uint8_t* value);
+	void Init(const Action action, const Property property, int index, const uint8_t* value, int size);
+	const int LengthOffset();
 
 	MemoryBlock m_data;
 };

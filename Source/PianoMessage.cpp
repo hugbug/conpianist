@@ -24,6 +24,9 @@ static const int CSP_COMMAND_PREFIX_LENGTH = 6;
 
 // ACTIONS
 
+// Unknown Action (may occur only when parsing sysex)
+const Action Action::Unknown = Action("ff ff");
+
 // Request Property Value from Piano
 // Format for Get Command:
 //   Signature(2 Bytes) : Property(4 Bytes) : Index(1 Byte) : 01 00
@@ -56,6 +59,9 @@ const Action Action::Events = Action("02 00");
 
 
 // PROPERTIES
+
+// Unknown Property (may occur only when parsing sysex)
+const Property Property::Unknown = Property("ff ff ff ff", 0);
 
 // Value: Piano Model Name (variable length)
 const Property Property::PianoModel = Property("0f 01 18 01", 0);
@@ -165,7 +171,6 @@ Property::Property(const char* signature, int length) :
 {
 }
 
-
 String BytesToText(const uint8* buf, int size)
 {
 	if (size < 3)
@@ -254,15 +259,15 @@ void TextToBytes(const String& value, uint8_t* data)
 	}
 }
 
-
-void PianoMessage::Init(const Action action, const Property property, int index, int length, const uint8_t* value)
+void PianoMessage::Init(const Action action, const Property property, int index,
+	const uint8_t* value, int size)
 {
 	bool hasValue = action.signature == Action::Set.signature ||
 		 action.signature == Action::Info.signature ||
 		 action.signature == Action::Info2.signature;
 
 	int payloadSize = action.signature == Action::Events.signature ? 0 :
-		1 + 2 + (hasValue ? 2 + length : 0) +
+		1 + 2 + (hasValue ? 2 + size : 0) +
 		(action.signature == Action::Info2.signature ? 2 : 0);
 
 	int blockSize = CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + payloadSize;
@@ -298,10 +303,10 @@ void PianoMessage::Init(const Action action, const Property property, int index,
 
 		if (hasValue)
 		{
-			m_data[pos++] = (length >> 7) & 0xff;
-			m_data[pos++] = (length >> 0) & 0xff;
+			m_data[pos++] = (size >> 7) & 0xff;
+			m_data[pos++] = (size >> 0) & 0xff;
 
-			for (int i = 0; i < length; i++)
+			for (int i = 0; i < size; i++)
 			{
 				m_data[pos++] = value[i];
 			}
@@ -331,12 +336,13 @@ PianoMessage::PianoMessage(const Action action, const Property property, int ind
 		data[pos++] = (value >> 0) & 0xff;
 	}
 
-	Init(action, property, index, property.length, data);
+	Init(action, property, index, data, property.length);
 }
 
-PianoMessage::PianoMessage(const Action action, const Property property, int index, int length, const uint8_t* value)
+PianoMessage::PianoMessage(const Action action, const Property property, int index,
+	const uint8_t* value, int size)
 {
-	Init(action, property, index, length, value);
+	Init(action, property, index, value, size);
 }
 
 PianoMessage::PianoMessage(const Action action, const Property property, int index, String value)
@@ -345,5 +351,126 @@ PianoMessage::PianoMessage(const Action action, const Property property, int ind
 	uint8_t data[size];
 	TextToBytes(value, data);
 
-	Init(action, property, index, size, data);
+	Init(action, property, index, data, size);
+}
+
+PianoMessage::PianoMessage(const uint8_t* sysExData, int size)
+{
+	if (IsCspMessage(sysExData, size))
+	{
+		m_data.append(sysExData, size);
+	}
+}
+
+const bool PianoMessage::IsCspMessage(const uint8_t* sysExData, int size)
+{
+	const int minCspSize = CSP_COMMAND_PREFIX_LENGTH + 2 + 4;
+	bool isCspMessage = size >= minCspSize &&
+		!strncmp((const char*)sysExData, CSP_COMMAND_PREFIX, CSP_COMMAND_PREFIX_LENGTH);
+	return isCspMessage;
+}
+
+const Action PianoMessage::GetAction()
+{
+	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2)
+	{
+		return Action(
+			(m_data[CSP_COMMAND_PREFIX_LENGTH] << 8) +
+			m_data[CSP_COMMAND_PREFIX_LENGTH + 1]);
+	}
+	return Action::Unknown;
+}
+
+const Property PianoMessage::GetProperty()
+{
+	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4)
+	{
+		return Property(
+			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 0] << 24) +
+			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 1] << 16) +
+			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 2] << 8) +
+			m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 3],
+			0);
+	}
+	return Property::Unknown;
+}
+
+const int PianoMessage::GetIndex()
+{
+	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1)
+	{
+		return m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 4];
+	}
+	return 0;
+}
+
+const int PianoMessage::GetIntValue()
+{
+	int ind = LengthOffset();
+	if (m_data.getSize() > ind + 2)
+	{
+		int size = (m_data[ind + 0] << 7) + m_data[ind + 1];
+		ind += 2;
+		const uint8_t* data = (const uint8_t*)m_data.getData();
+		switch (size)
+		{
+			case 1:
+				return data[ind];
+			case 2:
+				return (data[ind + 0] << 7) + data[ind + 1];
+			case 3:
+				return (data[ind + 0] << 7*2) + (data[ind + 1] << 7) + data[ind + 2];
+			case 4:
+				return (data[ind + 0] << 7*3) + (data[ind + 1] << 7*2) +
+					(data[ind + 2] << 7) + data[ind + 3];
+		}
+	}
+	return 0;
+}
+
+const String PianoMessage::GetStrValue()
+{
+	int ind = LengthOffset();
+	if (m_data.getSize() >= ind + 2)
+	{
+		const uint8_t* data = (const uint8_t*)m_data.getData();
+		return BytesToText(data + ind, (int)m_data.getSize() - ind);
+	}
+	return String();
+}
+
+const int PianoMessage::GetSize()
+{
+	int ind = LengthOffset();
+	if (ind > 0)
+	{
+		return (m_data[ind + 0] << 7) + m_data[ind + 1];
+	}
+	return 0;
+}
+
+const uint8_t* PianoMessage::GetRawValue()
+{
+	int ind = LengthOffset();
+	if (m_data.getSize() > ind + 2)
+	{
+		return (const uint8_t*)m_data.getData() + ind + 2;
+	}
+	return nullptr;
+}
+
+const int PianoMessage::LengthOffset()
+{
+	const Action action = GetAction();
+	if ((action == Action::Set || action == Action::Info) &&
+		m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1 + 2 + 2)
+	{
+		return CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1 + 2;
+	}
+	else if ((action == Action::Info2) &&
+		m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1 + 2 + 2 + 2)
+	{
+		return CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 2 + 1 + 2;
+	}
+	return 0;
 }

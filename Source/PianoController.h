@@ -92,6 +92,13 @@ public:
 		String voice;
 	};
 
+	enum Part
+	{
+		paRight = 0,
+		paLeft = 1,
+		paBacking = 2
+	};
+
 	enum Aspect
 	{
 		apConnection,
@@ -124,6 +131,7 @@ public:
 		virtual void PianoNoteMessage(const MidiMessage& message) {}
 	};
 
+	~PianoController() {}
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void AddListener(Listener* listener);
 	void RemoveListener(Listener* listener);
@@ -174,12 +182,8 @@ public:
 	void ResetTempo();
 	int GetTranspose() { return m_transpose; }
 	void SetTranspose(int transpose);
-	bool GetBackingPart() { return m_backingPart; }
-	void SetBackingPart(bool enable);
-	bool GetLeftPart() { return m_leftPart; }
-	void SetLeftPart(bool enable);
-	bool GetRightPart() { return m_rightPart; }
-	void SetRightPart(bool enable);
+	bool GetPart(Part part) { return m_parts[part]; }
+	void SetPart(Part part, bool enable);
 	const String& GetVoice(Channel ch) { return m_channels[ch].voice; }
 	void SetVoice(Channel ch, const String& voice);
 	bool GetActive(Channel ch) { return m_channels[ch].active; }
@@ -190,7 +194,7 @@ public:
 	const String& GetSongFilename() { return m_songFilename; }
 
 	void SendMidiMessage(const MidiMessage& message);
-	void IncomingMidiMessage(const MidiMessage& message);
+	void IncomingMidiMessage(const MidiMessage& message) override;
 
 private:
 	MidiConnector* m_midiConnector;
@@ -206,9 +210,7 @@ private:
 	bool m_streamLightsFast = false;
 	Position m_length{0,0};
 	Position m_position{0,0};
-	bool m_backingPart = false;
-	bool m_leftPart = false;
-	bool m_rightPart = false;
+	bool m_parts[3]{false,false,false};
 	int m_tempo = DefaultTempo;
 	int m_transpose = DefaultTranspose;
 	Position m_loopStart{0,0};
@@ -219,8 +221,5 @@ private:
 	bool m_songLoaded = false;
 
 	void SendCspMessage(const PianoMessage& message);
-	static bool IsCspMessage(const MidiMessage& message, const char* messageHex);
-	void ProcessVoiceEvent(const MidiMessage& message);
-
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
 };

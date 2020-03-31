@@ -20,33 +20,6 @@
 #include "PianoController.h"
 #include "PianoMessage.h"
 
-static const char* CSP_PREFIX = "43 73 01 52 25 26 ";
-static const char* CSP_MODEL_STATE = "00 00 0f 01 18 01 00 01 00";
-static const char* CSP_VERSION_STATE = "00 00 0f 01 0b 01 00 01 00";
-static const char* CSP_GUIDE_STATE = "00 00 04 03 00 01 00 01 00 00 01";
-static const char* CSP_POSITION_STATE = "00 00 04 00 0a 01 00 01 00 00 04";
-static const char* CSP_LENGTH_STATE = "00 00 04 00 1b 01 00 01 00 00 04";
-static const char* CSP_PLAY_STATE = "00 00 04 00 05 01 00 01 00 00 01";
-static const char* CSP_STREAM_LIGHTS_STATE = "00 00 04 02 00 01 00 01 00 00 01";
-static const char* CSP_STREAM_LIGHTS_SPEED_STATE = "00 00 04 02 02 01 00 01 00 00 01";
-static const char* CSP_BACKING_PART_STATE = "00 00 04 00 0e 01 02 01 00 00 01";
-static const char* CSP_LEFT_PART_STATE = "00 00 04 00 0e 01 01 01 00 00 01";
-static const char* CSP_RIGHT_PART_STATE = "00 00 04 00 0e 01 00 01 00 00 01";
-static const char* CSP_SONG_NAME_STATE = "00 00 04 00 01 01 00 01 00";
-static const char* CSP_VOLUME_STATE = "00 00 0c 00 00 01";
-static const char* CSP_PAN_STATE = "00 00 0c 00 03 01";
-static const char* CSP_REVERB_STATE = "00 00 0c 00 04 01";
-static const char* CSP_OCTAVE_STATE = "00 00 0c 00 12 01";
-static const char* CSP_TEMPO_STATE = "00 00 08 00 00 01 01 01 00 00 02";
-static const char* CSP_TRANSPOSE_STATE = "00 00 0a 00 00 01 02 01 00 00 01";
-static const char* CSP_REVERB_EFFECT_STATE = "00 00 0c 01 00 01 00 01 00 00 03 00";
-static const char* CSP_LOOP_STATE = "00 00 04 00 0d 01 00 01 00 00 09";
-static const char* CSP_VOICE_SELECT_STATE = "00 00 02 00 00 01";
-static const char* CSP_VOICE_SELECT_STATE2 = "00 01 02 00 00 01";
-static const char* CSP_CHANNEL_ACTIVE_STATE = "00 00 0c 00 01 01";
-static const char* CSP_CHANNEL_VOICE_STATE = "00 00 02 00 01 01";
-static const char* CSP_CHANNEL_ENABLE_STATE = "00 00 04 01 00 01";
-
 static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
 	PianoController::chMidi1, PianoController::chMidi2, PianoController::chMidi3,
@@ -61,7 +34,6 @@ void Sleep(int milliseconds)
 {
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
 }
-
 
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 {
@@ -233,7 +205,8 @@ bool PianoController::UploadSong(const File& file)
 
 void PianoController::SendCspMessage(const PianoMessage& message)
 {
-	MidiMessage midiMessage = MidiMessage::createSysExMessage(message.GetData().getData(), (int)message.GetData().getSize());
+	MidiMessage midiMessage = MidiMessage::createSysExMessage(
+		message.GetSysExData().getData(), (int)message.GetSysExData().getSize());
 	m_midiConnector->SendMessage(midiMessage);
 }
 
@@ -279,7 +252,7 @@ void PianoController::SetPosition(const Position position)
 	data[1] = (position.measure >> 0) & 0x7f;
 	data[2] = (position.beat >> 7) & 0x7f;
 	data[3] = (position.beat >> 0) & 0x7f;
-	SendCspMessage(PianoMessage(Action::Set, Property::Position, 0, 4, data));
+	SendCspMessage(PianoMessage(Action::Set, Property::Position, 0, data, 4));
 }
 
 void PianoController::SetVolume(Channel ch, int volume)
@@ -294,7 +267,7 @@ void PianoController::ResetVolume(Channel ch)
 
 void PianoController::SetPan(Channel ch, int pan)
 {
-	SendCspMessage(PianoMessage(Action::Set, Property::Pan, ch, pan));
+	SendCspMessage(PianoMessage(Action::Set, Property::Pan, ch, pan + PanBase));
 }
 
 void PianoController::ResetPan(Channel ch)
@@ -337,19 +310,9 @@ void PianoController::SetReverbEffect(int effect)
 	SendCspMessage(PianoMessage(Action::Set, Property::ReverbEffect, 0, effect));
 }
 
-void PianoController::SetBackingPart(bool enable)
+void PianoController::SetPart(Part part, bool enable)
 {
-	SendCspMessage(PianoMessage(Action::Set, Property::Part, 2, enable ? 1 : 0));
-}
-
-void PianoController::SetLeftPart(bool enable)
-{
-	SendCspMessage(PianoMessage(Action::Set, Property::Part, 1, enable ? 1 : 0));
-}
-
-void PianoController::SetRightPart(bool enable)
-{
-	SendCspMessage(PianoMessage(Action::Set, Property::Part, 0, enable ? 1 : 0));
+	SendCspMessage(PianoMessage(Action::Set, Property::Part, part, enable ? 1 : 0));
 }
 
 void PianoController::SetLoop(Loop loop)
@@ -364,14 +327,14 @@ void PianoController::SetLoop(Loop loop)
 		(uint8_t)((loop.end.measure >> 0) & 0x7f),
 		(uint8_t)((loop.end.beat >> 7) & 0x7f),
 		(uint8_t)((loop.end.beat >> 0) & 0x7f)};
-	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, 9, data));
+	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, data, 9));
 }
 
 void PianoController::ResetLoop()
 {
 	m_loopStart = {0,0};
 	uint8_t data[9] = {0,0,1,0,1,0,2,0,1};
-	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, 9, data));
+	SendCspMessage(PianoMessage(Action::Set, Property::Loop, 0, data, 9));
 }
 
 void PianoController::SetLoopStart(const Position loopStart)
@@ -390,173 +353,159 @@ void PianoController::SetActive(Channel ch, bool active)
 	SendCspMessage(PianoMessage(Action::Set, Property::Active, ch, active ? 1 : 0));
 }
 
-bool PianoController::IsCspMessage(const MidiMessage& message, const char* messageHex)
-{
-	MemoryBlock sig;
-	sig.loadFromHexString(String(CSP_PREFIX) + messageHex);
-	bool ret = message.getSysExDataSize() >= sig.getSize() &&
-		memcmp(message.getSysExData(), sig.getData(), sig.getSize()) == 0;
-	return ret;
-}
-
 void PianoController::IncomingMidiMessage(const MidiMessage& message)
 {
-	if (message.isSysEx())
+	if (message.isSysEx() &&
+		PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize()))
 	{
-		if (IsCspMessage(message, CSP_POSITION_STATE))
+		PianoMessage pm(message.getSysExData(), message.getSysExDataSize());
+		const Action action = pm.GetAction();
+		const Property property = pm.GetProperty();
+		const uint8_t* data = pm.GetRawValue();
+		const int size = pm.GetSize();
+		const int index = pm.GetIndex();
+		const int intValue = pm.GetIntValue();
+		const bool boolValue = intValue == 1;
+		Channel ch = (Channel)index;
+
+		if (action == Action::Info)
 		{
-			m_position = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
-				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
-			NotifyChanged(apPosition);
-		}
-		else if (IsCspMessage(message, CSP_LENGTH_STATE))
-		{
-			m_length = {(message.getSysExData()[17] << 7) + message.getSysExData()[18],
-				(message.getSysExData()[19] << 7) + message.getSysExData()[20]};
-			m_songLoaded = m_length.measure > 1 || m_length.beat > 1;
-			m_channels[chMidiMaster].enabled = m_songLoaded;
-			m_channels[chMidiMaster].active = m_songLoaded;
-			NotifyChanged(apLength);
-			NotifyChanged(apEnable, chMidiMaster);
-		}
-		else if (IsCspMessage(message, CSP_PLAY_STATE))
-		{
-			m_playing = message.getSysExData()[17] == 1;
-			NotifyChanged(apPlayback);
-		}
-		else if (IsCspMessage(message, CSP_GUIDE_STATE))
-		{
-			m_guide = message.getSysExData()[17] == 1;
-			NotifyChanged(apGuide);
-		}
-		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_STATE))
-		{
-			m_streamLights = message.getSysExData()[17] == 1;
-			NotifyChanged(apStreamLights);
-		}
-		else if (IsCspMessage(message, CSP_STREAM_LIGHTS_SPEED_STATE))
-		{
-			m_streamLightsFast = message.getSysExData()[17] == 1;
-			NotifyChanged(apStreamLights);
-		}
-		else if (IsCspMessage(message, CSP_BACKING_PART_STATE))
-		{
-			m_backingPart = message.getSysExData()[17] == 1;
-			NotifyChanged(apPart);
-		}
-		else if (IsCspMessage(message, CSP_LEFT_PART_STATE))
-		{
-			m_leftPart = message.getSysExData()[17] == 1;
-			NotifyChanged(apPart);
-		}
-		else if (IsCspMessage(message, CSP_RIGHT_PART_STATE))
-		{
-			m_rightPart = message.getSysExData()[17] == 1;
-			NotifyChanged(apPart);
-		}
-		else if (IsCspMessage(message, CSP_VOLUME_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].volume = message.getSysExData()[17];
-			NotifyChanged(apVolume, ch);
-		}
-		else if (IsCspMessage(message, CSP_PAN_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].pan = message.getSysExData()[17] - PanBase;
-			NotifyChanged(apPan, ch);
-		}
-		else if (IsCspMessage(message, CSP_REVERB_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].reverb = message.getSysExData()[17];
-			NotifyChanged(apReverb, ch);
-		}
-		else if (IsCspMessage(message, CSP_OCTAVE_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].octave = message.getSysExData()[17] - OctaveBase;
-			NotifyChanged(apOctave, ch);
-		}
-		else if (IsCspMessage(message, CSP_CHANNEL_ACTIVE_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].active = message.getSysExData()[17] == 1;
-			NotifyChanged(apActive, ch);
-		}
-		else if (IsCspMessage(message, CSP_CHANNEL_ENABLE_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].enabled = message.getSysExData()[17] == 1;
-			NotifyChanged(apEnable, ch);
-		}
-		else if (IsCspMessage(message, CSP_CHANNEL_VOICE_STATE))
-		{
-			Channel ch = (Channel)message.getSysExData()[12];
-			m_channels[ch].voice = String(
-				(message.getSysExData()[17] << 7 * 3) +
-				(message.getSysExData()[18] << 7 * 2) +
-				(message.getSysExData()[19] << 7) +
-				 message.getSysExData()[20]);
-			NotifyChanged(apVoice, ch);
-		}
-		else if (IsCspMessage(message, CSP_TEMPO_STATE))
-		{
-			m_tempo = (message.getSysExData()[17] << 7) + message.getSysExData()[18];
-			NotifyChanged(apTempo);
-		}
-		else if (IsCspMessage(message, CSP_TRANSPOSE_STATE))
-		{
-			m_transpose = (int)(message.getSysExData()[17]) - TransposeBase;
-			NotifyChanged(apTranspose);
-		}
-		else if (IsCspMessage(message, CSP_REVERB_EFFECT_STATE))
-		{
-			m_reverbEffect = (message.getSysExData()[18] << 7) + message.getSysExData()[19];
-			NotifyChanged(apReverbEffect);
-		}
-		else if (IsCspMessage(message, CSP_LOOP_STATE))
-		{
-			bool enabled = message.getSysExData()[17] == 1;
-			if (enabled)
+			if (property == Property::Position && size == 4)
 			{
-				m_loop = {{(message.getSysExData()[18] << 7) + message.getSysExData()[19],
-					(message.getSysExData()[20] << 7) + message.getSysExData()[21]},
-					{(message.getSysExData()[22] << 7) + message.getSysExData()[23],
-					(message.getSysExData()[24] << 7) + message.getSysExData()[25]}};
-				m_loopStart = {0,0};
+				m_position = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
+				NotifyChanged(apPosition);
 			}
-			else
+			else if (property == Property::Length && size == 4)
 			{
-				m_loop = {{0,0},{0,0}};
+				m_length = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
+				m_songLoaded = m_length.measure > 1 || m_length.beat > 1;
+				m_channels[chMidiMaster].enabled = m_songLoaded;
+				m_channels[chMidiMaster].active = m_songLoaded;
+				NotifyChanged(apLength);
+				NotifyChanged(apEnable, chMidiMaster);
 			}
-			NotifyChanged(apLoop);
+			else if (property == Property::Play)
+			{
+				m_playing = boolValue;
+				NotifyChanged(apPlayback);
+			}
+			else if (property == Property::Guide)
+			{
+				m_guide = boolValue;
+				NotifyChanged(apGuide);
+			}
+			else if (property == Property::StreamLights)
+			{
+				m_streamLights = boolValue;
+				NotifyChanged(apStreamLights);
+			}
+			else if (property == Property::StreamLightsSpeed)
+			{
+				m_streamLightsFast = boolValue;
+				NotifyChanged(apStreamLights);
+			}
+			else if (property == Property::Part)
+			{
+				m_parts[(Part)index] = boolValue;
+				NotifyChanged(apPart);
+			}
+			else if (property == Property::Volume)
+			{
+				m_channels[ch].volume = intValue;
+				NotifyChanged(apVolume, ch);
+			}
+			else if (property == Property::Pan)
+			{
+				m_channels[ch].pan = intValue - PanBase;
+				NotifyChanged(apPan, ch);
+			}
+			else if (property == Property::Reverb)
+			{
+				m_channels[ch].reverb = intValue;
+				NotifyChanged(apReverb, ch);
+			}
+			else if (property == Property::Octave)
+			{
+				m_channels[ch].octave = intValue - OctaveBase;
+				NotifyChanged(apOctave, ch);
+			}
+			else if (property == Property::Active)
+			{
+				m_channels[ch].active = boolValue;
+				NotifyChanged(apActive, ch);
+			}
+			else if (property == Property::Present)
+			{
+				m_channels[ch].enabled = boolValue;
+				NotifyChanged(apEnable, ch);
+			}
+			else if (property == Property::VoiceMidi && size == 4)
+			{
+				m_channels[ch].voice = String((data[0] << 7 * 3) + (data[1] << 7 * 2) + (data[2] << 7) + data[3]);
+				NotifyChanged(apVoice, ch);
+			}
+			else if (property == Property::Tempo)
+			{
+				m_tempo = intValue;
+				NotifyChanged(apTempo);
+			}
+			else if (property == Property::Transpose && index == 2)
+			{
+				m_transpose = intValue - TransposeBase;
+				NotifyChanged(apTranspose);
+			}
+			else if (property == Property::ReverbEffect)
+			{
+				m_reverbEffect = intValue;
+				NotifyChanged(apReverbEffect);
+			}
+			else if (property == Property::Loop && size == 9)
+			{
+				bool enabled = data[0] == 1;
+				if (enabled)
+				{
+					m_loop = {{(data[1] << 7) + data[2], (data[3] << 7) + data[4]},
+						{(data[5] << 7) + data[6], (data[7] << 7) + data[8]}};
+					m_loopStart = {0,0};
+				}
+				else
+				{
+					m_loop = {{0,0},{0,0}};
+				}
+				NotifyChanged(apLoop);
+			}
+			else if (property == Property::VoicePreset)
+			{
+				//TODO: make thread safe
+				m_channels[ch].voice = pm.GetStrValue();
+				NotifyChanged(apVoice, ch);
+			}
+			else if (property == Property::PianoModel)
+			{
+				//TODO: make thread safe
+				m_model = pm.GetStrValue();
+			}
+			else if (property == Property::FirmwareVersion)
+			{
+				//TODO: make thread safe
+				m_version = pm.GetStrValue();
+				m_connected = true;
+				NotifyChanged(apConnection);
+			}
+			else if (property == Property::SongName)
+			{
+				m_position = {1,1};
+				NotifyChanged(apSongLoaded);
+			}
 		}
-		else if (IsCspMessage(message, CSP_VOICE_SELECT_STATE) ||
-			IsCspMessage(message, CSP_VOICE_SELECT_STATE2))
+		else if (action == Action::Info2)
 		{
-			ProcessVoiceEvent(message);
-		}
-		else if (IsCspMessage(message, CSP_MODEL_STATE))
-		{
-			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
-			String str((char*)(message.getSysExData() + 18), len-1);
-			//TODO: make thread safe
-			m_model = str;
-		}
-		else if (IsCspMessage(message, CSP_VERSION_STATE))
-		{
-			int len = (message.getSysExData()[15] << 7) + message.getSysExData()[16];
-			String str((char*)(message.getSysExData() + 18), len-1);
-			//TODO: make thread safe
-			m_version = str;
-			m_connected = true;
-			NotifyChanged(apConnection);
-		}
-		else if (IsCspMessage(message, CSP_SONG_NAME_STATE))
-		{
-			m_position = {1,1};
-			NotifyChanged(apSongLoaded);
+			if (property == Property::VoicePreset)
+			{
+				//TODO: make thread safe
+				m_channels[ch].voice = pm.GetStrValue();
+				NotifyChanged(apVoice, ch);
+			}
 		}
 	}
 	else if (message.isNoteOnOrOff())
@@ -566,15 +515,6 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			listener->PianoNoteMessage(message);
 		}
 	}
-}
-
-void PianoController::ProcessVoiceEvent(const MidiMessage& message)
-{
-	Channel ch = (Channel)message.getSysExData()[12];
-	int off = message.getSysExData()[7] == 1 ? 17 : 15;
-	String voice = BytesToText(message.getSysExData() + off, message.getSysExDataSize() - off);
-	m_channels[ch].voice = voice;
-	NotifyChanged(apVoice, ch);
 }
 
 void PianoController::AddListener(Listener* listener)

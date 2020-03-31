@@ -484,19 +484,19 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == backingPartButton.get())
     {
         //[UserButtonCode_backingPartButton] -- add your button handler code here..
-        pianoController.SetBackingPart(!pianoController.GetBackingPart());
+        pianoController.SetPart(PianoController::paBacking, !pianoController.GetPart(PianoController::paBacking));
         //[/UserButtonCode_backingPartButton]
     }
     else if (buttonThatWasClicked == leftPartButton.get())
     {
         //[UserButtonCode_leftPartButton] -- add your button handler code here..
-        pianoController.SetLeftPart(!pianoController.GetLeftPart());
+        pianoController.SetPart(PianoController::paLeft, !pianoController.GetPart(PianoController::paLeft));
         //[/UserButtonCode_leftPartButton]
     }
     else if (buttonThatWasClicked == rightPartButton.get())
     {
         //[UserButtonCode_rightPartButton] -- add your button handler code here..
-        pianoController.SetRightPart(!pianoController.GetRightPart());
+        pianoController.SetPart(PianoController::paRight, !pianoController.GetPart(PianoController::paRight));
         //[/UserButtonCode_rightPartButton]
     }
     else if (buttonThatWasClicked == guideButton.get())
@@ -641,9 +641,9 @@ void PlaybackComponent::updateSettingsState()
 	lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 
-	backingPartButton->setToggleState(pianoController.GetBackingPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-	leftPartButton->setToggleState(pianoController.GetLeftPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-	rightPartButton->setToggleState(pianoController.GetRightPart() && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	backingPartButton->setToggleState(pianoController.GetPart(PianoController::paBacking) && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	leftPartButton->setToggleState(pianoController.GetPart(PianoController::paLeft) && pianoController.IsConnected(), NotificationType::dontSendNotification);
+	rightPartButton->setToggleState(pianoController.GetPart(PianoController::paRight) && pianoController.IsConnected(), NotificationType::dontSendNotification);
 }
 
 void PlaybackComponent::updateEnabledControls()
