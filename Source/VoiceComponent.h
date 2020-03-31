@@ -69,8 +69,8 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<TreeView> voicesTree;
     std::unique_ptr<GroupComponent> targetGroup;
+    std::unique_ptr<TreeView> voicesTree;
     std::unique_ptr<TextButton> leftVoiceButton;
     std::unique_ptr<TextButton> mainVoiceButton;
     std::unique_ptr<TextButton> layerVoiceButton;
@@ -80,9 +80,15 @@ private:
     std::unique_ptr<Label> leftIndicatorLabel;
     std::unique_ptr<Label> mainIndicatorLabel;
     std::unique_ptr<Label> layerIndicatorLabel;
-    std::unique_ptr<ImageButton> leftMenuButton;
-    std::unique_ptr<ImageButton> mainMenuButton;
+    std::unique_ptr<Label> layerOctaveLabel;
+    std::unique_ptr<Label> leftOctaveLabel;
+    std::unique_ptr<Label> mainOctaveLabel;
+    std::unique_ptr<ImageButton> leftMenuButton2;
+    std::unique_ptr<ImageButton> layerMenuButton2;
     std::unique_ptr<ImageButton> layerMenuButton;
+    std::unique_ptr<ImageButton> leftMenuButton;
+    std::unique_ptr<ImageButton> mainMenuButton2;
+    std::unique_ptr<ImageButton> mainMenuButton;
 
 
     //==============================================================================

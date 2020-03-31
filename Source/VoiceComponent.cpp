@@ -91,28 +91,28 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    voicesTree.reset (new TreeView ("Voices TreeView"));
-    addAndMakeVisible (voicesTree.get());
-    voicesTree->setRootItemVisible (false);
-
     targetGroup.reset (new GroupComponent ("Target Group",
                                            TRANS("Target")));
     addAndMakeVisible (targetGroup.get());
     targetGroup->setTextLabelPosition (Justification::centred);
 
+    voicesTree.reset (new TreeView ("Voices TreeView"));
+    addAndMakeVisible (voicesTree.get());
+    voicesTree->setRootItemVisible (false);
+
     leftVoiceButton.reset (new TextButton ("Left Voice Button"));
     addAndMakeVisible (leftVoiceButton.get());
-    leftVoiceButton->setButtonText (TRANS("None"));
+    leftVoiceButton->setButtonText (String());
     leftVoiceButton->addListener (this);
 
     mainVoiceButton.reset (new TextButton ("Main Voice Button"));
     addAndMakeVisible (mainVoiceButton.get());
-    mainVoiceButton->setButtonText (TRANS("Yamaha CFX Grand"));
+    mainVoiceButton->setButtonText (TRANS("CFX Grand"));
     mainVoiceButton->addListener (this);
 
     layerVoiceButton.reset (new TextButton ("Layer Voice Button"));
     addAndMakeVisible (layerVoiceButton.get());
-    layerVoiceButton->setButtonText (TRANS("Strings"));
+    layerVoiceButton->setButtonText (TRANS("Real Strings"));
     layerVoiceButton->addListener (this);
 
     mainTitleButton.reset (new TextButton ("Main Title Button"));
@@ -160,29 +160,59 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
     layerIndicatorLabel->setColour (TextEditor::textColourId, Colours::black);
     layerIndicatorLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    leftMenuButton.reset (new ImageButton ("Left Menu Button"));
-    addAndMakeVisible (leftMenuButton.get());
-    leftMenuButton->setTooltip (TRANS("Context Menu"));
-    leftMenuButton->setButtonText (TRANS("Menu"));
-    leftMenuButton->addListener (this);
+    layerOctaveLabel.reset (new Label ("Layer Octave Label",
+                                       TRANS("+2")));
+    addAndMakeVisible (layerOctaveLabel.get());
+    layerOctaveLabel->setFont (Font (13.00f, Font::plain).withTypefaceStyle ("Regular"));
+    layerOctaveLabel->setJustificationType (Justification::centredLeft);
+    layerOctaveLabel->setEditable (false, false, false);
+    layerOctaveLabel->setColour (Label::textColourId, Colour (0xc6ffffff));
+    layerOctaveLabel->setColour (TextEditor::textColourId, Colours::black);
+    layerOctaveLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    leftMenuButton->setImages (false, true, true,
-                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
-                               Image(), 0.750f, Colour (0x00000000),
-                               Image(), 1.000f, Colour (0x00000000));
-    mainMenuButton.reset (new ImageButton ("Main Menu Button"));
-    addAndMakeVisible (mainMenuButton.get());
-    mainMenuButton->setTooltip (TRANS("Context Menu"));
-    mainMenuButton->setButtonText (TRANS("Menu"));
-    mainMenuButton->addListener (this);
+    leftOctaveLabel.reset (new Label ("Left Octave Label",
+                                      TRANS("+2")));
+    addAndMakeVisible (leftOctaveLabel.get());
+    leftOctaveLabel->setFont (Font (13.00f, Font::plain).withTypefaceStyle ("Regular"));
+    leftOctaveLabel->setJustificationType (Justification::centredLeft);
+    leftOctaveLabel->setEditable (false, false, false);
+    leftOctaveLabel->setColour (Label::textColourId, Colour (0xc6ffffff));
+    leftOctaveLabel->setColour (TextEditor::textColourId, Colours::black);
+    leftOctaveLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    mainMenuButton->setImages (false, true, true,
-                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
-                               Image(), 0.750f, Colour (0x00000000),
-                               Image(), 1.000f, Colour (0x00000000));
+    mainOctaveLabel.reset (new Label ("Main Octave Label",
+                                      TRANS("+2")));
+    addAndMakeVisible (mainOctaveLabel.get());
+    mainOctaveLabel->setFont (Font (13.00f, Font::plain).withTypefaceStyle ("Regular"));
+    mainOctaveLabel->setJustificationType (Justification::centredLeft);
+    mainOctaveLabel->setEditable (false, false, false);
+    mainOctaveLabel->setColour (Label::textColourId, Colour (0xc6ffffff));
+    mainOctaveLabel->setColour (TextEditor::textColourId, Colours::black);
+    mainOctaveLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    leftMenuButton2.reset (new ImageButton ("Left Menu Button"));
+    addAndMakeVisible (leftMenuButton2.get());
+    leftMenuButton2->setTooltip (TRANS("Octave Shift"));
+    leftMenuButton2->setButtonText (TRANS("Menu"));
+    leftMenuButton2->addListener (this);
+
+    leftMenuButton2->setImages (false, true, true,
+                                Image(), 1.000f, Colour (0x00000000),
+                                Image(), 0.750f, Colour (0x00000000),
+                                Image(), 1.000f, Colour (0x00000000));
+    layerMenuButton2.reset (new ImageButton ("Layer Menu Button"));
+    addAndMakeVisible (layerMenuButton2.get());
+    layerMenuButton2->setTooltip (TRANS("Octave Shift"));
+    layerMenuButton2->setButtonText (TRANS("Menu"));
+    layerMenuButton2->addListener (this);
+
+    layerMenuButton2->setImages (false, true, true,
+                                 Image(), 1.000f, Colour (0x00000000),
+                                 Image(), 0.750f, Colour (0x00000000),
+                                 Image(), 1.000f, Colour (0x00000000));
     layerMenuButton.reset (new ImageButton ("Layer Menu Button"));
     addAndMakeVisible (layerMenuButton.get());
-    layerMenuButton->setTooltip (TRANS("Context Menu"));
+    layerMenuButton->setTooltip (TRANS("Octave Shift"));
     layerMenuButton->setButtonText (TRANS("Menu"));
     layerMenuButton->addListener (this);
 
@@ -190,6 +220,36 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
                                 ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
                                 Image(), 0.750f, Colour (0x00000000),
                                 Image(), 1.000f, Colour (0x00000000));
+    leftMenuButton.reset (new ImageButton ("Left Menu Button"));
+    addAndMakeVisible (leftMenuButton.get());
+    leftMenuButton->setTooltip (TRANS("Octave Shift"));
+    leftMenuButton->setButtonText (TRANS("Menu"));
+    leftMenuButton->addListener (this);
+
+    leftMenuButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
+    mainMenuButton2.reset (new ImageButton ("Main Menu Button"));
+    addAndMakeVisible (mainMenuButton2.get());
+    mainMenuButton2->setTooltip (TRANS("Octave Shift"));
+    mainMenuButton2->setButtonText (TRANS("Menu"));
+    mainMenuButton2->addListener (this);
+
+    mainMenuButton2->setImages (false, true, true,
+                                Image(), 1.000f, Colour (0x00000000),
+                                Image(), 0.750f, Colour (0x00000000),
+                                Image(), 1.000f, Colour (0x00000000));
+    mainMenuButton.reset (new ImageButton ("Main Menu Button"));
+    addAndMakeVisible (mainMenuButton.get());
+    mainMenuButton->setTooltip (TRANS("Octave Shift"));
+    mainMenuButton->setButtonText (TRANS("Menu"));
+    mainMenuButton->addListener (this);
+
+    mainMenuButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     targetGroup->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -203,17 +263,18 @@ VoiceComponent::VoiceComponent (PianoController& pianoController)
 
 
     //[Constructor] You can add your own custom stuff here..
-	updateEnabledControls();
-    buildVoiceTree();
-    pianoController.AddListener(this);
-
     leftTitleButton->getProperties().set("toggle", "yes");
     mainTitleButton->getProperties().set("toggle", "yes");
     layerTitleButton->getProperties().set("toggle", "yes");
 
+	leftIndicatorLabel->setVisible(false);
 	mainIndicatorLabel->setVisible(true);
 	layerIndicatorLabel->setVisible(false);
-	leftIndicatorLabel->setVisible(false);
+
+	updateEnabledControls();
+    buildVoiceTree();
+	updateVoiceState();
+    pianoController.AddListener(this);
     //[/Constructor]
 }
 
@@ -222,8 +283,8 @@ VoiceComponent::~VoiceComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    voicesTree = nullptr;
     targetGroup = nullptr;
+    voicesTree = nullptr;
     leftVoiceButton = nullptr;
     mainVoiceButton = nullptr;
     layerVoiceButton = nullptr;
@@ -233,9 +294,15 @@ VoiceComponent::~VoiceComponent()
     leftIndicatorLabel = nullptr;
     mainIndicatorLabel = nullptr;
     layerIndicatorLabel = nullptr;
-    leftMenuButton = nullptr;
-    mainMenuButton = nullptr;
+    layerOctaveLabel = nullptr;
+    leftOctaveLabel = nullptr;
+    mainOctaveLabel = nullptr;
+    leftMenuButton2 = nullptr;
+    layerMenuButton2 = nullptr;
     layerMenuButton = nullptr;
+    leftMenuButton = nullptr;
+    mainMenuButton2 = nullptr;
+    mainMenuButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -260,8 +327,8 @@ void VoiceComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    voicesTree->setBounds (8, (-8) + 104, getWidth() - 16, getHeight() - 98);
     targetGroup->setBounds (0, -8, getWidth() - 0, 104);
+    voicesTree->setBounds (8, (-8) + 104, getWidth() - 16, getHeight() - 98);
     leftVoiceButton->setBounds (0 + 16, (-8) + 55, proportionOfWidth (0.3029f), 28);
     mainVoiceButton->setBounds (0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2), (-8) + 55, proportionOfWidth (0.3029f), 28);
     layerVoiceButton->setBounds (0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f), (-8) + 55, proportionOfWidth (0.3029f), 28);
@@ -271,9 +338,15 @@ void VoiceComponent::resized()
     leftIndicatorLabel->setBounds (0 + 16, (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
     mainIndicatorLabel->setBounds (0 + (getWidth() - 0) / 2 - ((roundToInt ((getWidth() - 0) * 0.3029f)) / 2), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
     layerIndicatorLabel->setBounds (0 + (getWidth() - 0) - 16 - (roundToInt ((getWidth() - 0) * 0.3029f)), (-8) + 90, roundToInt ((getWidth() - 0) * 0.3029f), 3);
-    leftMenuButton->setBounds ((0 + 16) + 0, 8, 32, 28);
-    mainMenuButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + 0, 8, 32, 28);
-    layerMenuButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + 0, 8, 32, 28);
+    layerOctaveLabel->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + 23, 8, 26, 25);
+    leftOctaveLabel->setBounds ((0 + 16) + 23, 8, 26, 25);
+    mainOctaveLabel->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + 23, 8, 26, 25);
+    leftMenuButton2->setBounds ((0 + 16) + 24, 8, 28, 28);
+    layerMenuButton2->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + 24, 8, 28, 28);
+    layerMenuButton->setBounds ((0 + (getWidth() - 0) - 16 - proportionOfWidth (0.3029f)) + 0, 8, 28, 28);
+    leftMenuButton->setBounds ((0 + 16) + 0, 8, 28, 28);
+    mainMenuButton2->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + 24, 8, 28, 28);
+    mainMenuButton->setBounds ((0 + (getWidth() - 0) / 2 - (proportionOfWidth (0.3029f) / 2)) + 0, 8, 28, 28);
     //[UserResized] Add your own custom resize handling here..
     //[/UserResized]
 }
@@ -322,23 +395,41 @@ void VoiceComponent::buttonClicked (Button* buttonThatWasClicked)
         	!pianoController.GetActive(PianoController::chLayer));
         //[/UserButtonCode_layerTitleButton]
     }
-    else if (buttonThatWasClicked == leftMenuButton.get())
+    else if (buttonThatWasClicked == leftMenuButton2.get())
     {
-        //[UserButtonCode_leftMenuButton] -- add your button handler code here..
-        showMenu(buttonThatWasClicked, PianoController::chLeft);
-        //[/UserButtonCode_leftMenuButton]
+        //[UserButtonCode_leftMenuButton2] -- add your button handler code here..
+        showMenu(leftMenuButton2.get(), PianoController::chLeft);
+        //[/UserButtonCode_leftMenuButton2]
     }
-    else if (buttonThatWasClicked == mainMenuButton.get())
+    else if (buttonThatWasClicked == layerMenuButton2.get())
     {
-        //[UserButtonCode_mainMenuButton] -- add your button handler code here..
-        showMenu(buttonThatWasClicked, PianoController::chMain);
-        //[/UserButtonCode_mainMenuButton]
+        //[UserButtonCode_layerMenuButton2] -- add your button handler code here..
+        showMenu(layerMenuButton2.get(), PianoController::chLayer);
+        //[/UserButtonCode_layerMenuButton2]
     }
     else if (buttonThatWasClicked == layerMenuButton.get())
     {
         //[UserButtonCode_layerMenuButton] -- add your button handler code here..
-        showMenu(buttonThatWasClicked, PianoController::chLayer);
+        showMenu(layerMenuButton.get(), PianoController::chLayer);
         //[/UserButtonCode_layerMenuButton]
+    }
+    else if (buttonThatWasClicked == leftMenuButton.get())
+    {
+        //[UserButtonCode_leftMenuButton] -- add your button handler code here..
+        showMenu(leftMenuButton.get(), PianoController::chLeft);
+        //[/UserButtonCode_leftMenuButton]
+    }
+    else if (buttonThatWasClicked == mainMenuButton2.get())
+    {
+        //[UserButtonCode_mainMenuButton2] -- add your button handler code here..
+        showMenu(mainMenuButton2.get(), PianoController::chMain);
+        //[/UserButtonCode_mainMenuButton2]
+    }
+    else if (buttonThatWasClicked == mainMenuButton.get())
+    {
+        //[UserButtonCode_mainMenuButton] -- add your button handler code here..
+        showMenu(mainMenuButton.get(), PianoController::chMain);
+        //[/UserButtonCode_mainMenuButton]
     }
 
     //[UserbuttonClicked_Post]
@@ -368,16 +459,13 @@ void VoiceComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 void VoiceComponent::updateVoiceState()
 {
 	int octave = pianoController.GetOctave(PianoController::chMain);
-	mainTitleButton->setButtonText(String("Main") + (octave == 0 ? "" :
-		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+	mainOctaveLabel->setText(octave == 0 ? "" : (octave > 0 ? "+" : "") + String(octave), NotificationType::dontSendNotification);
 
 	octave = pianoController.GetOctave(PianoController::chLayer);
-	layerTitleButton->setButtonText(String("Layer") + (octave == 0 ? "" :
-		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+	layerOctaveLabel->setText(octave == 0 ? "" : (octave > 0 ? "+" : "") + String(octave), NotificationType::dontSendNotification);
 
 	octave = pianoController.GetOctave(PianoController::chLeft);
-	leftTitleButton->setButtonText(String("Left") + (octave == 0 ? "" :
-		String(" (") + (octave > 0 ? "+" : "") + String(octave) + ")"));
+	leftOctaveLabel->setText(octave == 0 ? "" : (octave > 0 ? "+" : "") + String(octave), NotificationType::dontSendNotification);
 
 	mainVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chMain)));
 	layerVoiceButton->setButtonText(Presets::VoiceTitle(pianoController.GetVoice(PianoController::chLayer)));
@@ -532,25 +620,25 @@ BEGIN_JUCER_METADATA
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="600" initialHeight="400">
   <BACKGROUND backgroundColour="ff323e44"/>
-  <TREEVIEW name="Voices TreeView" id="5c337882807de41a" memberName="voicesTree"
-            virtualName="" explicitFocusOrder="0" pos="8 0R 16M 98M" posRelativeY="56427593ca278ddd"
-            rootVisible="0" openByDefault="0"/>
   <GROUPCOMPONENT name="Target Group" id="56427593ca278ddd" memberName="targetGroup"
                   virtualName="" explicitFocusOrder="0" pos="0 -8 0M 104" title="Target"
                   textpos="36"/>
+  <TREEVIEW name="Voices TreeView" id="5c337882807de41a" memberName="voicesTree"
+            virtualName="" explicitFocusOrder="0" pos="8 0R 16M 98M" posRelativeY="56427593ca278ddd"
+            rootVisible="0" openByDefault="0"/>
   <TEXTBUTTON name="Left Voice Button" id="f4f376ddb622016f" memberName="leftVoiceButton"
               virtualName="" explicitFocusOrder="0" pos="16 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
-              buttonText="None" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+              buttonText="" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Main Voice Button" id="a44dda5da363325" memberName="mainVoiceButton"
               virtualName="" explicitFocusOrder="0" pos="0Cc 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
-              buttonText="Yamaha CFX Grand" connectedEdges="0" needsCallback="1"
-              radioGroupId="0"/>
+              buttonText="CFX Grand" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
   <TEXTBUTTON name="Layer Voice Button" id="e72441cfef2070c4" memberName="layerVoiceButton"
               virtualName="" explicitFocusOrder="0" pos="16Rr 55 30.295% 28"
               posRelativeX="56427593ca278ddd" posRelativeY="56427593ca278ddd"
-              buttonText="Strings" connectedEdges="0" needsCallback="1" radioGroupId="0"/>
+              buttonText="Real Strings" connectedEdges="0" needsCallback="1"
+              radioGroupId="0"/>
   <TEXTBUTTON name="Main Title Button" id="9fa4d9ce58b1b951" memberName="mainTitleButton"
               virtualName="" explicitFocusOrder="0" pos="0Cc 16 80 28" posRelativeX="a44dda5da363325"
               posRelativeY="56427593ca278ddd" buttonText="Main" connectedEdges="0"
@@ -584,23 +672,62 @@ BEGIN_JUCER_METADATA
          edBkgCol="0" labelText="" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
-  <IMAGEBUTTON name="Left Menu Button" id="c87eaad1c0559e4c" memberName="leftMenuButton"
-               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="f4f376ddb622016f"
-               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+  <LABEL name="Layer Octave Label" id="d1ecf45d2430421b" memberName="layerOctaveLabel"
+         virtualName="" explicitFocusOrder="0" pos="23 8 26 28" posRelativeX="e72441cfef2070c4"
+         textCol="c6ffffff" edTextCol="ff000000" edBkgCol="0" labelText="+2"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="13.0" kerning="0.0" bold="0"
+         italic="0" justification="33"/>
+  <LABEL name="Left Octave Label" id="857779c04097ab5b" memberName="leftOctaveLabel"
+         virtualName="" explicitFocusOrder="0" pos="23 8 26 28" posRelativeX="f4f376ddb622016f"
+         textCol="c6ffffff" edTextCol="ff000000" edBkgCol="0" labelText="+2"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="13.0" kerning="0.0" bold="0"
+         italic="0" justification="33"/>
+  <LABEL name="Main Octave Label" id="c039cf6ff29c7794" memberName="mainOctaveLabel"
+         virtualName="" explicitFocusOrder="0" pos="23 8 26 28" posRelativeX="a44dda5da363325"
+         textCol="c6ffffff" edTextCol="ff000000" edBkgCol="0" labelText="+2"
+         editableSingleClick="0" editableDoubleClick="0" focusDiscardsChanges="0"
+         fontname="Default font" fontsize="13.0" kerning="0.0" bold="0"
+         italic="0" justification="33"/>
+  <IMAGEBUTTON name="Left Menu Button" id="8656dae8fdb73033" memberName="leftMenuButton2"
+               virtualName="" explicitFocusOrder="0" pos="24 8 28 28" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
-               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
-               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
-               resourceDown="" opacityDown="1.0" colourDown="0"/>
-  <IMAGEBUTTON name="Main Menu Button" id="d7280e4dca735b29" memberName="mainMenuButton"
-               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="a44dda5da363325"
-               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               resourceNormal="" opacityNormal="1.0" colourNormal="0" resourceOver=""
+               opacityOver="0.75" colourOver="0" resourceDown="" opacityDown="1.0"
+               colourDown="0"/>
+  <IMAGEBUTTON name="Layer Menu Button" id="871faac488786d20" memberName="layerMenuButton2"
+               virtualName="" explicitFocusOrder="0" pos="24 8 28 28" posRelativeX="e72441cfef2070c4"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
-               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
-               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
-               resourceDown="" opacityDown="1.0" colourDown="0"/>
+               resourceNormal="" opacityNormal="1.0" colourNormal="0" resourceOver=""
+               opacityOver="0.75" colourOver="0" resourceDown="" opacityDown="1.0"
+               colourDown="0"/>
   <IMAGEBUTTON name="Layer Menu Button" id="3fc472f3e7ad73d0" memberName="layerMenuButton"
-               virtualName="" explicitFocusOrder="0" pos="0 8 32 28" posRelativeX="e72441cfef2070c4"
-               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               virtualName="" explicitFocusOrder="0" pos="0 8 28 28" posRelativeX="e72441cfef2070c4"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <IMAGEBUTTON name="Left Menu Button" id="c87eaad1c0559e4c" memberName="leftMenuButton"
+               virtualName="" explicitFocusOrder="0" pos="0 8 28 28" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <IMAGEBUTTON name="Main Menu Button" id="8b4864a08146bf38" memberName="mainMenuButton2"
+               virtualName="" explicitFocusOrder="0" pos="24 8 28 28" posRelativeX="a44dda5da363325"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="" opacityNormal="1.0" colourNormal="0" resourceOver=""
+               opacityOver="0.75" colourOver="0" resourceDown="" opacityDown="1.0"
+               colourDown="0"/>
+  <IMAGEBUTTON name="Main Menu Button" id="d7280e4dca735b29" memberName="mainMenuButton"
+               virtualName="" explicitFocusOrder="0" pos="0 8 28 28" posRelativeX="a44dda5da363325"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Octave Shift" buttonText="Menu"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
