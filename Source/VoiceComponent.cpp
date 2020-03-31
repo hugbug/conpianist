@@ -540,7 +540,9 @@ void VoiceComponent::scrollToVoice(const String& preset)
 						return ret;
 					}
 				}
-				if (sub->m_voice && preset == sub->m_voice->path)
+				bool isPath = preset.startsWith("PRESET:");
+				if (sub->m_voice && ((isPath && preset == sub->m_voice->path) ||
+					(!isPath && preset.getIntValue() == sub->m_voice->num)))
 				{
 					return sub;
 				}
