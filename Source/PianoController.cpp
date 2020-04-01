@@ -47,7 +47,7 @@ void PianoController::Connect()
 	SendCspMessage(PianoMessage(Action::Get, Property::FirmwareVersion));
 }
 
-void PianoController::Reset()
+void PianoController::InitEvents()
 {
 	// Activate feedback events from piano
 	SendCspMessage(PianoMessage(Action::Events, Property::Length));
@@ -70,6 +70,68 @@ void PianoController::Reset()
 	SendCspMessage(PianoMessage(Action::Events, Property::Present));
 	SendCspMessage(PianoMessage(Action::Events, Property::VoiceMidi));
 	SendCspMessage(PianoMessage(Action::Events, Property::SongName));
+}
+
+void PianoController::Sync()
+{
+	InitEvents();
+
+	SetLocalControl(true);
+
+	m_songLoaded = false;
+
+	m_channels[chAuxIn].enabled = true;
+	m_channels[chAuxIn].active = true;
+
+	for (Channel ch : ValidChannelIds)
+	{
+		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16); // these are always enabled
+
+		if (chMidi1 <= ch && ch <= chMidi16)
+		{
+			SendCspMessage(PianoMessage(Action::Get, Property::Present, ch, 0));
+			SendCspMessage(PianoMessage(Action::Get, Property::VoiceMidi, ch, 0));
+		}
+		if (ch != chAuxIn)
+		{
+			SendCspMessage(PianoMessage(Action::Get, Property::Active, ch, 0));
+			SendCspMessage(PianoMessage(Action::Get, Property::Pan, ch, 0));
+			SendCspMessage(PianoMessage(Action::Get, Property::Reverb, ch, 0));
+		}
+
+		SendCspMessage(PianoMessage(Action::Get, Property::Volume, ch, 0));
+
+		// Sleep is not nice, we should wait for confirmation messages instead.
+		// Without waiting the piano may miss some commands because there are too many.
+		Sleep(10);
+	}
+
+	SendCspMessage(PianoMessage(Action::Get, Property::Guide));
+	SendCspMessage(PianoMessage(Action::Get, Property::StreamLights));
+	SendCspMessage(PianoMessage(Action::Get, Property::StreamLightsSpeed));
+	SendCspMessage(PianoMessage(Action::Get, Property::ReverbEffect));
+	SendCspMessage(PianoMessage(Action::Get, Property::Tempo));
+	SendCspMessage(PianoMessage(Action::Get, Property::Transpose, 2, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::VoicePreset, chMain, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::VoicePreset, chLayer, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::VoicePreset, chLeft, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chMain, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLayer, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLeft, 0));
+
+	SendCspMessage(PianoMessage(Action::Get, Property::Length));
+	SendCspMessage(PianoMessage(Action::Get, Property::Position));
+	SendCspMessage(PianoMessage(Action::Get, Property::Loop));
+	SendCspMessage(PianoMessage(Action::Get, Property::Play));
+	SendCspMessage(PianoMessage(Action::Get, Property::SongName));
+	SendCspMessage(PianoMessage(Action::Get, Property::Part, paRight, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::Part, paLeft, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::Part, paBacking, 0));
+}
+
+void PianoController::Reset()
+{
+	InitEvents();
 
 	Stop();
 
@@ -140,12 +202,12 @@ void PianoController::Reset()
 	SetActive(chMic, true);
 	SetActive(chAuxIn, true);
 
-	// By trying to set an invalid voice we cause the piano to fire
-	// event "CSP_VOICE_SELECT_STATE2" containing info about current voice.
-	// That's how we know which voice is selected without changing it
-	SetVoice(chMain, "");
-	SetVoice(chLayer, "");
-	SetVoice(chLeft, "");
+	Sleep(50);
+	SetVoice(chMain, "PRESET:/VOICE/Piano/Grand Piano/CFX Grand.T542.VRM");
+	Sleep(50);
+	SetVoice(chLayer, "PRESET:/VOICE/Strings & Vocal/String Ensemble/Real Strings.T250.SAR");
+	Sleep(50);
+	SetVoice(chLeft, "PRESET:/VOICE/Piano/FM E.Piano/DX7 EP.T232.NLV");
 }
 
 void PianoController::Disconnect()
@@ -360,6 +422,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 	{
 		PianoMessage pm(message.getSysExData(), message.getSysExDataSize());
 		const Action action = pm.GetAction();
+
+		if (action != Action::Info)
+		{
+			return;
+		}
+
 		const Property property = pm.GetProperty();
 		const uint8_t* data = pm.GetRawValue();
 		const int size = pm.GetSize();
@@ -368,144 +436,131 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		const bool boolValue = intValue == 1;
 		Channel ch = (Channel)index;
 
-		if (action == Action::Info)
+		if (property == Property::Position && size == 4)
 		{
-			if (property == Property::Position && size == 4)
-			{
-				m_position = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
-				NotifyChanged(apPosition);
-			}
-			else if (property == Property::Length && size == 4)
-			{
-				m_length = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
-				m_songLoaded = m_length.measure > 1 || m_length.beat > 1;
-				m_channels[chMidiMaster].enabled = m_songLoaded;
-				m_channels[chMidiMaster].active = m_songLoaded;
-				NotifyChanged(apLength);
-				NotifyChanged(apEnable, chMidiMaster);
-			}
-			else if (property == Property::Play)
-			{
-				m_playing = boolValue;
-				NotifyChanged(apPlayback);
-			}
-			else if (property == Property::Guide)
-			{
-				m_guide = boolValue;
-				NotifyChanged(apGuide);
-			}
-			else if (property == Property::StreamLights)
-			{
-				m_streamLights = boolValue;
-				NotifyChanged(apStreamLights);
-			}
-			else if (property == Property::StreamLightsSpeed)
-			{
-				m_streamLightsFast = boolValue;
-				NotifyChanged(apStreamLights);
-			}
-			else if (property == Property::Part)
-			{
-				m_parts[(Part)index] = boolValue;
-				NotifyChanged(apPart);
-			}
-			else if (property == Property::Volume)
-			{
-				m_channels[ch].volume = intValue;
-				NotifyChanged(apVolume, ch);
-			}
-			else if (property == Property::Pan)
-			{
-				m_channels[ch].pan = intValue - PanBase;
-				NotifyChanged(apPan, ch);
-			}
-			else if (property == Property::Reverb)
-			{
-				m_channels[ch].reverb = intValue;
-				NotifyChanged(apReverb, ch);
-			}
-			else if (property == Property::Octave)
-			{
-				m_channels[ch].octave = intValue - OctaveBase;
-				NotifyChanged(apOctave, ch);
-			}
-			else if (property == Property::Active)
-			{
-				m_channels[ch].active = boolValue;
-				NotifyChanged(apActive, ch);
-			}
-			else if (property == Property::Present)
-			{
-				m_channels[ch].enabled = boolValue;
-				NotifyChanged(apEnable, ch);
-			}
-			else if (property == Property::VoiceMidi && size == 4)
-			{
-				m_channels[ch].voice = String((data[0] << 7 * 3) + (data[1] << 7 * 2) + (data[2] << 7) + data[3]);
-				NotifyChanged(apVoice, ch);
-			}
-			else if (property == Property::Tempo)
-			{
-				m_tempo = intValue;
-				NotifyChanged(apTempo);
-			}
-			else if (property == Property::Transpose && index == 2)
-			{
-				m_transpose = intValue - TransposeBase;
-				NotifyChanged(apTranspose);
-			}
-			else if (property == Property::ReverbEffect)
-			{
-				m_reverbEffect = intValue;
-				NotifyChanged(apReverbEffect);
-			}
-			else if (property == Property::Loop && size == 9)
-			{
-				bool enabled = data[0] == 1;
-				if (enabled)
-				{
-					m_loop = {{(data[1] << 7) + data[2], (data[3] << 7) + data[4]},
-						{(data[5] << 7) + data[6], (data[7] << 7) + data[8]}};
-					m_loopStart = {0,0};
-				}
-				else
-				{
-					m_loop = {{0,0},{0,0}};
-				}
-				NotifyChanged(apLoop);
-			}
-			else if (property == Property::VoicePreset)
-			{
-				//TODO: make thread safe
-				m_channels[ch].voice = pm.GetStrValue();
-				NotifyChanged(apVoice, ch);
-			}
-			else if (property == Property::PianoModel)
-			{
-				//TODO: make thread safe
-				m_model = pm.GetStrValue();
-			}
-			else if (property == Property::FirmwareVersion)
-			{
-				//TODO: make thread safe
-				m_version = pm.GetStrValue();
-				m_connected = true;
-				NotifyChanged(apConnection);
-			}
-			else if (property == Property::SongName)
-			{
-				m_position = {1,1};
-				NotifyChanged(apSongLoaded);
-			}
+			m_position = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
+			NotifyChanged(apPosition);
 		}
-		else if (action == Action::Info2)
+		else if (property == Property::Length && size == 4)
 		{
-			if (property == Property::VoicePreset)
+			m_length = {(data[0] << 7) + data[1], (data[2] << 7) + data[3]};
+			m_songLoaded = m_length.measure > 1 || m_length.beat > 1;
+			m_channels[chMidiMaster].enabled = m_songLoaded;
+			m_channels[chMidiMaster].active = m_songLoaded;
+			NotifyChanged(apLength);
+			NotifyChanged(apEnable, chMidiMaster);
+		}
+		else if (property == Property::Play)
+		{
+			m_playing = boolValue;
+			NotifyChanged(apPlayback);
+		}
+		else if (property == Property::Guide)
+		{
+			m_guide = boolValue;
+			NotifyChanged(apGuide);
+		}
+		else if (property == Property::StreamLights)
+		{
+			m_streamLights = boolValue;
+			NotifyChanged(apStreamLights);
+		}
+		else if (property == Property::StreamLightsSpeed)
+		{
+			m_streamLightsFast = boolValue;
+			NotifyChanged(apStreamLights);
+		}
+		else if (property == Property::Part)
+		{
+			m_parts[(Part)index] = boolValue;
+			NotifyChanged(apPart);
+		}
+		else if (property == Property::Volume)
+		{
+			m_channels[ch].volume = intValue;
+			NotifyChanged(apVolume, ch);
+		}
+		else if (property == Property::Pan)
+		{
+			m_channels[ch].pan = intValue - PanBase;
+			NotifyChanged(apPan, ch);
+		}
+		else if (property == Property::Reverb)
+		{
+			m_channels[ch].reverb = intValue;
+			NotifyChanged(apReverb, ch);
+		}
+		else if (property == Property::Octave)
+		{
+			m_channels[ch].octave = intValue - OctaveBase;
+			NotifyChanged(apOctave, ch);
+		}
+		else if (property == Property::Active)
+		{
+			m_channels[ch].active = boolValue;
+			NotifyChanged(apActive, ch);
+		}
+		else if (property == Property::Present)
+		{
+			m_channels[ch].enabled = boolValue;
+			NotifyChanged(apEnable, ch);
+		}
+		else if (property == Property::VoiceMidi && size == 4)
+		{
+			m_channels[ch].voice = String((data[0] << 7 * 3) + (data[1] << 7 * 2) + (data[2] << 7) + data[3]);
+			NotifyChanged(apVoice, ch);
+		}
+		else if (property == Property::Tempo)
+		{
+			m_tempo = intValue;
+			NotifyChanged(apTempo);
+		}
+		else if (property == Property::Transpose && index == 2)
+		{
+			m_transpose = intValue - TransposeBase;
+			NotifyChanged(apTranspose);
+		}
+		else if (property == Property::ReverbEffect)
+		{
+			m_reverbEffect = intValue;
+			NotifyChanged(apReverbEffect);
+		}
+		else if (property == Property::Loop && size == 9)
+		{
+			bool enabled = data[0] == 1;
+			if (enabled)
 			{
-				//TODO: make thread safe
-				m_channels[ch].voice = pm.GetStrValue();
-				NotifyChanged(apVoice, ch);
+				m_loop = {{(data[1] << 7) + data[2], (data[3] << 7) + data[4]},
+					{(data[5] << 7) + data[6], (data[7] << 7) + data[8]}};
+				m_loopStart = {0,0};
 			}
+			else
+			{
+				m_loop = {{0,0},{0,0}};
+			}
+			NotifyChanged(apLoop);
+		}
+		else if (property == Property::VoicePreset)
+		{
+			//TODO: make thread safe
+			m_channels[ch].voice = pm.GetStrValue();
+			NotifyChanged(apVoice, ch);
+		}
+		else if (property == Property::PianoModel)
+		{
+			//TODO: make thread safe
+			m_model = pm.GetStrValue();
+		}
+		else if (property == Property::FirmwareVersion)
+		{
+			//TODO: make thread safe
+			m_version = pm.GetStrValue();
+			m_connected = true;
+			NotifyChanged(apConnection);
+		}
+		else if (property == Property::SongName)
+		{
+			NotifyChanged(apSongLoaded);
 		}
 	}
 	else if (message.isNoteOnOrOff())

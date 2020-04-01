@@ -140,6 +140,8 @@ public:
 	void Connect();
 	void Disconnect();
 	void Reset();
+	void Sync();
+	void InitEvents();
 	bool UploadSong(const File& file);
 	void ResetSong();
 	void Play();

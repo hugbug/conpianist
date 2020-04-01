@@ -352,7 +352,7 @@ void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	}
 	if (aspect == PianoController::apConnection && pianoController.IsConnected())
 	{
-		MessageManager::callAsync([=](){pianoController.Reset();});
+		MessageManager::callAsync([=](){pianoController.Sync();});
 	}
 }
 
