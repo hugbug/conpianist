@@ -376,21 +376,32 @@ void SceneComponent::updateSettingsState()
 void SceneComponent::showMenu()
 {
 	PopupMenu menu;
-	menu.addSectionHeader("SETTINGS");
-	menu.addItem(1, "Instrument");
-	menu.addSectionHeader("ABOUT");
-	menu.addItem(2, "Version " + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
-	menu.addItem(3, "Homepage");
+	menu.addSectionHeader("INSTRUMENT");
+	menu.addItem(1, "Connection Settings");
+	menu.addItem(2, "Resync State from Piano");
+	menu.addItem(3, "Reset Piano to Default State");
+	menu.addSectionHeader("PROGRAM INFO");
+	menu.addItem(99, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
+	menu.addItem(100, "Visit Homepage");
 
 	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
 
-	if (result == 1)
+	switch (result)
 	{
-		ConnectionComponent::showDialog(settings);
-	}
-	else if (result == 3)
-	{
-		URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
+		case 1:
+			ConnectionComponent::showDialog(settings);
+			break;
+		case 2:
+			statusLabel->setText("Resyncing...", NotificationType::dontSendNotification);
+			MessageManager::callAsync([=](){pianoController.Sync();});
+			break;
+		case 3:
+			statusLabel->setText("Resetting...", NotificationType::dontSendNotification);
+			MessageManager::callAsync([=](){pianoController.Reset();});
+			break;
+		case 100:
+			URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
+			break;
 	}
 }
 
