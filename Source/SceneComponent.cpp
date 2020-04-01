@@ -420,7 +420,10 @@ void SceneComponent::checkConnection()
 		}
 		statusLabel->setText(status, NotificationType::dontSendNotification);
 
-		pianoController.Connect();
+		if (midiConnector->IsConnected())
+		{
+			pianoController.Connect();
+		}
 	}
 }
 

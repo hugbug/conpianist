@@ -277,7 +277,7 @@ void LomseScoreComponent::buttonClicked(Button* buttonThatWasClicked)
 {
 	File initialLocation = File::getSpecialLocation(File::userHomeDirectory);
 	initialLocation = initialLocation.getFullPathName() + "/Midi";
-	String songName = File(m_pianoController.GetSongFilename()).getFileNameWithoutExtension();
+	String songName = File(m_pianoController.GetSongName()).getFileNameWithoutExtension();
 	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
 	FileChooser chooser(title, initialLocation, "*.xml;*.musicxml");
     if (chooser.browseForFileToOpen())
@@ -360,7 +360,7 @@ void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, Pian
 	{
 		MessageManager::callAsync([=](){UpdateSongState();});
 	}
-	else if (aspect == PianoController::apSongLoaded)
+	else if (aspect == PianoController::apSongName)
 	{
 		MessageManager::callAsync([=](){LoadSong();});
 	}
@@ -434,10 +434,10 @@ void LomseScoreComponent::LoadSong()
 {
 	m_presenter = nullptr;
 
-	File file = File(m_pianoController.GetSongFilename()).withFileExtension(".musicxml");
+	File file = File(m_pianoController.GetSongName()).withFileExtension(".musicxml");
 	if (!file.existsAsFile())
 	{
-		file = File(m_pianoController.GetSongFilename()).withFileExtension(".xml");
+		file = File(m_pianoController.GetSongName()).withFileExtension(".xml");
 	}
 
 	if (file.existsAsFile() && file.getSize() > 0)

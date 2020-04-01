@@ -556,15 +556,14 @@ void PlaybackComponent::loadSong(const URL& url)
 		songLabel->setText(TRANS("Error loading midi"), NotificationType::dontSendNotification);
 		return;
 	}
-
-	songLabel->setText(file.getFileNameWithoutExtension(), NotificationType::dontSendNotification);
 }
 
 void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
 	if (aspect == PianoController::apPosition || aspect == PianoController::apLength ||
 		aspect == PianoController::apPlayback || aspect == PianoController::apTempo ||
-		aspect == PianoController::apTranspose || aspect == PianoController::apLoop)
+		aspect == PianoController::apTranspose || aspect == PianoController::apLoop ||
+		aspect == PianoController::apSongName)
 	{
 		MessageManager::callAsync([=](){updatePlaybackState(aspect);});
 	}
@@ -586,15 +585,17 @@ void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoC
 
 void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
 {
-	if (aspect == PianoController::apPosition || aspect == PianoController::apLength)
+	if (aspect == PianoController::apPosition)
 	{
-		int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 001;
-		lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
-
-		positionSlider->setRange(1, std::max(songLength, 2), 1);
 		positionLabel->setText(String::formatted("%03d", pianoController.GetPosition().measure),
 			NotificationType::dontSendNotification);
 		positionSlider->setValue(pianoController.GetPosition().measure, NotificationType::dontSendNotification);
+	}
+	else if (aspect == PianoController::apLength)
+	{
+		int songLength = pianoController.GetLength().measure > 0 ? pianoController.GetLength().measure : 001;
+		lengthLabel->setText(String::formatted("%03d", songLength), NotificationType::dontSendNotification);
+		positionSlider->setRange(1, std::max(songLength, 2), 1);
 	}
 	else if (aspect == PianoController::apPlayback)
 	{
@@ -624,6 +625,14 @@ void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
 			loopHalf ? BinaryData::buttonabloophalf_pngSize : BinaryData::buttonabloop_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 		loopButton->setToggleState(loopSet || loopHalf, NotificationType::dontSendNotification);
+	}
+	else if (aspect == PianoController::apSongName)
+	{
+		bool songLoaded = pianoController.GetSongName() != "/SONG/NEW SONG";
+		songLabel->setText(songLoaded ?
+			File(pianoController.GetSongName()).getFileNameWithoutExtension() :
+			"Click here and select a Song",
+			NotificationType::dontSendNotification);
 	}
 }
 

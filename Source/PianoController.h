@@ -103,7 +103,7 @@ public:
 	{
 		apConnection,
 		apLocalControl,
-		apSongLoaded,
+		apSongName,
 		apLength,
 		apPosition,
 		apPlayback,
@@ -193,7 +193,7 @@ public:
 	bool GetEnabled(Channel ch) { return m_channels[ch].enabled; }
 	int GetReverbEffect() { return m_reverbEffect; }
 	void SetReverbEffect(int effect);
-	const String& GetSongFilename() { return m_songFilename; }
+	const String& GetSongName() { return m_songName; }
 
 	void SendMidiMessage(const MidiMessage& message);
 	void IncomingMidiMessage(const MidiMessage& message) override;
@@ -219,7 +219,7 @@ private:
 	Loop m_loop{{0,0},{0,0}};
 	ChannelInfo m_channels[127];
 	int m_reverbEffect = 0;
-	String m_songFilename;
+	String m_songName;
 	bool m_songLoaded = false;
 
 	void SendCspMessage(const PianoMessage& message);

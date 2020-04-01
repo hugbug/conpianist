@@ -119,11 +119,11 @@ void PianoController::Sync()
 	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLayer, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLeft, 0));
 
+	SendCspMessage(PianoMessage(Action::Get, Property::SongName));
 	SendCspMessage(PianoMessage(Action::Get, Property::Length));
 	SendCspMessage(PianoMessage(Action::Get, Property::Position));
 	SendCspMessage(PianoMessage(Action::Get, Property::Loop));
 	SendCspMessage(PianoMessage(Action::Get, Property::Play));
-	SendCspMessage(PianoMessage(Action::Get, Property::SongName));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paRight, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paLeft, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paBacking, 0));
@@ -137,7 +137,7 @@ void PianoController::Reset()
 
 	// Sleep is not nice, we should wait for a confirmation message instead.
 	// Without waiting the config-commands below do not issue change events.
-	Sleep(150);
+	Sleep(250);
 
 	ResetSong();
 
@@ -229,27 +229,29 @@ void PianoController::SetLocalControl(bool enabled)
 
 bool PianoController::UploadSong(const File& file)
 {
-	m_songFilename = file.getFullPathName();
-
-	String headerHex =
-		"01 00 00 06 00 00 00 01 00 00 00 00 00 00 00 01 "
-		"00 00 00 00 00 00 00 16 45 58 54 45 52 4e 41 4c "
-		"3a 2f 41 70 70 53 6f 6e 67 2e 6d 69 64 00 00 00 "
-		"00 00";
+	String headerHex = "01 00 00 06 00 00 00 01 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00";
 
 	MemoryBlock message;
 	message.loadFromHexString(headerHex);
 
-	int size = (int)file.getSize();
-	message[8] = ((size + 38) & (0xFF << (8 * 3))) >> (8 * 3);
-	message[9] = ((size + 38) & (0xFF << (8 * 2))) >> (8 * 2);
-	message[10] = ((size + 38) & (0xFF << (8 * 1))) >> (8 * 1);
-	message[11] = ((size + 38) & (0xFF << (8 * 0))) >> (8 * 0);
+	String filename = "EXTERNAL:/" + file.getFullPathName().replaceCharacter('\\', '/').substring(0, 254 - 10);
+	uint8_t namelen = filename.length() + 1;
+	message.append(&namelen, 1);
+	message.append(filename.getCharPointer(), namelen);
 
-	message[46] = (size & (0xFF << (8 * 3))) >> (8 * 3);
-	message[47] = (size & (0xFF << (8 * 2))) >> (8 * 2);
-	message[48] = (size & (0xFF << (8 * 1))) >> (8 * 1);
-	message[49] = (size & (0xFF << (8 * 0))) >> (8 * 0);
+	int fileSize = (int)file.getSize();
+	int payloadSize = (int)message.getSize() - 8 + fileSize;
+	message[8] = ((payloadSize >> 8*3) & 0xFF);
+	message[9] = ((payloadSize >> 8*2) & 0xFF);
+	message[10] = ((payloadSize >> 8*1) & 0xFF);
+	message[11] = ((payloadSize >> 8*0) & 0xFF);
+
+	uint8_t sizeBuf[4] = {
+		(uint8_t)((fileSize >> 8*3) & 0xFF),
+		(uint8_t)((fileSize >> 8*2) & 0xFF),
+		(uint8_t)((fileSize >> 8*1) & 0xFF),
+		(uint8_t)((fileSize >> 8*0) & 0xFF)};
+	message.append(sizeBuf, 4);
 
 	file.loadFileAsData(message);
 
@@ -560,7 +562,13 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		}
 		else if (property == Property::SongName)
 		{
-			NotifyChanged(apSongLoaded);
+			String name = pm.GetStrValue();
+			// strip "EXTERNAL:" or "PRESET:"
+			if (name.startsWith("EXTERNAL:")) name = name.substring(9);
+			else if (name.startsWith("PRESET:")) name = name.substring(7);
+			//TODO: make thread safe
+			m_songName = name;
+			NotifyChanged(apSongName);
 		}
 	}
 	else if (message.isNoteOnOrOff())
