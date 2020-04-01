@@ -234,7 +234,7 @@ bool PianoController::UploadSong(const File& file)
 	MemoryBlock message;
 	message.loadFromHexString(headerHex);
 
-	String filename = "EXTERNAL:/" + file.getFullPathName().replaceCharacter('\\', '/').substring(0, 254 - 10);
+	String filename = "EXTERNAL:" + file.getFullPathName().substring(0, 254 - 10);
 	uint8_t namelen = filename.length() + 1;
 	message.append(&namelen, 1);
 	message.append(filename.getCharPointer(), namelen);

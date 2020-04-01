@@ -145,14 +145,14 @@ constexpr char CharToCode(char ch)
 	return ch - (ch >= 'a' ? 'a' - 10 : '0');
 }
 
-constexpr int Signature2(const char* str)
+int Signature2(const char* str)
 {
 	char b1 = (CharToCode(str[0]) << 4) + CharToCode(str[1]);
 	char b2 = (CharToCode(str[3]) << 4) + CharToCode(str[4]);
 	return (b1 << 8) + b2;
 }
 
-constexpr int Signature4(const char* str)
+int Signature4(const char* str)
 {
 	char b1 = (CharToCode(str[0]) << 4) + CharToCode(str[1]);
 	char b2 = (CharToCode(str[3]) << 4) + CharToCode(str[4]);
@@ -348,10 +348,10 @@ PianoMessage::PianoMessage(const Action action, const Property property, int ind
 PianoMessage::PianoMessage(const Action action, const Property property, int index, String value)
 {
 	int size = TextToBytesSize(value);
-	uint8_t data[size];
-	TextToBytes(value, data);
+	std::vector<uint8_t> data(size);
+	TextToBytes(value, data.data());
 
-	Init(action, property, index, data, size);
+	Init(action, property, index, data.data(), size);
 }
 
 PianoMessage::PianoMessage(const uint8_t* sysExData, int size)
