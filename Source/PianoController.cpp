@@ -35,6 +35,16 @@ void Sleep(int milliseconds)
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
 }
 
+PianoController::PianoController()
+{
+	// set internal state for channels
+	for (Channel ch : ValidChannelIds)
+	{
+		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && ch != chMidiMaster;
+		m_channels[ch].active = m_channels[ch].enabled;
+	}
+}
+
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 {
 	m_midiConnector = midiConnector;
@@ -75,19 +85,16 @@ void PianoController::InitEvents()
 void PianoController::Sync()
 {
 	InitEvents();
-
 	SetLocalControl(true);
-
 	m_songLoaded = false;
+	ResyncStateFromPiano();
+}
 
-	m_channels[chAuxIn].enabled = true;
-	m_channels[chAuxIn].active = true;
-
+void PianoController::ResyncStateFromPiano()
+{
 	for (Channel ch : ValidChannelIds)
 	{
-		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16); // these are always enabled
-
-		if (chMidi1 <= ch && ch <= chMidi16)
+		if (chMidi1 <= ch && ch <= chMidi16 && ch != chMidiMaster)
 		{
 			SendCspMessage(PianoMessage(Action::Get, Property::Present, ch, 0));
 			SendCspMessage(PianoMessage(Action::Get, Property::VoiceMidi, ch, 0));
@@ -131,7 +138,18 @@ void PianoController::Sync()
 
 void PianoController::Reset()
 {
+	// set internal state for channels
+	for (Channel ch : ValidChannelIds)
+	{
+		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && ch != chMidiMaster;
+		m_channels[ch].active = true;
+	}
+
 	InitEvents();
+
+	// Sleep is not nice, we should wait for a confirmation message instead.
+	// Without waiting the config-commands below do not issue change events.
+	Sleep(50);
 
 	Stop();
 
@@ -143,32 +161,25 @@ void PianoController::Reset()
 
 	// Sleep is not nice, we should wait for a confirmation message instead.
 	// Without waiting the config-commands below do not issue change events.
-	Sleep(1000);
+	Sleep(500);
+
+	// second attempt
+	ResetSong();
+
+	// Sleep is not nice, we should wait for a confirmation message instead.
+	// Without waiting the config-commands below do not issue change events.
+	Sleep(500);
 
 	SetLocalControl(true);
 
-	SetGuide(true);
-	SetStreamLights(false);
-	SetStreamLightsFast(false);
 	SetGuide(false);
 	SetStreamLights(true);
 	SetStreamLightsFast(true);
 
 	for (Channel ch : ValidChannelIds)
 	{
-		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && (ch != chMidiMaster);
-		m_channels[ch].active = false;
-
-		SetVolume(ch, MinVolume);
-		SetVolume(ch, DefaultVolume);
 		ResetVolume(ch);
-
-		SetPan(ch, MinPan);
-		SetPan(ch, DefaultPan);
 		ResetPan(ch);
-
-		SetReverb(ch, MinReverb);
-		SetReverb(ch, DefaultReverb);
 		ResetReverb(ch);
 
 		// Sleep is not nice, we should wait for confirmation messages instead.
@@ -176,10 +187,7 @@ void PianoController::Reset()
 		Sleep(20);
 	}
 
-	SetTempo(MinTempo);
-	SetTempo(DefaultTempo);
 	ResetTempo();
-	SetTranspose(MinTranspose);
 	SetTranspose(DefaultTranspose);
 	SetReverbEffect(DefaultReverbEffect);
 
@@ -187,27 +195,21 @@ void PianoController::Reset()
 	SetOctave(chLayer, 0);
 	SetOctave(chLeft, 0);
 
-	// set internal active for channels
-	m_channels[chMain].active = true;
-	m_channels[chLayer].active = false;
-	m_channels[chLeft].active = false;
-	m_channels[chMidiMaster].active = false;
-	m_channels[chMic].active = true;
-	m_channels[chAuxIn].active = true;
-
+	Sleep(20);
 	SetActive(chMain, true);
 	SetActive(chLayer, false);
 	SetActive(chLeft, false);
-	SetActive(chMidiMaster, false);
 	SetActive(chMic, true);
-	SetActive(chAuxIn, true);
 
 	Sleep(50);
 	SetVoice(chMain, "PRESET:/VOICE/Piano/Grand Piano/CFX Grand.T542.VRM");
 	Sleep(50);
 	SetVoice(chLayer, "PRESET:/VOICE/Strings & Vocal/String Ensemble/Real Strings.T250.SAR");
 	Sleep(50);
-	SetVoice(chLeft, "PRESET:/VOICE/Piano/FM E.Piano/DX7 EP.T232.NLV");
+	SetVoice(chLeft, "PRESET:/VOICE/Piano/FM E.Piano/Sweet DX.T232.CLV");
+	Sleep(50);
+
+	ResyncStateFromPiano();
 }
 
 void PianoController::Disconnect()
@@ -497,12 +499,12 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			m_channels[ch].octave = intValue - OctaveBase;
 			NotifyChanged(apOctave, ch);
 		}
-		else if (property == Property::Active)
+		else if (property == Property::Active && ch != chMidiMaster)
 		{
 			m_channels[ch].active = boolValue;
 			NotifyChanged(apActive, ch);
 		}
-		else if (property == Property::Present)
+		else if (property == Property::Present && ch != chMidiMaster)
 		{
 			m_channels[ch].enabled = boolValue;
 			NotifyChanged(apEnable, ch);
@@ -566,6 +568,10 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			// strip "EXTERNAL:" or "PRESET:"
 			if (name.startsWith("EXTERNAL:")) name = name.substring(9);
 			else if (name.startsWith("PRESET:")) name = name.substring(7);
+			// Windows <-> Unix compatibility
+			name = File::createLegalPathName(name
+				.replaceCharacter('\\', File::getSeparatorChar())
+				.replaceCharacter('/', File::getSeparatorChar()));
 			//TODO: make thread safe
 			m_songName = name;
 			NotifyChanged(apSongName);

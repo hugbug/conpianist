@@ -245,7 +245,7 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
-	bool enabled = pianoController.GetEnabled(channel);
+	bool enabled = pianoController.GetEnabled(channel) && pianoController.IsConnected();
 	bool active = pianoController.GetActive(channel);
 
 	titleButton->setEnabled(enabled);

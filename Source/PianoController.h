@@ -131,6 +131,7 @@ public:
 		virtual void PianoNoteMessage(const MidiMessage& message) {}
 	};
 
+	PianoController();
 	~PianoController() {}
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void AddListener(Listener* listener);
@@ -224,4 +225,5 @@ private:
 
 	void SendCspMessage(const PianoMessage& message);
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
+	void ResyncStateFromPiano();
 };
