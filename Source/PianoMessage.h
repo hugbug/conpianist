@@ -38,14 +38,14 @@ struct Action
 	// Request Property Value from Piano
 	const static Action Get;
 
-	// Set Property Value or Issue a Command
+	// Set Property Value
 	const static Action Set;
 
-	// Response from Piano, Containing Property Value
+	// Info from Piano, Containing Property Value
 	const static Action Info;
 
-	// Also Response from Piano, Containing Property Value
-	const static Action Info2;
+	// Response from Piano to Set-Action; Contains New Property Value
+	const static Action Response;
 
 	// Reset Property to Default Value
 	const static Action Reset;

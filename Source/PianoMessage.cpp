@@ -32,20 +32,20 @@ const Action Action::Unknown = Action("ff ff");
 //   Signature(2 Bytes) : Property(4 Bytes) : Index(1 Byte) : 01 00
 const Action Action::Get = Action("01 00");
 
-// Set Property Value or Issue a Command
+// Set Property Value
 // Format for Set Command:
 //   Signature(2 Bytes) : Property(4 Bytes) : Index(1 Byte) : 01 00 : Length(2 bytes) : Value(variable length)
 const Action Action::Set = Action("01 01");
 
-// Response from Piano, Containing Property Value
+// Info from Piano, Containing Property Value
 // Format for Info Command:
 //   Signature(2 Bytes) : Property(4 Bytes) : Index(1 Byte) : 01 00 : Length(2 bytes) : Value(variable length)
 const Action Action::Info = Action("00 00");
 
-// Also Response from Piano, Containing Property Value
+// Response from Piano to Set-Action; Contains New Property Value
 // Format for Info-2 Command:
 //   Signature(2 Bytes) : Property(4 Bytes) : Index(1 Byte) : 01 00 : 00 00 : Length(2 bytes) : Value(variable length)
-const Action Action::Info2 = Action("00 01");
+const Action Action::Response = Action("00 01");
 
 // Reset Property to Default Value
 // Format for Reset Command:
@@ -264,11 +264,11 @@ void PianoMessage::Init(const Action action, const Property property, int index,
 {
 	bool hasValue = action.signature == Action::Set.signature ||
 		 action.signature == Action::Info.signature ||
-		 action.signature == Action::Info2.signature;
+		 action.signature == Action::Response.signature;
 
 	int payloadSize = action.signature == Action::Events.signature ? 0 :
 		1 + 2 + (hasValue ? 2 + size : 0) +
-		(action.signature == Action::Info2.signature ? 2 : 0);
+		(action.signature == Action::Response.signature ? 2 : 0);
 
 	int blockSize = CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + payloadSize;
 	m_data.ensureSize(blockSize);
@@ -295,7 +295,7 @@ void PianoMessage::Init(const Action action, const Property property, int index,
 		m_data[pos++] = 0x01;
 		m_data[pos++] = 0x00;
 
-		if (action.signature == Action::Info2.signature)
+		if (action.signature == Action::Response.signature)
 		{
 			m_data[pos++] = 0x00;
 			m_data[pos++] = 0x00;
@@ -467,7 +467,7 @@ const int PianoMessage::LengthOffset()
 	{
 		return CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1 + 2;
 	}
-	else if ((action == Action::Info2) &&
+	else if ((action == Action::Response) &&
 		m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1 + 2 + 2 + 2)
 	{
 		return CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 2 + 1 + 2;
