@@ -50,8 +50,9 @@ public:
 		{ if (ch == channel || ap == PianoController::apConnection) MessageManager::callAsync([=](){updateChannelState(ap);}); }
 	void updateChannelState(PianoController::Aspect aspect);
     void mouseDoubleClick(const MouseEvent& event) override;
-    void mouseDown(const MouseEvent& event) override;
+    void mouseUp(const MouseEvent& event) override;
 	void showMenu(Button* button);
+	void toggleChannel();
     //[/UserMethods]
 
     void paint (Graphics& g) override;

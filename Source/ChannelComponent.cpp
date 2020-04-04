@@ -274,7 +274,7 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == titleButton.get())
     {
         //[UserButtonCode_titleButton] -- add your button handler code here..
-       	pianoController.SetActive(channel, !pianoController.GetActive(channel));
+        toggleChannel();
         //[/UserButtonCode_titleButton]
     }
 
@@ -366,11 +366,11 @@ void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
 	}
 }
 
-void ChannelComponent::mouseDown(const MouseEvent& event)
+void ChannelComponent::mouseUp(const MouseEvent& event)
 {
 	if (event.eventComponent == titleLabel.get() || event.eventComponent == voiceLabel.get())
 	{
-        pianoController.SetActive(channel, !pianoController.GetActive(channel));
+        toggleChannel();
 	}
 }
 
@@ -457,6 +457,28 @@ void ChannelComponent::showMenu(Button* button)
 			Sleep(100);
 			pianoController.Play();
 		}
+	}
+}
+
+void ChannelComponent::toggleChannel()
+{
+	// using "shrinkMenu" to detect if we in Mixer dialog (not in Balance dialog)
+	if (channel == PianoController::chMidiMaster && !shrinkMenu)
+	{
+		bool allChannelsActive = true;
+		for (PianoController::Channel ch : PianoController::MidiChannels)
+		{
+			allChannelsActive = allChannelsActive &&
+				(pianoController.GetActive(ch) || !pianoController.GetEnabled(ch));
+		}
+		for (PianoController::Channel ch : PianoController::MidiChannels)
+		{
+			pianoController.SetActive(ch, !allChannelsActive);
+		}
+	}
+	else
+	{
+       	pianoController.SetActive(channel, !pianoController.GetActive(channel));
 	}
 }
 //[/MiscUserCode]
