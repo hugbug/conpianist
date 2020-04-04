@@ -378,6 +378,9 @@ void ChannelComponent::showMenu(Button* button)
 {
 	PopupMenu menu;
 
+	menu.addSectionHeader("CHANNEL");
+	menu.addItem(1, "Select Only This Channel");
+
 	menu.addSectionHeader("VOICE");
 	String voice = Presets::VoiceTitle(pianoController.GetVoice(channel));
 	menu.addItem(100 + PianoController::chMain, "Select " + voice + " for Main");
@@ -395,7 +398,14 @@ void ChannelComponent::showMenu(Button* button)
 	const int result = menu.showAt(button, 0, 0, 0, 35);
 	int group = result / 100;
 
-	if (group == 1)
+	if (result == 1)
+	{
+		for (PianoController::Channel ch : PianoController::MidiChannels)
+		{
+			pianoController.SetActive(ch, ch == channel);
+		}
+	}
+	else if (group == 1)
 	{
 		Voice* vc = Presets::FindVoice(pianoController.GetVoice(channel));
 		if (vc)

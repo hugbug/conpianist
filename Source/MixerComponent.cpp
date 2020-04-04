@@ -59,12 +59,11 @@ MixerComponent::MixerComponent (PianoController& pianoController)
 
 
     //[UserPreSize]
-    for (PianoController::Channel ch = PianoController::chMidi1; ch <= PianoController::chMidi16;
-    	ch = PianoController::Channel(ch + 1))
+    for (PianoController::Channel ch : PianoController::MidiChannels)
     {
     	std::unique_ptr<ChannelComponent> comp;
     	comp.reset(new ChannelComponent(pianoController, ch,
-    		String("Ch. ") + String(ch - PianoController::chMidi1 + 1), false, true, true, false));
+    		String("Ch. ") + String(ch - PianoController::chMidi0), false, true, true, false));
     	channelPanel->addAndMakeVisible(comp.get());
 		channels.push_back(std::move(comp));
 	}

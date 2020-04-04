@@ -20,15 +20,15 @@
 #include "PianoController.h"
 #include "PianoMessage.h"
 
-static const std::vector<PianoController::Channel> ValidChannelIds = {
-	PianoController::chMain, PianoController::chLayer, PianoController::chLeft,
-	PianoController::chMidi1, PianoController::chMidi2, PianoController::chMidi3,
-	PianoController::chMidi4, PianoController::chMidi5, PianoController::chMidi6,
-	PianoController::chMidi7, PianoController::chMidi8, PianoController::chMidi9,
-	PianoController::chMidi10, PianoController::chMidi11, PianoController::chMidi12,
-	PianoController::chMidi13, PianoController::chMidi14, PianoController::chMidi15,
-	PianoController::chMidi16, PianoController::chMic, PianoController::chAuxIn,
-	PianoController::chWave, PianoController::chMidiMaster, PianoController::chStyle };
+const std::vector<PianoController::Channel> PianoController::AllChannels = {
+	chMain, chLayer, chLeft,
+	chMidi1, chMidi2, chMidi3, chMidi4, chMidi5, chMidi6, chMidi7, chMidi8,
+	chMidi9, chMidi10, chMidi11, chMidi12, chMidi13, chMidi14, chMidi15, chMidi16,
+	chMic, chAuxIn, chWave, chMidiMaster, chStyle };
+
+const std::vector<PianoController::Channel> PianoController::MidiChannels = {
+	chMidi1, chMidi2, chMidi3, chMidi4, chMidi5, chMidi6, chMidi7, chMidi8,
+	chMidi9, chMidi10, chMidi11, chMidi12, chMidi13, chMidi14, chMidi15, chMidi16 };
 
 // This is a convenience function, which should be replaced
 // with wait-for-confirmation functionality.
@@ -40,7 +40,7 @@ void Sleep(int milliseconds)
 PianoController::PianoController()
 {
 	// set internal state for channels
-	for (Channel ch : ValidChannelIds)
+	for (Channel ch : AllChannels)
 	{
 		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && ch != chMidiMaster;
 		m_channels[ch].active = m_channels[ch].enabled;
@@ -96,7 +96,7 @@ void PianoController::Sync()
 
 void PianoController::ResyncStateFromPiano()
 {
-	for (Channel ch : ValidChannelIds)
+	for (Channel ch : AllChannels)
 	{
 		if (chMidi1 <= ch && ch <= chMidi16 && ch != chMidiMaster)
 		{
@@ -146,7 +146,7 @@ void PianoController::ResyncStateFromPiano()
 void PianoController::Reset()
 {
 	// set internal state for channels
-	for (Channel ch : ValidChannelIds)
+	for (Channel ch : AllChannels)
 	{
 		m_channels[ch].enabled = (ch < chMidi1 || ch > chMidi16) && ch != chMidiMaster;
 		m_channels[ch].active = true;
@@ -183,7 +183,7 @@ void PianoController::Reset()
 	SetStreamLights(true);
 	SetStreamFast(true);
 
-	for (Channel ch : ValidChannelIds)
+	for (Channel ch : AllChannels)
 	{
 		ResetVolume(ch);
 		ResetPan(ch);

@@ -79,8 +79,11 @@ public:
 		chAuxIn = 0x41,
 		chWave = 0x44,
 		chMidiMaster = 0x50,
-		chStyle = 0x51
+		chStyle = 0x51,
 	};
+
+	static const std::vector<Channel> AllChannels;
+	static const std::vector<Channel> MidiChannels;
 
 	struct ChannelInfo
 	{
