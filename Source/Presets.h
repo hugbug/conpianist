@@ -52,6 +52,7 @@ class Presets
 public:
 	static VoiceList& Voices();
 	static String VoiceTitle(String voice);
+	static Voice* FindVoice(String voice);
 	static ReverbEffectList& ReverbEffects();
 	static String ReverbEffectTitle(int num);
 };

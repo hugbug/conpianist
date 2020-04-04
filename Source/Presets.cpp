@@ -2855,6 +2855,52 @@ String Presets::VoiceTitle(String voice)
 	return voice;
 }
 
+Voice* Presets::FindVoice(String voice)
+{
+	if (voice == "")
+	{
+		return nullptr;
+	}
+
+	bool isPath = voice.startsWith("PRESET:/VOICE");
+	int num = isPath ? -1 : voice.getIntValue();
+	for (Voice& vc : voices)
+	{
+		if ((isPath && vc.path == voice) ||
+			(!isPath && vc.num == num))
+		{
+			return &vc;
+		}
+	}
+
+	if (!isPath)
+	{
+		std::map<int,int>::iterator it = voiceMap.find(num);
+		if (it != voiceMap.end())
+		{
+			num = it->second;
+			if (num == -1)
+			{
+				// known num voice but without proper mapping
+				return nullptr;
+			}
+			for (Voice& vc : voices)
+			{
+				if (vc.num == num)
+				{
+					return &vc;
+				}
+			}
+		}
+
+		// unknown num voice
+		return nullptr;
+	}
+
+	// unknown path
+	return nullptr;
+}
+
 String Presets::ReverbEffectTitle(int num)
 {
 	for (ReverbEffect& re : reverbEffects)
