@@ -628,7 +628,8 @@ void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
 	}
 	else if (aspect == PianoController::apSongName)
 	{
-		bool songLoaded = pianoController.GetSongName() != "/SONG/NEW SONG";
+		bool songLoaded = pianoController.GetSongName() != "/SONG/NEW SONG" &&
+			pianoController.GetSongName() != "\\SONG\\NEW SONG";
 		songLabel->setText(songLoaded ?
 			File(pianoController.GetSongName()).getFileNameWithoutExtension() :
 			"Click here and select a Song",
