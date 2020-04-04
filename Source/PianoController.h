@@ -70,6 +70,7 @@ public:
 		chMain = 0x00,
 		chLayer = 0x01,
 		chLeft = 0x02,
+		chMidi0 = 0x0f,
 		chMidi1 = 0x10,
 		chMidi2, chMidi3, chMidi4, chMidi5, chMidi6, chMidi7, chMidi8,
 		chMidi9, chMidi10, chMidi11, chMidi12, chMidi13, chMidi14, chMidi15,
@@ -114,6 +115,8 @@ public:
 		apTempo,
 		apReverbEffect,
 		apPart,
+		apPartAuto,
+		apPartChannel,
 		apVolume,
 		apPan,
 		apReverb,
@@ -159,8 +162,8 @@ public:
 	void SetLocalControl(bool enabled);
 	bool GetStreamLights() { return m_streamLights; }
 	void SetStreamLights(bool enable);
-	bool GetStreamLightsFast() { return m_streamLightsFast; }
-	void SetStreamLightsFast(bool fast);
+	bool GetStreamFast() { return m_streamFast; }
+	void SetStreamFast(bool fast);
 	Position GetLength() { return m_length; }
 	Position GetPosition() { return m_position; }
 	void SetPosition(const Position position);
@@ -187,6 +190,10 @@ public:
 	void SetTranspose(int transpose);
 	bool GetPart(Part part) { return m_parts[part]; }
 	void SetPart(Part part, bool enable);
+	Channel GetPartChannel(Part part) { return m_partChannels[part]; }
+	void SetPartChannel(Part part, Channel channel);
+	int GetPartAuto() { return m_partAuto; }
+	void SetPartAuto(bool enable);
 	const String& GetVoice(Channel ch) { return m_channels[ch].voice; }
 	void SetVoice(Channel ch, const String& voice);
 	bool GetActive(Channel ch) { return m_channels[ch].active; }
@@ -210,10 +217,12 @@ private:
 	bool m_localControl = true;
 	bool m_guide = false;
 	bool m_streamLights = false;
-	bool m_streamLightsFast = false;
+	bool m_streamFast = false;
 	Position m_length{0,0};
 	Position m_position{0,0};
 	bool m_parts[3]{false,false,false};
+	Channel m_partChannels[2]{chMidi0,chMidi0};
+	bool m_partAuto = true;
 	int m_tempo = DefaultTempo;
 	int m_transpose = DefaultTranspose;
 	Position m_loopStart{0,0};

@@ -25,14 +25,63 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+void Sleep(int milliseconds);
 //[/MiscUserDefs]
 
 //==============================================================================
-ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb)
-    : pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb)
+ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu)
+    : pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
+
+    menuButton.reset (new ImageButton ("Menu Button"));
+    addAndMakeVisible (menuButton.get());
+    menuButton->setTooltip (TRANS("Context Menu"));
+    menuButton->setButtonText (TRANS("Menu"));
+    menuButton->addListener (this);
+
+    menuButton->setImages (false, true, true,
+                           ImageCache::getFromMemory (BinaryData::buttoncontextmenu_png, BinaryData::buttoncontextmenu_pngSize), 1.000f, Colour (0x00000000),
+                           Image(), 0.750f, Colour (0x00000000),
+                           Image(), 1.000f, Colour (0x00000000));
+    menuButton->setBounds (4, 66, 28, 28);
+
+    partLabel.reset (new Label ("Part Label",
+                                TRANS("R")));
+    addAndMakeVisible (partLabel.get());
+    partLabel->setFont (Font (18.00f, Font::plain).withTypefaceStyle ("Regular"));
+    partLabel->setJustificationType (Justification::centred);
+    partLabel->setEditable (false, false, false);
+    partLabel->setColour (Label::backgroundColourId, Colour (0xff42a2c8));
+    partLabel->setColour (Label::textColourId, Colours::azure);
+    partLabel->setColour (TextEditor::textColourId, Colours::black);
+    partLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    partLabel->setBounds (37, 69, 22, 21);
+
+    panLabel.reset (new Label ("Pan Label",
+                               TRANS("Pan")));
+    addAndMakeVisible (panLabel.get());
+    panLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
+    panLabel->setJustificationType (Justification::centredLeft);
+    panLabel->setEditable (false, false, false);
+    panLabel->setColour (TextEditor::textColourId, Colours::black);
+    panLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+
+    panLabel->setBounds (0, 90, 40, 24);
+
+    menuButton2.reset (new ImageButton ("Menu Button"));
+    addAndMakeVisible (menuButton2.get());
+    menuButton2->setTooltip (TRANS("Context Menu"));
+    menuButton2->setButtonText (TRANS("Menu"));
+    menuButton2->addListener (this);
+
+    menuButton2->setImages (false, true, true,
+                            Image(), 1.000f, Colour (0x00000000),
+                            Image(), 0.750f, Colour (0x00000000),
+                            Image(), 1.000f, Colour (0x00000000));
+    menuButton2->setBounds (33, 66, 28, 28);
 
     volumeSlider.reset (new Slider ("Volume Slider"));
     addAndMakeVisible (volumeSlider.get());
@@ -51,18 +100,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     panSlider->addListener (this);
 
-    panSlider->setBounds (0, 100, 70, 76);
-
-    panLabel.reset (new Label ("Pan Label",
-                               TRANS("Pan")));
-    addAndMakeVisible (panLabel.get());
-    panLabel->setFont (Font (15.40f, Font::plain).withTypefaceStyle ("Regular"));
-    panLabel->setJustificationType (Justification::centredLeft);
-    panLabel->setEditable (false, false, false);
-    panLabel->setColour (TextEditor::textColourId, Colours::black);
-    panLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    panLabel->setBounds (0, 68, 70, 24);
+    panSlider->setBounds (0, 122, 70, 76);
 
     reverbLabel.reset (new Label ("Reverb Label",
                                   TRANS("Reverb")));
@@ -73,7 +111,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbLabel->setColour (TextEditor::textColourId, Colours::black);
     reverbLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    reverbLabel->setBounds (0, 174, 70, 24);
+    reverbLabel->setBounds (0, 196, 70, 24);
 
     reverbSlider.reset (new Slider ("Reverb Slider"));
     addAndMakeVisible (reverbSlider.get());
@@ -83,7 +121,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     reverbSlider->addListener (this);
 
-    reverbSlider->setBounds (0, 206, 70, 76);
+    reverbSlider->setBounds (0, 228, 70, 76);
 
     volumeLabel.reset (new Label ("Volume Label",
                                   TRANS("Volume")));
@@ -94,7 +132,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     volumeLabel->setColour (TextEditor::textColourId, Colours::black);
     volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    volumeLabel->setBounds (0, 282, 70, 24);
+    volumeLabel->setBounds (0, 304, 70, 24);
 
     titleButton.reset (new TextButton ("Title Button"));
     addAndMakeVisible (titleButton.get());
@@ -127,23 +165,37 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 
 
     //[UserPreSize]
+    titleButton->getProperties().set("toggle", "yes");
+    titleLabel->setText(title, NotificationType::dontSendNotification);
+	panLabel->setVisible(showLabels);
+	reverbLabel->setVisible(showLabels);
+	volumeLabel->setVisible(showLabels);
+    menuButton->setVisible(showMenu);
+    menuButton2->setVisible(showMenu);
+    partLabel->setVisible(showMenu);
+
+    if (shrinkMenu)
+    {
+    	int delta = 20;
+		panLabel->setTopLeftPosition(panLabel->getX(), panLabel->getY() - delta);
+		reverbLabel->setTopLeftPosition(reverbLabel->getX(), reverbLabel->getY() - delta);
+		volumeLabel->setTopLeftPosition(volumeLabel->getX(), volumeLabel->getY() - delta);
+		panSlider->setTopLeftPosition(panSlider->getX(), panSlider->getY() - delta);
+		reverbSlider->setTopLeftPosition(reverbSlider->getX(), reverbSlider->getY() - delta);
+	}
     //[/UserPreSize]
 
     setSize (70, 560);
 
 
     //[Constructor] You can add your own custom stuff here..
-    titleButton->getProperties().set("toggle", "yes");
-    titleLabel->setText(title, NotificationType::dontSendNotification);
-	panLabel->setVisible(showLabels);
-	reverbLabel->setVisible(showLabels);
-	volumeLabel->setVisible(showLabels);
-
     titleLabel->addMouseListener(this, false);
     voiceLabel->addMouseListener(this, false);
     panSlider->addMouseListener(this, false);
     reverbSlider->addMouseListener(this, false);
     volumeSlider->addMouseListener(this, false);
+
+    partLabel->getProperties().set("bg-status", "yes");
 
     pianoController.AddListener(this);
     updateChannelState(PianoController::apActive);
@@ -156,9 +208,12 @@ ChannelComponent::~ChannelComponent()
     pianoController.RemoveListener(this);
     //[/Destructor_pre]
 
+    menuButton = nullptr;
+    partLabel = nullptr;
+    panLabel = nullptr;
+    menuButton2 = nullptr;
     volumeSlider = nullptr;
     panSlider = nullptr;
-    panLabel = nullptr;
     reverbLabel = nullptr;
     reverbSlider = nullptr;
     volumeLabel = nullptr;
@@ -188,9 +243,43 @@ void ChannelComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    volumeSlider->setBounds (0, 314, 70, getHeight() - 320);
+    volumeSlider->setBounds (0, 336, 70, getHeight() - 342);
     //[UserResized] Add your own custom resize handling here..
+    if (shrinkMenu)
+    {
+    	int delta = 20;
+		volumeSlider->setBounds(volumeSlider->getX(), volumeSlider->getY() - delta,
+			volumeSlider->getWidth(), volumeSlider->getHeight() + delta);
+	}
     //[/UserResized]
+}
+
+void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
+{
+    //[UserbuttonClicked_Pre]
+    //[/UserbuttonClicked_Pre]
+
+    if (buttonThatWasClicked == menuButton.get())
+    {
+        //[UserButtonCode_menuButton] -- add your button handler code here..
+        showMenu(buttonThatWasClicked);
+        //[/UserButtonCode_menuButton]
+    }
+    else if (buttonThatWasClicked == menuButton2.get())
+    {
+        //[UserButtonCode_menuButton2] -- add your button handler code here..
+        showMenu(buttonThatWasClicked);
+        //[/UserButtonCode_menuButton2]
+    }
+    else if (buttonThatWasClicked == titleButton.get())
+    {
+        //[UserButtonCode_titleButton] -- add your button handler code here..
+       	pianoController.SetActive(channel, !pianoController.GetActive(channel));
+        //[/UserButtonCode_titleButton]
+    }
+
+    //[UserbuttonClicked_Post]
+    //[/UserbuttonClicked_Post]
 }
 
 void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
@@ -221,25 +310,6 @@ void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     //[/UsersliderValueChanged_Post]
 }
 
-void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
-{
-    //[UserbuttonClicked_Pre]
-    //[/UserbuttonClicked_Pre]
-
-    if (buttonThatWasClicked == titleButton.get())
-    {
-        //[UserButtonCode_titleButton] -- add your button handler code here..
-        if (pianoController.GetActive(channel))
-        {
-        	pianoController.SetActive(channel, !pianoController.GetActive(channel));
-		}
-        //[/UserButtonCode_titleButton]
-    }
-
-    //[UserbuttonClicked_Post]
-    //[/UserbuttonClicked_Post]
-}
-
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
@@ -268,6 +338,16 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 	panSlider->setValue(pianoController.GetPan(channel), NotificationType::dontSendNotification);
 	reverbSlider->setValue(pianoController.GetReverb(channel), NotificationType::dontSendNotification);
 	volumeSlider->setValue(pianoController.GetVolume(channel), NotificationType::dontSendNotification);
+
+	menuButton->setEnabled(enabled);
+	menuButton2->setEnabled(enabled);
+
+	partLabel->setText(pianoController.GetPartChannel(PianoController::paRight) == channel ? "R" : "L",
+		NotificationType::dontSendNotification);
+	partLabel->setVisible(showMenuRow &&
+		(pianoController.GetPartChannel(PianoController::paRight) == channel ||
+		pianoController.GetPartChannel(PianoController::paLeft) == channel));
+	partLabel->setEnabled(enabled && active);
 }
 
 void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
@@ -294,6 +374,62 @@ void ChannelComponent::mouseDown(const MouseEvent& event)
 	}
 }
 
+void ChannelComponent::showMenu(Button* button)
+{
+	PopupMenu menu;
+
+	menu.addSectionHeader("PART");
+	bool right = pianoController.GetPartChannel(PianoController::paRight) == channel;
+	bool left = pianoController.GetPartChannel(PianoController::paLeft) == channel;
+	menu.addItem(200, "Right", true, right);
+	menu.addItem(201, "Left", true, left);
+	menu.addItem(202, "Backing", true, !right && !left);
+
+	const int result = menu.showAt(button, 0, 0, 0, 35);
+
+	bool playng = pianoController.GetPlaying();
+	PianoController::Position pos = pianoController.GetPosition();
+
+	if (playng)
+	{
+		// part cannot be changed during playback
+		pianoController.Pause();
+	}
+
+	if (result == 200)
+	{
+		if (pianoController.GetPartChannel(PianoController::paLeft) == channel)
+		{
+			pianoController.SetPartChannel(PianoController::paLeft, PianoController::chMidi0);
+			Sleep(20);
+		}
+		pianoController.SetPartChannel(PianoController::paRight, channel);
+	}
+	else if (result == 201)
+	{
+		if (pianoController.GetPartChannel(PianoController::paRight) == channel)
+		{
+			pianoController.SetPartChannel(PianoController::paRight, PianoController::chMidi0);
+			Sleep(20);
+		}
+		pianoController.SetPartChannel(PianoController::paLeft, channel);
+	}
+	else if (result == 202)
+	{
+		pianoController.SetPartChannel(
+			pianoController.GetPartChannel(PianoController::paLeft) == channel ?
+				PianoController::paLeft : PianoController::paRight,
+			PianoController::chMidi0);
+	}
+
+	if (playng)
+	{
+		Sleep(200);
+		pianoController.SetPosition(pos);
+		Sleep(100);
+		pianoController.Play();
+	}
+}
 //[/MiscUserCode]
 
 
@@ -308,38 +444,58 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ChannelComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb"
-                 variableInitialisers="pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb)"
+                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu"
+                 variableInitialisers="pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
+  <IMAGEBUTTON name="Menu Button" id="c87eaad1c0559e4c" memberName="menuButton"
+               virtualName="" explicitFocusOrder="0" pos="4 66 28 28" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="BinaryData::buttoncontextmenu_png" opacityNormal="1.0"
+               colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
+               resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <LABEL name="Part Label" id="857779c04097ab5b" memberName="partLabel"
+         virtualName="" explicitFocusOrder="0" pos="37 69 22 21" posRelativeX="f4f376ddb622016f"
+         bkgCol="ff42a2c8" textCol="fff0ffff" edTextCol="ff000000" edBkgCol="0"
+         labelText="R" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="18.0"
+         kerning="0.0" bold="0" italic="0" justification="36"/>
+  <LABEL name="Pan Label" id="83fd07e9ba9100c1" memberName="panLabel"
+         virtualName="" explicitFocusOrder="0" pos="0 90 40 24" edTextCol="ff000000"
+         edBkgCol="0" labelText="Pan" editableSingleClick="0" editableDoubleClick="0"
+         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
+         kerning="0.0" bold="0" italic="0" justification="33"/>
+  <IMAGEBUTTON name="Menu Button" id="8656dae8fdb73033" memberName="menuButton2"
+               virtualName="" explicitFocusOrder="0" pos="33 66 28 28" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"
+               connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
+               resourceNormal="" opacityNormal="1.0" colourNormal="0" resourceOver=""
+               opacityOver="0.75" colourOver="0" resourceDown="" opacityDown="1.0"
+               colourDown="0"/>
   <SLIDER name="Volume Slider" id="9ebc7097d295b7c9" memberName="volumeSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 314 70 320M" textboxoutline="80939d9f"
+          virtualName="" explicitFocusOrder="0" pos="0 336 70 342M" textboxoutline="80939d9f"
           min="0.0" max="127.0" int="1.0" style="LinearVertical" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="50" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <SLIDER name="Pan Slider" id="6dc8f196b2d9dabf" memberName="panSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 100 70 76" textboxhighlight="6642a2c8"
+          virtualName="" explicitFocusOrder="0" pos="0 122 70 76" textboxhighlight="6642a2c8"
           textboxoutline="80939d9f" min="-64.0" max="63.0" int="1.0" style="RotaryHorizontalDrag"
           textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
           textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
-  <LABEL name="Pan Label" id="83fd07e9ba9100c1" memberName="panLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 68 70 24" edTextCol="ff000000"
-         edBkgCol="0" labelText="Pan" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
-         kerning="0.0" bold="0" italic="0" justification="33"/>
   <LABEL name="Reverb Label" id="5ba2a16ed7ba194a" memberName="reverbLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 174 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 196 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Reverb" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <SLIDER name="Reverb Slider" id="ebd0ba792eb80390" memberName="reverbSlider"
-          virtualName="" explicitFocusOrder="0" pos="0 206 70 76" textboxoutline="80939d9f"
+          virtualName="" explicitFocusOrder="0" pos="0 228 70 76" textboxoutline="80939d9f"
           min="0.0" max="127.0" int="1.0" style="RotaryHorizontalDrag"
           textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
           textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="Volume Label" id="3a0483b1c68cf176" memberName="volumeLabel"
-         virtualName="" explicitFocusOrder="0" pos="0 282 70 24" edTextCol="ff000000"
+         virtualName="" explicitFocusOrder="0" pos="0 304 70 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Volume" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.4"
          kerning="0.0" bold="0" italic="0" justification="33"/>

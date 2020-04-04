@@ -87,8 +87,8 @@ struct Property
 	// Value: 0 - Stream Lights Off, 1 - Stream Light On
 	const static Property StreamLights;
 
-	// Value: 0 - Slow, 1 - Fast
-	const static Property StreamLightsSpeed;
+	// Value: 0 - Stream Lights Slow, 1 - Stream Lights Fast
+	const static Property StreamSpeed;
 
 	// Value: 0 - Stop, 1 - Play, 2 - Pause
 	const static Property Play;
@@ -96,6 +96,13 @@ struct Property
 	// Index: 0 - Right Hand, 1 - Left Hand, 3 - Backing
 	// Value: 0 - Off, 1 - On
 	const static Property Part;
+
+	// Index: 0 - Right Hand, 1 - Left Hand, 3 - Backing
+	// Value: 0..F (Midi-Channel 1..16)
+	const static Property PartChannel;
+
+	// Value: 0 - Off, 1 - On
+	const static Property PartAuto;
 
 	// Value: Song Name (variable length)
 	const static Property SongName;

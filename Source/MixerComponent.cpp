@@ -37,7 +37,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     channelViewport.reset (new Viewport ("Channel Viewport"));
     addAndMakeVisible (channelViewport.get());
 
-    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Master", true, true));
+    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Master", true, true, false, false));
     addAndMakeVisible (leftChannel.get());
     channelPanel.reset (new Component());
     addAndMakeVisible (channelPanel.get());
@@ -55,7 +55,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     effectComboBox->addItem (TRANS("Concert Hall"), 3);
     effectComboBox->addListener (this);
 
-    effectComboBox->setBounds (74, 175, 176, 24);
+    effectComboBox->setBounds (74, 196, 176, 24);
 
 
     //[UserPreSize]
@@ -64,7 +64,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     {
     	std::unique_ptr<ChannelComponent> comp;
     	comp.reset(new ChannelComponent(pianoController, ch,
-    		String("Ch. ") + String(ch - PianoController::chMidi1 + 1), false, true));
+    		String("Ch. ") + String(ch - PianoController::chMidi1 + 1), false, true, true, false));
     	channelPanel->addAndMakeVisible(comp.get());
 		channels.push_back(std::move(comp));
 	}
@@ -194,12 +194,12 @@ BEGIN_JUCER_METADATA
             contentClass="" constructorParams=""/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 8M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true, true"/>
+             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true, true, false, false"/>
   <GENERICCOMPONENT name="Channels" id="256e91213f333b3c" memberName="channelPanel"
                     virtualName="" explicitFocusOrder="0" pos="96 0 280 8M" class="Component"
                     params=""/>
   <COMBOBOX name="Reverb Effect Combo Box" id="486cacdf50ec1ba7" memberName="effectComboBox"
-            virtualName="" explicitFocusOrder="0" pos="74 175 176 24" tooltip="Reverb Effect"
+            virtualName="" explicitFocusOrder="0" pos="74 196 176 24" tooltip="Reverb Effect"
             editable="0" layout="33" items="Real Large Hall&#10;Real Medium Hall&#10;Concert Hall"
             textWhenNonSelected="Reverb Effect" textWhenNoItems="(no choices)"/>
 </JUCER_COMPONENT>

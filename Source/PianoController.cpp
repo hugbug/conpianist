@@ -30,6 +30,8 @@ static const std::vector<PianoController::Channel> ValidChannelIds = {
 	PianoController::chMidi16, PianoController::chMic, PianoController::chAuxIn,
 	PianoController::chWave, PianoController::chMidiMaster, PianoController::chStyle };
 
+// This is a convenience function, which should be replaced
+// with wait-for-confirmation functionality.
 void Sleep(int milliseconds)
 {
 	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
@@ -64,9 +66,11 @@ void PianoController::InitEvents()
 	SendCspMessage(PianoMessage(Action::Events, Property::Position));
 	SendCspMessage(PianoMessage(Action::Events, Property::Play));
 	SendCspMessage(PianoMessage(Action::Events, Property::Part));
+	SendCspMessage(PianoMessage(Action::Events, Property::PartChannel));
+	SendCspMessage(PianoMessage(Action::Events, Property::PartAuto));
 	SendCspMessage(PianoMessage(Action::Events, Property::Guide));
 	SendCspMessage(PianoMessage(Action::Events, Property::StreamLights));
-	SendCspMessage(PianoMessage(Action::Events, Property::StreamLightsSpeed));
+	SendCspMessage(PianoMessage(Action::Events, Property::StreamSpeed));
 	SendCspMessage(PianoMessage(Action::Events, Property::Volume));
 	SendCspMessage(PianoMessage(Action::Events, Property::Pan));
 	SendCspMessage(PianoMessage(Action::Events, Property::Reverb));
@@ -115,7 +119,7 @@ void PianoController::ResyncStateFromPiano()
 
 	SendCspMessage(PianoMessage(Action::Get, Property::Guide));
 	SendCspMessage(PianoMessage(Action::Get, Property::StreamLights));
-	SendCspMessage(PianoMessage(Action::Get, Property::StreamLightsSpeed));
+	SendCspMessage(PianoMessage(Action::Get, Property::StreamSpeed));
 	SendCspMessage(PianoMessage(Action::Get, Property::ReverbEffect));
 	SendCspMessage(PianoMessage(Action::Get, Property::Tempo));
 	SendCspMessage(PianoMessage(Action::Get, Property::Transpose, 2, 0));
@@ -134,6 +138,9 @@ void PianoController::ResyncStateFromPiano()
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paRight, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paLeft, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paBacking, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::PartChannel, paRight, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::PartChannel, paLeft, 0));
+	SendCspMessage(PianoMessage(Action::Get, Property::PartAuto));
 }
 
 void PianoController::Reset()
@@ -174,7 +181,7 @@ void PianoController::Reset()
 
 	SetGuide(false);
 	SetStreamLights(true);
-	SetStreamLightsFast(true);
+	SetStreamFast(true);
 
 	for (Channel ch : ValidChannelIds)
 	{
@@ -306,9 +313,9 @@ void PianoController::SetStreamLights(bool enable)
 	SendCspMessage(PianoMessage(Action::Set, Property::StreamLights, enable ? 1 : 0));
 }
 
-void PianoController::SetStreamLightsFast(bool fast)
+void PianoController::SetStreamFast(bool fast)
 {
-	SendCspMessage(PianoMessage(Action::Set, Property::StreamLightsSpeed, fast ? 1 : 0));
+	SendCspMessage(PianoMessage(Action::Set, Property::StreamSpeed, fast ? 1 : 0));
 }
 
 void PianoController::SetPosition(const Position position)
@@ -379,6 +386,16 @@ void PianoController::SetReverbEffect(int effect)
 void PianoController::SetPart(Part part, bool enable)
 {
 	SendCspMessage(PianoMessage(Action::Set, Property::Part, part, enable ? 1 : 0));
+}
+
+void PianoController::SetPartChannel(Part part, Channel channel)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::PartChannel, part, channel - chMidi0));
+}
+
+void PianoController::SetPartAuto(bool enable)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::PartAuto, 0, enable ? 1 : 0));
 }
 
 void PianoController::SetLoop(Loop loop)
@@ -469,15 +486,28 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 			m_streamLights = boolValue;
 			NotifyChanged(apStreamLights);
 		}
-		else if (property == Property::StreamLightsSpeed)
+		else if (property == Property::StreamSpeed)
 		{
-			m_streamLightsFast = boolValue;
+			m_streamFast = boolValue;
 			NotifyChanged(apStreamLights);
 		}
 		else if (property == Property::Part)
 		{
 			m_parts[(Part)index] = boolValue;
 			NotifyChanged(apPart);
+		}
+		else if (property == Property::PartChannel)
+		{
+			Channel newCh = (Channel)(chMidi0 + intValue);
+			Channel oldCh = m_partChannels[index];
+			m_partChannels[index] = newCh;
+			NotifyChanged(apPartChannel, oldCh);
+			NotifyChanged(apPartChannel, newCh);
+		}
+		else if (property == Property::PartAuto)
+		{
+			m_partAuto = boolValue;
+			NotifyChanged(apPartAuto);
 		}
 		else if (property == Property::Volume)
 		{

@@ -82,7 +82,7 @@ const Property Property::Length = Property("04 00 1b 01", 4);
 const Property Property::StreamLights = Property("04 02 00 01", 1);
 
 // Value: 0 - Slow; 1 - Fast
-const Property Property::StreamLightsSpeed = Property("04 02 02 01", 1);
+const Property Property::StreamSpeed = Property("04 02 02 01", 1);
 
 // Value: 0 - Stop; 1 - Play; 2 - Pause
 const Property Property::Play = Property("04 00 05 01", 1);
@@ -90,6 +90,13 @@ const Property Property::Play = Property("04 00 05 01", 1);
 // Index: 0 - Right Hand; 1 - Left Hand; 3 - Backing
 // Value: 0 - Off; 1 - On
 const Property Property::Part = Property("04 00 0e 01", 1);
+
+// Index: 0 - Right Hand, 1 - Left Hand, 3 - Backing
+// Value: 0..F (Midi-Channel 1..16)
+const Property Property::PartChannel = Property("04 00 0f 01", 1);
+
+// Value: 0 - Off, 1 - On
+const Property Property::PartAuto = Property("04 00 10 01", 1);
 
 // Value: Song Name (variable length)
 const Property Property::SongName = Property("04 00 01 01", 0);

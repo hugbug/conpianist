@@ -73,7 +73,7 @@ void ::LookAndFeel::drawLinearSlider(Graphics& g, int x, int y, int width, int h
 	float sliderPos, float minSliderPos, float maxSliderPos,
 	const Slider::SliderStyle style, Slider& slider)
 {
-	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2A8 : 0xFF48626D);
+	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2C8 : 0xFF48626D);
 	if (slider.findColour(Slider::thumbColourId) != thumbColor)
 	{
 		slider.setColour(Slider::thumbColourId, thumbColor);
@@ -86,11 +86,31 @@ void ::LookAndFeel::drawRotarySlider(Graphics& g, int x, int y, int width, int h
 	float sliderPosProportional, float rotaryStartAngle,
 	float rotaryEndAngle, Slider& slider)
 {
-	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2A8 : 0xFF48626D);
+	Colour thumbColor = Colour(slider.isEnabled() ? 0xFF42A2C8 : 0xFF48626D);
 	if (slider.findColour(Slider::thumbColourId) != thumbColor)
 	{
 		slider.setColour(Slider::thumbColourId, thumbColor);
 	}
 
 	LookAndFeel_V4::drawRotarySlider(g, x, y, width, height, sliderPosProportional, rotaryStartAngle, rotaryEndAngle, slider);
+}
+
+void ::LookAndFeel::drawLabel(Graphics& gr, Label& label)
+{
+	bool bgstatus = label.getProperties().contains("bg-status");
+
+	if (bgstatus)
+	{
+		if (label.findColour(Label::backgroundColourId) != Colours::transparentBlack)
+		{
+			label.setColour(Label::backgroundColourId, Colours::transparentBlack);
+		}
+
+		gr.setColour(Colour(label.isEnabled() ? 0xFF42A2C8 : 0xFF48626D));
+		Rectangle<int> r = label.getLocalBounds();
+		gr.fillRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5);
+		gr.drawRoundedRectangle(r.getX(), r.getY(), r.getWidth(), r.getHeight(), 5, 2);
+	}
+
+	LookAndFeel_V4::drawLabel(gr, label);
 }
