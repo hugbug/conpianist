@@ -238,4 +238,5 @@ private:
 	void SendCspMessage(const PianoMessage& message);
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
 	void ResyncStateFromPiano();
+	String DecodeSongName(String rawValue);
 };

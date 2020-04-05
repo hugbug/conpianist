@@ -243,10 +243,17 @@ bool PianoController::UploadSong(const File& file)
 	MemoryBlock message;
 	message.loadFromHexString(headerHex);
 
-	String filename = "EXTERNAL:" + file.getFullPathName().substring(0, 254 - 10);
-	uint8_t namelen = filename.length() + 1;
-	message.append(&namelen, 1);
-	message.append(filename.getCharPointer(), namelen);
+	String filename = "EXTERNAL:" + file.getFullPathName();
+	size_t namelen = filename.getNumBytesAsUTF8() + 1;
+	if (namelen > 255)
+	{
+		filename = "EXTERNAL:" + file.getFileName().substring(0, 255-10);
+	}
+	const char* namebuf = filename.toRawUTF8();
+	namelen = strlen(namebuf) + 1;
+	uint8_t namelenbuf = (uint8_t)namelen;
+	message.append(&namelenbuf, 1);
+	message.append(namebuf, namelen);
 
 	int fileSize = (int)file.getSize();
 	int payloadSize = (int)message.getSize() - 8 + fileSize;
@@ -274,6 +281,36 @@ bool PianoController::UploadSong(const File& file)
 		socket.read(response, 16, true);
 
 	return ok;
+}
+
+String PianoController::DecodeSongName(String rawValue)
+{
+	// utf8 conversion
+	int len = rawValue.length();
+	std::vector<char> utf8name(len + 1);
+	for (int i = 0; i < len; i++)
+	{
+		utf8name[i] = rawValue[i];
+	}
+	utf8name[len] = '\0';
+	String name = String::fromUTF8(utf8name.data());
+
+	// strip "EXTERNAL:" or "PRESET:"
+	if (name.startsWith("EXTERNAL:"))
+	{
+		name = name.substring(9);
+	}
+	else if (name.startsWith("PRESET:"))
+	{
+		name = name.substring(7);
+	}
+
+	// Windows <-> Unix compatibility
+	name = File::createLegalPathName(name
+		.replaceCharacter('\\', File::getSeparatorChar())
+		.replaceCharacter('/', File::getSeparatorChar()));
+
+	return name;
 }
 
 void PianoController::SendCspMessage(const PianoMessage& message)
@@ -594,14 +631,7 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		}
 		else if (property == Property::SongName)
 		{
-			String name = pm.GetStrValue();
-			// strip "EXTERNAL:" or "PRESET:"
-			if (name.startsWith("EXTERNAL:")) name = name.substring(9);
-			else if (name.startsWith("PRESET:")) name = name.substring(7);
-			// Windows <-> Unix compatibility
-			name = File::createLegalPathName(name
-				.replaceCharacter('\\', File::getSeparatorChar())
-				.replaceCharacter('/', File::getSeparatorChar()));
+			String name = DecodeSongName(pm.GetStrValue());
 			//TODO: make thread safe
 			m_songName = name;
 			NotifyChanged(apSongName);
