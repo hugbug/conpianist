@@ -328,19 +328,19 @@ PianoMessage::PianoMessage(const Action action, const Property property, int ind
 
 	if (property.length >= 4)
 	{
-		data[pos++] = (value >> 21) & 0xff;
+		data[pos++] = (value >> 21) & 0x7f;
 	}
 	if (property.length >= 3)
 	{
-		data[pos++] = (value >> 14) & 0xff;
+		data[pos++] = (value >> 14) & 0x7f;
 	}
 	if (property.length >= 2)
 	{
-		data[pos++] = (value >> 7) & 0xff;
+		data[pos++] = (value >> 7) & 0x7f;
 	}
 	if (property.length >= 1)
 	{
-		data[pos++] = (value >> 0) & 0xff;
+		data[pos++] = (value >> 0) & 0x7f;
 	}
 
 	Init(action, property, index, data, property.length);
