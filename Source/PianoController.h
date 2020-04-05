@@ -138,7 +138,7 @@ public:
 	};
 
 	PianoController();
-	~PianoController() {}
+	~PianoController();
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void AddListener(Listener* listener);
 	void RemoveListener(Listener* listener);
@@ -234,9 +234,11 @@ private:
 	int m_reverbEffect = 0;
 	String m_songName;
 	bool m_songLoaded = false;
+	std::unique_ptr<PianoMessage> lastMessage;
 
 	void SendCspMessage(const PianoMessage& message);
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
+	void NotifyNoteMessage(const MidiMessage& message);
 	void ResyncStateFromPiano();
 	String DecodeSongName(String rawValue);
 };

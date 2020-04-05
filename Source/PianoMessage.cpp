@@ -377,7 +377,38 @@ const bool PianoMessage::IsCspMessage(const uint8_t* sysExData, int size)
 	return isCspMessage;
 }
 
-const Action PianoMessage::GetAction()
+const bool PianoMessage::DataEqualsTo(const PianoMessage& other) const
+{
+	const Action a1 = GetAction();
+	const Action a2 = other.GetAction();
+
+	const bool similarAction = a1 == a2 ||
+		(a1 == Action::Info && a2 == Action::Response) ||
+		(a2 == Action::Info && a1 == Action::Response);
+
+	if (similarAction && GetProperty() == other.GetProperty() &&
+		GetIndex() == other.GetIndex())
+	{
+		const int offset1 = LengthOffset();
+		const int offset2 = other.LengthOffset();
+		if (offset1 > 0 && offset2 > 0)
+		{
+			const int size1 = GetSize(offset1);
+			const int size2 = other.GetSize(offset2);
+			if (size1 == size2)
+			{
+				const uint8_t* val1 = GetRawValue(offset1);
+				const uint8_t* val2 = other.GetRawValue(offset2);
+				bool equal = (!val1 && !val2) || (val1 && val2 && memcmp(val1, val2, size1) == 0);
+				return equal;
+			}
+		}
+	}
+
+	return false;
+}
+
+const Action PianoMessage::GetAction() const
 {
 	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2)
 	{
@@ -388,7 +419,7 @@ const Action PianoMessage::GetAction()
 	return Action::Unknown;
 }
 
-const Property PianoMessage::GetProperty()
+const Property PianoMessage::GetProperty() const
 {
 	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4)
 	{
@@ -402,7 +433,7 @@ const Property PianoMessage::GetProperty()
 	return Property::Unknown;
 }
 
-const int PianoMessage::GetIndex()
+const int PianoMessage::GetIndex() const
 {
 	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4 + 1)
 	{
@@ -411,12 +442,12 @@ const int PianoMessage::GetIndex()
 	return 0;
 }
 
-const int PianoMessage::GetIntValue()
+const int PianoMessage::GetIntValue() const
 {
 	int ind = LengthOffset();
 	if (m_data.getSize() > ind + 2)
 	{
-		int size = (m_data[ind + 0] << 7) + m_data[ind + 1];
+		int size = GetSize(ind);
 		ind += 2;
 		const uint8_t* data = (const uint8_t*)m_data.getData();
 		switch (size)
@@ -435,7 +466,7 @@ const int PianoMessage::GetIntValue()
 	return 0;
 }
 
-const String PianoMessage::GetStrValue()
+const String PianoMessage::GetStrValue() const
 {
 	int ind = LengthOffset();
 	if (m_data.getSize() >= ind + 2)
@@ -446,27 +477,35 @@ const String PianoMessage::GetStrValue()
 	return String();
 }
 
-const int PianoMessage::GetSize()
+const int PianoMessage::GetSize() const
 {
-	int ind = LengthOffset();
-	if (ind > 0)
+	return GetSize(LengthOffset());
+}
+
+const int PianoMessage::GetSize(int lengthOffset) const
+{
+	if (lengthOffset > 0)
 	{
-		return (m_data[ind + 0] << 7) + m_data[ind + 1];
+		return (m_data[lengthOffset + 0] << 7) + m_data[lengthOffset + 1];
 	}
 	return 0;
 }
 
-const uint8_t* PianoMessage::GetRawValue()
+const uint8_t* PianoMessage::GetRawValue() const
 {
-	int ind = LengthOffset();
-	if (m_data.getSize() > ind + 2)
+	return GetRawValue(LengthOffset());
+}
+
+const uint8_t* PianoMessage::GetRawValue(int lengthOffset) const
+{
+	if (m_data.getSize() > lengthOffset + 2)
 	{
-		return (const uint8_t*)m_data.getData() + ind + 2;
+		return (const uint8_t*)m_data.getData() + lengthOffset + 2;
 	}
 	return nullptr;
 }
 
-const int PianoMessage::LengthOffset()
+const int PianoMessage::LengthOffset() const
 {
 	const Action action = GetAction();
 	if ((action == Action::Set || action == Action::Info) &&

@@ -164,19 +164,22 @@ public:
 	PianoMessage(const Action action, const Property property, int index, const uint8_t* value, int size);
 	PianoMessage(const Action action, const Property property, int index, String value);
 	PianoMessage(const uint8_t* sysExData, int size);
+	const bool DataEqualsTo(const PianoMessage& other) const;
 	const MemoryBlock& GetSysExData() const { return m_data; }
 	static const bool IsCspMessage(const uint8_t* sysExData, int size);
-	const Action GetAction();
-	const Property GetProperty();
-	const int GetIndex();
-	const int GetIntValue();
-	const String GetStrValue();
-	const int GetSize();
-	const uint8_t* GetRawValue();
+	const Action GetAction() const;
+	const Property GetProperty() const;
+	const int GetIndex() const;
+	const int GetIntValue() const;
+	const String GetStrValue() const;
+	const int GetSize() const;
+	const uint8_t* GetRawValue() const;
 
 private: 
 	void Init(const Action action, const Property property, int index, const uint8_t* value, int size);
-	const int LengthOffset();
+	const int LengthOffset() const;
+	const int GetSize(int lengthOffset) const;
+	const uint8_t* GetRawValue(int lengthOffset) const;
 
 	MemoryBlock m_data;
 };

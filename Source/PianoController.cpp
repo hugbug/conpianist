@@ -47,6 +47,10 @@ PianoController::PianoController()
 	}
 }
 
+PianoController::~PianoController()
+{
+}
+
 void PianoController::SetMidiConnector(MidiConnector* midiConnector)
 {
 	m_midiConnector = midiConnector;
@@ -478,19 +482,21 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 	if (message.isSysEx() &&
 		PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize()))
 	{
-		PianoMessage pm(message.getSysExData(), message.getSysExDataSize());
-		const Action action = pm.GetAction();
+		std::unique_ptr<PianoMessage> pm = std::make_unique<PianoMessage>(message.getSysExData(), message.getSysExDataSize());
 
-		if (action != Action::Info)
+		const Action action = pm->GetAction();
+
+		if ((action != Action::Info && action != Action::Response) ||
+			(lastMessage && pm->DataEqualsTo(*lastMessage)))
 		{
 			return;
 		}
 
-		const Property property = pm.GetProperty();
-		const uint8_t* data = pm.GetRawValue();
-		const int size = pm.GetSize();
-		const int index = pm.GetIndex();
-		const int intValue = pm.GetIntValue();
+		const Property property = pm->GetProperty();
+		const uint8_t* data = pm->GetRawValue();
+		const int size = pm->GetSize();
+		const int index = pm->GetIndex();
+		const int intValue = pm->GetIntValue();
 		const bool boolValue = intValue == 1;
 		Channel ch = (Channel)index;
 
@@ -614,35 +620,34 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (property == Property::VoicePreset)
 		{
 			//TODO: make thread safe
-			m_channels[ch].voice = pm.GetStrValue();
+			m_channels[ch].voice = pm->GetStrValue();
 			NotifyChanged(apVoice, ch);
 		}
 		else if (property == Property::PianoModel)
 		{
 			//TODO: make thread safe
-			m_model = pm.GetStrValue();
+			m_model = pm->GetStrValue();
 		}
 		else if (property == Property::FirmwareVersion)
 		{
 			//TODO: make thread safe
-			m_version = pm.GetStrValue();
+			m_version = pm->GetStrValue();
 			m_connected = true;
 			NotifyChanged(apConnection);
 		}
 		else if (property == Property::SongName)
 		{
-			String name = DecodeSongName(pm.GetStrValue());
+			String name = DecodeSongName(pm->GetStrValue());
 			//TODO: make thread safe
 			m_songName = name;
 			NotifyChanged(apSongName);
 		}
+
+		lastMessage = std::move(pm);
 	}
 	else if (message.isNoteOnOrOff())
 	{
-		for (auto listener : m_listeners)
-		{
-			listener->PianoNoteMessage(message);
-		}
+		NotifyNoteMessage(message);
 	}
 }
 
@@ -671,5 +676,13 @@ void PianoController::NotifyChanged(Aspect aspect, Channel channel)
 	for (auto listener : m_listeners)
 	{
 		listener->PianoStateChanged(aspect, channel);
+	}
+}
+
+void PianoController::NotifyNoteMessage(const MidiMessage& message)
+{
+	for (auto listener : m_listeners)
+	{
+		listener->PianoNoteMessage(message);
 	}
 }
