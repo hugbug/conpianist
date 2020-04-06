@@ -29,8 +29,8 @@ void Sleep(int milliseconds);
 //[/MiscUserDefs]
 
 //==============================================================================
-ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu)
-    : pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
+ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable)
+    : pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -94,7 +94,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     panSlider.reset (new Slider ("Pan Slider"));
     addAndMakeVisible (panSlider.get());
     panSlider->setRange (-64, 63, 1);
-    panSlider->setSliderStyle (Slider::RotaryHorizontalDrag);
+    panSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     panSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
     panSlider->setColour (Slider::textBoxHighlightColourId, Colour (0x6642a2c8));
     panSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
@@ -116,7 +116,7 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
     reverbSlider.reset (new Slider ("Reverb Slider"));
     addAndMakeVisible (reverbSlider.get());
     reverbSlider->setRange (0, 127, 1);
-    reverbSlider->setSliderStyle (Slider::RotaryHorizontalDrag);
+    reverbSlider->setSliderStyle (Slider::RotaryHorizontalVerticalDrag);
     reverbSlider->setTextBoxStyle (Slider::TextBoxAbove, false, 50, 20);
     reverbSlider->setColour (Slider::textBoxOutlineColourId, Colour (0x80939d9f));
     reverbSlider->addListener (this);
@@ -197,6 +197,14 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 
     partLabel->getProperties().set("bg-status", "yes");
 
+	panSlider->setViewportIgnoreDragFlag(true);
+	reverbSlider->setViewportIgnoreDragFlag(true);
+	volumeSlider->setViewportIgnoreDragFlag(true);
+
+	panSlider->setScrollWheelEnabled(!scrollable);
+	reverbSlider->setScrollWheelEnabled(!scrollable);
+	volumeSlider->setScrollWheelEnabled(!scrollable);
+
     pianoController.AddListener(this);
     updateChannelState(PianoController::apActive);
     //[/Constructor]
@@ -274,7 +282,6 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == titleButton.get())
     {
         //[UserButtonCode_titleButton] -- add your button handler code here..
-        toggleChannel();
         //[/UserButtonCode_titleButton]
     }
 
@@ -368,7 +375,8 @@ void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
 
 void ChannelComponent::mouseUp(const MouseEvent& event)
 {
-	if (event.eventComponent == titleLabel.get() || event.eventComponent == voiceLabel.get())
+	if ((event.eventComponent == titleLabel.get() || event.eventComponent == voiceLabel.get()) &&
+		!event.mouseWasDraggedSinceMouseDown())
 	{
         toggleChannel();
 	}
@@ -378,7 +386,7 @@ void ChannelComponent::showMenu(Button* button)
 {
 	PopupMenu menu;
 
-	menu.addSectionHeader("CHANNEL");
+	menu.addSectionHeader("CHANNEL " + String(channel - PianoController::chMidi0));
 	menu.addItem(1, "Select Only This Channel");
 
 	menu.addSectionHeader("VOICE");
@@ -474,6 +482,7 @@ void ChannelComponent::toggleChannel()
 		for (PianoController::Channel ch : PianoController::MidiChannels)
 		{
 			pianoController.SetActive(ch, !allChannelsActive);
+			Sleep(20);
 		}
 	}
 	else
@@ -495,8 +504,8 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ChannelComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu"
-                 variableInitialisers="pianoController(pianoController), channel(channel), title(title),  canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
+                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable"
+                 variableInitialisers="pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
@@ -532,7 +541,7 @@ BEGIN_JUCER_METADATA
           needsCallback="1"/>
   <SLIDER name="Pan Slider" id="6dc8f196b2d9dabf" memberName="panSlider"
           virtualName="" explicitFocusOrder="0" pos="0 122 70 76" textboxhighlight="6642a2c8"
-          textboxoutline="80939d9f" min="-64.0" max="63.0" int="1.0" style="RotaryHorizontalDrag"
+          textboxoutline="80939d9f" min="-64.0" max="63.0" int="1.0" style="RotaryHorizontalVerticalDrag"
           textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
           textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="Reverb Label" id="5ba2a16ed7ba194a" memberName="reverbLabel"
@@ -542,7 +551,7 @@ BEGIN_JUCER_METADATA
          kerning="0.0" bold="0" italic="0" justification="33"/>
   <SLIDER name="Reverb Slider" id="ebd0ba792eb80390" memberName="reverbSlider"
           virtualName="" explicitFocusOrder="0" pos="0 228 70 76" textboxoutline="80939d9f"
-          min="0.0" max="127.0" int="1.0" style="RotaryHorizontalDrag"
+          min="0.0" max="127.0" int="1.0" style="RotaryHorizontalVerticalDrag"
           textBoxPos="TextBoxAbove" textBoxEditable="1" textBoxWidth="50"
           textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="Volume Label" id="3a0483b1c68cf176" memberName="volumeLabel"
