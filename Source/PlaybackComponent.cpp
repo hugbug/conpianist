@@ -277,15 +277,17 @@ PlaybackComponent::PlaybackComponent (PianoController& pianoController)
     updatePlaybackState(PianoController::apTranspose);
     updatePlaybackState(PianoController::apTempo);
     updatePlaybackState(PianoController::apLoop);
-    pianoController.AddListener(this);
-    songLabel->addMouseListener(this, false);
-    songGroup->addMouseListener(this, true);
     backingPartButton->getProperties().set("toggle", "yes");
     leftPartButton->getProperties().set("toggle", "yes");
     rightPartButton->getProperties().set("toggle", "yes");
     guideButton->getProperties().set("toggle", "yes");
     lightsButton->getProperties().set("toggle", "yes");
     loopButton->getProperties().set("toggle", "yes");
+    pianoController.AddListener(this);
+    songLabel->addMouseListener(this, false);
+    songGroup->addMouseListener(this, true);
+    lightsButton->addMouseListener(this, false);
+    guideButton->addMouseListener(this, false);
     volumeTitleLabel->addMouseListener(this, false);
     volumeLabel->addMouseListener(this, false);
     volumeSlider->addMouseListener(this, false);
@@ -502,7 +504,6 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == guideButton.get())
     {
         //[UserButtonCode_guideButton] -- add your button handler code here..
-        pianoController.SetGuide(!pianoController.GetGuide());
         //[/UserButtonCode_guideButton]
     }
     else if (buttonThatWasClicked == loopButton.get())
@@ -514,7 +515,6 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == lightsButton.get())
     {
         //[UserButtonCode_lightsButton] -- add your button handler code here..
-        pianoController.SetStreamLights(!pianoController.GetStreamLights());
         //[/UserButtonCode_lightsButton]
     }
 
@@ -649,8 +649,6 @@ void PlaybackComponent::updateSettingsState()
 {
 	guideButton->setToggleState(pianoController.GetGuide() && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	lightsButton->setToggleState(pianoController.GetStreamLights() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-	//lightsFastButton->setToggleState(pianoController.GetStreamLightsFast() && pianoController.IsConnected(), NotificationType::dontSendNotification);
-
 	backingPartButton->setToggleState(pianoController.GetPart(PianoController::paBacking) && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	leftPartButton->setToggleState(pianoController.GetPart(PianoController::paLeft) && pianoController.IsConnected(), NotificationType::dontSendNotification);
 	rightPartButton->setToggleState(pianoController.GetPart(PianoController::paRight) && pianoController.IsConnected(), NotificationType::dontSendNotification);
@@ -674,6 +672,26 @@ void PlaybackComponent::mouseUp(const MouseEvent& event)
 		event.eventComponent == songLabel.get())
 	{
 		chooseSong();
+	}
+	else if (event.eventComponent == lightsButton.get() && event.mods.isLeftButtonDown() &&
+		(event.eventTime - event.mouseDownTime).inSeconds() < 0.8 && !menuShown)
+	{
+        pianoController.SetStreamLights(!pianoController.GetStreamLights());
+	}
+	else if (event.eventComponent == lightsButton.get() && !menuShown &&
+		(event.mods.isPopupMenu() || (event.eventTime - event.mouseDownTime).inSeconds() >= 0.8))
+	{
+		showStreamLightsMenu();
+	}
+	else if (event.eventComponent == guideButton.get() && event.mods.isLeftButtonDown() &&
+		(event.eventTime - event.mouseDownTime).inSeconds() < 0.8 && !menuShown)
+	{
+        pianoController.SetGuide(!pianoController.GetGuide());
+	}
+	else if (event.eventComponent == guideButton.get() && !menuShown &&
+		(event.mods.isPopupMenu() || (event.eventTime - event.mouseDownTime).inSeconds() >= 0.8))
+	{
+		showGuideMenu();
 	}
 }
 
@@ -722,6 +740,40 @@ void PlaybackComponent::loopButtonClicked()
 	}
 }
 
+void PlaybackComponent::showStreamLightsMenu()
+{
+	PopupMenu menu;
+	menu.addSectionHeader("STREAM LIGHTS SPEED");
+	menu.addItem(1, "Fast", true, pianoController.GetStreamFast());
+	menu.addItem(2, "Slow", true, !pianoController.GetStreamFast());
+
+	menuShown = true;
+	const int result = menu.showAt(lightsButton.get(), 0, 0, 0, 35);
+	menuShown = false;
+
+	if (result > 0)
+	{
+		pianoController.SetStreamFast(result == 1);
+	}
+}
+
+void PlaybackComponent::showGuideMenu()
+{
+	PopupMenu menu;
+	menu.addSectionHeader("GUIDE TYPE");
+	menu.addItem(100 + PianoController::gtCorrectKey, "Correct Key", true, pianoController.GetGuideType() == PianoController::gtCorrectKey);
+	menu.addItem(100 + PianoController::gtAnyKey, "Any Key", true, pianoController.GetGuideType() == PianoController::gtAnyKey);
+	menu.addItem(100 + PianoController::gtYourTempo, "Your Tempo", true, pianoController.GetGuideType() == PianoController::gtYourTempo);
+
+	menuShown = true;
+	const int result = menu.showAt(lightsButton.get(), 0, 0, 0, 35);
+	menuShown = false;
+
+	if (result > 0)
+	{
+		pianoController.SetGuideType((PianoController::GuideType)(result - 100));
+	}
+}
 //[/MiscUserCode]
 
 

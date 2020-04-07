@@ -103,6 +103,13 @@ public:
 		paBacking = 2
 	};
 
+	enum GuideType
+	{
+		gtCorrectKey = 0,
+		gtAnyKey = 1,
+		gtYourTempo = 5
+	};
+
 	enum Aspect
 	{
 		apConnection,
@@ -161,6 +168,8 @@ public:
 	bool GetPlaying() { return m_playing; }
 	bool GetGuide() { return m_guide; }
 	void SetGuide(bool enable);
+	GuideType GetGuideType() { return m_guideType; }
+	void SetGuideType(GuideType type);
 	bool GetLocalControl() { return m_localControl; }
 	void SetLocalControl(bool enabled);
 	bool GetStreamLights() { return m_streamLights; }
@@ -219,6 +228,7 @@ private:
 	bool m_playing = false;
 	bool m_localControl = true;
 	bool m_guide = false;
+	GuideType m_guideType = gtCorrectKey;
 	bool m_streamLights = false;
 	bool m_streamFast = false;
 	Position m_length{0,0};

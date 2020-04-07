@@ -56,6 +56,8 @@ public:
 	void mouseUp(const MouseEvent& event) override;
 	void mouseDoubleClick (const MouseEvent& event) override;
 	void loopButtonClicked();
+	void showStreamLightsMenu();
+	void showGuideMenu();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -68,6 +70,7 @@ public:
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     PianoController& pianoController;
+    bool menuShown = false;
     //[/UserVariables]
 
     //==============================================================================

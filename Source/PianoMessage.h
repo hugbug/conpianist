@@ -78,6 +78,9 @@ struct Property
 	// Value: 0 - Guide Off, 1 - Guide On
 	const static Property Guide;
 
+	// Value: 0 - Correct Key, 1 - Any Key, 5 - Your Tempo
+	const static Property GuideType;
+
 	// Value (4 Bytes): 2 Bytes for Measure, 2 Bytes for Beat
 	const static Property Position;
 

@@ -73,6 +73,7 @@ void PianoController::InitEvents()
 	SendCspMessage(PianoMessage(Action::Events, Property::PartChannel));
 	SendCspMessage(PianoMessage(Action::Events, Property::PartAuto));
 	SendCspMessage(PianoMessage(Action::Events, Property::Guide));
+	SendCspMessage(PianoMessage(Action::Events, Property::GuideType));
 	SendCspMessage(PianoMessage(Action::Events, Property::StreamLights));
 	SendCspMessage(PianoMessage(Action::Events, Property::StreamSpeed));
 	SendCspMessage(PianoMessage(Action::Events, Property::Volume));
@@ -122,6 +123,7 @@ void PianoController::ResyncStateFromPiano()
 	}
 
 	SendCspMessage(PianoMessage(Action::Get, Property::Guide));
+	SendCspMessage(PianoMessage(Action::Get, Property::GuideType));
 	SendCspMessage(PianoMessage(Action::Get, Property::StreamLights));
 	SendCspMessage(PianoMessage(Action::Get, Property::StreamSpeed));
 	SendCspMessage(PianoMessage(Action::Get, Property::ReverbEffect));
@@ -349,6 +351,11 @@ void PianoController::SetGuide(bool enable)
 	SendCspMessage(PianoMessage(Action::Set, Property::Guide, enable ? 1 : 0));
 }
 
+void PianoController::SetGuideType(GuideType type)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::GuideType, type));
+}
+
 void PianoController::SetStreamLights(bool enable)
 {
 	SendCspMessage(PianoMessage(Action::Set, Property::StreamLights, enable ? 1 : 0));
@@ -522,6 +529,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 		else if (property == Property::Guide)
 		{
 			m_guide = boolValue;
+			NotifyChanged(apGuide);
+		}
+		else if (property == Property::GuideType)
+		{
+			m_guideType = (GuideType)intValue;
 			NotifyChanged(apGuide);
 		}
 		else if (property == Property::StreamLights)

@@ -72,6 +72,9 @@ const Property Property::FirmwareVersion = Property("0f 01 0b 01", 0);
 // Value: 0 - Guide Off, 1 - Guide On
 const Property Property::Guide = Property("04 03 00 01", 1);
 
+// Value: 0 - Correct Key, 1 - Any Key, 5 - Your Tempo
+const Property Property::GuideType = Property("04 03 01 01", 1);
+
 // Value (4 Bytes): 2 Bytes for Measure; 2 Bytes for Beat
 const Property Property::Position = Property("04 00 0a 01", 4);
 
