@@ -154,6 +154,9 @@ struct Property
 
 	// Value: 0 Bytes
 	const static Property SongReset;
+
+	// Value: 21(A1)..108(C7)
+	const static Property SplitPoint;
 };
 
 class PianoMessage

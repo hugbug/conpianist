@@ -133,7 +133,8 @@ public:
 		apOctave,
 		apEnable,
 		apActive,
-		apVoice
+		apVoice,
+		apSplitPoint
 	};
 
 	class Listener
@@ -213,6 +214,8 @@ public:
 	bool GetEnabled(Channel ch) { return m_channels[ch].enabled; }
 	int GetReverbEffect() { return m_reverbEffect; }
 	void SetReverbEffect(int effect);
+	int GetSplitPoint() { return m_splitPoint; }
+	void SetSplitPoint(int splitPoint);
 	const String& GetSongName() { return m_songName; }
 
 	void SendMidiMessage(const MidiMessage& message);
@@ -244,6 +247,7 @@ private:
 	int m_reverbEffect = 0;
 	String m_songName;
 	bool m_songLoaded = false;
+	int m_splitPoint = 0;
 	std::unique_ptr<PianoMessage> lastMessage;
 
 	void SendCspMessage(const PianoMessage& message);

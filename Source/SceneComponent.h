@@ -55,7 +55,7 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
-    void changeListenerCallback(ChangeBroadcaster* source) override;
+    void changeListenerCallback(ChangeBroadcaster* source) override { if (source == &settings) applySettings(); }
     void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 	void updateSettingsState();
 	void showMenu();
@@ -64,6 +64,7 @@ public:
 	void checkConnection();
 	void zoomUi(bool zoomIn);
     void toggleKeyboard();
+    void updateKeyboard();
 	void switchLargePanel(Button* button);
     //[/UserMethods]
 
@@ -88,6 +89,7 @@ private:
 	String currentPianoIp;
 	String currentMidiPort;
 	Settings& settings;
+	bool keyboardManuallyHidden = false;
     //[/UserVariables]
 
     //==============================================================================

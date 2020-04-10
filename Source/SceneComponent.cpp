@@ -151,7 +151,7 @@ SceneComponent::SceneComponent (Settings& settings)
 	playbackComponent.reset(new PlaybackComponent(pianoController));
 	playbackPanel->addAndMakeVisible(playbackComponent.get());
 
-	keyboardComponent.reset(new KeyboardComponent(pianoController, settings));
+	keyboardComponent.reset(new KeyboardComponent(settings, pianoController));
 	keyboardPanel->addAndMakeVisible(keyboardComponent.get());
 
 	voiceComponent.reset(new VoiceComponent(pianoController));
@@ -163,6 +163,7 @@ SceneComponent::SceneComponent (Settings& settings)
 	voiceButton->getProperties().set("tab", "yes");
 	scoreButton->getProperties().set("tab", "yes");
 	mixerButton->getProperties().set("tab", "yes");
+    keyboardButton->getProperties().set("toggle", "yes");
     //[/UserPreSize]
 
     setSize (850, 550);
@@ -172,6 +173,7 @@ SceneComponent::SceneComponent (Settings& settings)
     pianoController.AddListener(this);
     settings.addChangeListener(this);
 	applySettings();
+	updateSettingsState();
 
 	switchLargePanel(scoreButton.get());
 
@@ -237,9 +239,9 @@ void SceneComponent::resized()
     topbarPanel->setBounds (0, -8, getWidth() - 0, 52);
     playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 111);
     largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 111);
-    muteButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
-    zoomInButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
-    zoomOutButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
+    muteButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
+    zoomInButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
+    zoomOutButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
     keyboardPanel->setBounds (0, getHeight() - 67, getWidth() - 0, 67);
     keyboardButton->setBounds (getWidth() - 129 - 32, 8, 32, 28);
     balanceButton->setBounds (getWidth() - 169 - 32, 8, 32, 28);
@@ -336,14 +338,6 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
-void SceneComponent::changeListenerCallback(ChangeBroadcaster* source)
-{
-	if (source == &settings)
-	{
-		applySettings();
-	}
-}
-
 void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
 	if (aspect == PianoController::apConnection || aspect == PianoController::apLocalControl)
@@ -353,6 +347,10 @@ void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	if (aspect == PianoController::apConnection && pianoController.IsConnected())
 	{
 		MessageManager::callAsync([=](){pianoController.Sync();});
+	}
+	else if (aspect == PianoController::apActive && channel == PianoController::chLeft)
+	{
+		MessageManager::callAsync([=](){updateKeyboard();});
 	}
 }
 
@@ -370,7 +368,10 @@ void SceneComponent::updateSettingsState()
 			mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
 			mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
-	//keyboardButton->setToggleState(settings.keyboard, NotificationType::dontSendNotification);
+
+	balanceButton->setEnabled(pianoController.IsConnected());
+	keyboardButton->setEnabled(pianoController.IsConnected());
+	muteButton->setEnabled(pianoController.IsConnected());
 }
 
 void SceneComponent::showMenu()
@@ -380,9 +381,9 @@ void SceneComponent::showMenu()
 	menu.addItem(1, "Connection Settings");
 	menu.addItem(2, "Resync State from Piano");
 	menu.addItem(3, "Reset Piano to Default State");
-	menu.addSectionHeader("PROGRAM INFO");
+	menu.addSectionHeader("ABOUT");
 	menu.addItem(99, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
-	menu.addItem(100, "Visit Homepage");
+	menu.addItem(100, "Homepage");
 
 	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
 
@@ -482,11 +483,7 @@ void SceneComponent::applySettings()
 	scale = round(scale * 20) / 20;
 	Desktop::getInstance().setGlobalScaleFactor(scale);
 
-	if (keyboardPanel->isVisible() != settings.keyboardVisible)
-	{
-		keyboardPanel->setVisible(settings.keyboardVisible);
-		resized();
-    }
+	updateKeyboard();
 }
 
 void SceneComponent::zoomUi(bool zoomIn)
@@ -502,8 +499,29 @@ void SceneComponent::zoomUi(bool zoomIn)
 
 void SceneComponent::toggleKeyboard()
 {
-	settings.keyboardVisible = !settings.keyboardVisible;
+	if (keyboardPanel->isVisible() && voiceComponent->isVisible() &&
+		pianoController.GetActive(PianoController::chLeft))
+	{
+		keyboardManuallyHidden = true;
+	}
+
+	settings.keyboardVisible = !keyboardPanel->isVisible();
 	settings.Save();
+}
+
+void SceneComponent::updateKeyboard()
+{
+	keyboardButton->setToggleState(settings.keyboardVisible, NotificationType::dontSendNotification);
+	bool keyboardMustBeShown = settings.keyboardVisible ||
+		(voiceComponent->isVisible() && pianoController.GetActive(PianoController::chLeft) && !keyboardManuallyHidden);
+	if (keyboardPanel->isVisible() != keyboardMustBeShown ||
+		keyboardComponent->GetSplitMode() != voiceComponent->isVisible())
+	{
+		keyboardComponent->SetSplitMode(voiceComponent->isVisible());
+		keyboardPanel->setVisible(keyboardMustBeShown);
+		keyboardButton->setToggleState(keyboardPanel->isVisible(), NotificationType::dontSendNotification);
+		resized();
+    }
 }
 
 void SceneComponent::switchLargePanel(Button* button)
@@ -517,6 +535,7 @@ void SceneComponent::switchLargePanel(Button* button)
 	mixerButton->setToggleState(button == mixerButton.get(), NotificationType::dontSendNotification);
 
 	resized();
+	updateKeyboard();
 }
 
 //[/MiscUserCode]
@@ -549,21 +568,21 @@ BEGIN_JUCER_METADATA
                     virtualName="" explicitFocusOrder="0" pos="0R 52 290M 111M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
-               virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="89Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
                opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
                colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom In UI Button" id="8f2ba3f851b38bd8" memberName="zoomInButton"
-               virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom In UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttonzoomin_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
                resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom Out UI Button" id="9c93ecb0c87ce0c4" memberName="zoomOutButton"
-               virtualName="" explicitFocusOrder="0" pos="89Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom Out UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttonzoomout_png" opacityNormal="1.0"

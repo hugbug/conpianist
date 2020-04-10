@@ -149,6 +149,9 @@ const Property Property::Present = Property("04 01 00 01", 1);
 // Value: 0 Bytes
 const Property Property::SongReset = Property("04 00 00 01", 0);
 
+// Value: 21(A1)..108(C7)
+const Property Property::SplitPoint = Property("09 00 00 01", 1);
+
 
 constexpr char CharToCode(char ch)
 {

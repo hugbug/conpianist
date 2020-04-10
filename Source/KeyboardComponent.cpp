@@ -24,65 +24,70 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
+void KeyboardComponent::SplitMidiKeyboardComponent::drawWhiteNote(
+	int midiNoteNumber, Graphics& g, Rectangle<float> area,
+	bool isDown, bool isOver, Colour lineColour, Colour textColour)
+{
+	if (!isEnabled())
+	{
+		g.setColour(Colour(0x80606060));
+		g.fillRect(area);
+		isDown = false;
+		isOver = false;
+	}
+	else if (m_splitMode &&
+		(midiNoteNumber == pianoController.GetSplitPoint() ||
+		(pianoController.GetActive(PianoController::chLeft) &&
+		midiNoteNumber <= pianoController.GetSplitPoint())))
+	{
+		g.setColour(Colour(0x8023C0FF));
+		g.fillRect(area);
+	}
+
+	MidiKeyboardComponent::drawWhiteNote(midiNoteNumber, g, area, isDown, isOver, lineColour, textColour);
+}
+
+void KeyboardComponent::SplitMidiKeyboardComponent::drawBlackNote(
+	int midiNoteNumber, Graphics& g, Rectangle<float> area,
+	bool isDown, bool isOver, Colour noteFillColour)
+{
+	if (!isEnabled())
+	{
+		isDown = false;
+		isOver = false;
+	}
+	else if (m_splitMode &&
+		(midiNoteNumber == pianoController.GetSplitPoint() ||
+		(pianoController.GetActive(PianoController::chLeft) &&
+		midiNoteNumber <= pianoController.GetSplitPoint())))
+	{
+		noteFillColour = Colour(0xFF31535E);
+	}
+
+	MidiKeyboardComponent::drawBlackNote(midiNoteNumber, g, area, isDown, isOver, noteFillColour);
+}
+
 //[/MiscUserDefs]
 
 //==============================================================================
-KeyboardComponent::KeyboardComponent (PianoController& pianoController, Settings& settings)
-    : pianoController(pianoController), settings(settings)
+KeyboardComponent::KeyboardComponent (Settings& settings, PianoController& pianoController)
+    : settings(settings), pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    midiKeyboardComponent.reset (new MidiKeyboardComponent (keyState, MidiKeyboardComponent::horizontalKeyboard));
+    midiKeyboardComponent.reset (new SplitMidiKeyboardComponent (pianoController, keyState, MidiKeyboardComponent::horizontalKeyboard));
     addAndMakeVisible (midiKeyboardComponent.get());
     midiKeyboardComponent->setName ("Midi Keyboard Component");
 
-    channelComboBox.reset (new ComboBox ("Channel Combo Box"));
-    addAndMakeVisible (channelComboBox.get());
-    channelComboBox->setTooltip (TRANS("MIDI Channel"));
-    channelComboBox->setEditableText (false);
-    channelComboBox->setJustificationType (Justification::centred);
-    channelComboBox->setTextWhenNothingSelected (String());
-    channelComboBox->setTextWhenNoChoicesAvailable (TRANS("(no choices)"));
-    channelComboBox->addItem (TRANS("1"), 1);
-    channelComboBox->addItem (TRANS("2"), 2);
-    channelComboBox->addItem (TRANS("3"), 3);
-    channelComboBox->addItem (TRANS("4"), 4);
-    channelComboBox->addItem (TRANS("5"), 5);
-    channelComboBox->addItem (TRANS("6"), 6);
-    channelComboBox->addItem (TRANS("7"), 7);
-    channelComboBox->addItem (TRANS("8"), 8);
-    channelComboBox->addItem (TRANS("9"), 9);
-    channelComboBox->addItem (TRANS("10"), 10);
-    channelComboBox->addItem (TRANS("11"), 11);
-    channelComboBox->addItem (TRANS("12"), 12);
-    channelComboBox->addItem (TRANS("13"), 13);
-    channelComboBox->addItem (TRANS("14"), 14);
-    channelComboBox->addItem (TRANS("15"), 15);
-    channelComboBox->addItem (TRANS("16"), 16);
-    channelComboBox->addListener (this);
-
-    channelComboBox->setBounds (12, 26, 56, 24);
-
-    label.reset (new Label ("new label",
-                            TRANS("Channel")));
-    addAndMakeVisible (label.get());
-    label->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    label->setJustificationType (Justification::centredLeft);
-    label->setEditable (false, false, false);
-    label->setColour (TextEditor::textColourId, Colours::black);
-    label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
-
-    label->setBounds (8, 2, 64, 24);
-
 
     //[UserPreSize]
-	midiKeyboardComponent->setAvailableRange(21, 120);
+	midiKeyboardComponent->setAvailableRange(21, 108);
 	midiKeyboardComponent->setColour(MidiKeyboardComponent::ColourIds::keyDownOverlayColourId, Colour(0xFEEE6C0A));
 	midiKeyboardComponent->setColour(MidiKeyboardComponent::ColourIds::mouseOverKeyOverlayColourId, Colour(0xAEEE6C0A));
+	midiKeyboardComponent->setMidiChannel(1);
 	keyState.addListener(this);
 	pianoController.AddListener(this);
-
     settings.addChangeListener(this);
 	applySettings();
 
@@ -92,6 +97,7 @@ KeyboardComponent::KeyboardComponent (PianoController& pianoController, Settings
 
 
     //[Constructor] You can add your own custom stuff here..
+    updateKeyboardState();
     //[/Constructor]
 }
 
@@ -101,8 +107,6 @@ KeyboardComponent::~KeyboardComponent()
     //[/Destructor_pre]
 
     midiKeyboardComponent = nullptr;
-    channelComboBox = nullptr;
-    label = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -135,41 +139,15 @@ void KeyboardComponent::resized()
     //[UserPreResize] Add your own custom resize code here..
     //[/UserPreResize]
 
-    midiKeyboardComponent->setBounds (0, 2, getWidth() - 0, getHeight() - 2);
+    midiKeyboardComponent->setBounds (0, 0, getWidth() - 0, getHeight() - 0);
     //[UserResized] Add your own custom resize handling here..
-    float offset = channelComboBox->getX() * 2 + channelComboBox->getWidth();
 	float requiredWidth = midiKeyboardComponent->getTotalKeyboardWidth();
-	if (requiredWidth < getWidth() - offset * 2)
+	if (requiredWidth < getWidth())
 	{
 		midiKeyboardComponent->setBounds((getWidth() - requiredWidth) / 2,
 			midiKeyboardComponent->getY(), requiredWidth, midiKeyboardComponent->getHeight());
 	}
-	else if (requiredWidth < getWidth() - offset)
-	{
-    	midiKeyboardComponent->setBounds(offset, midiKeyboardComponent->getY(), requiredWidth, midiKeyboardComponent->getHeight());
-	}
-	else
-	{
-    	midiKeyboardComponent->setBounds(offset, midiKeyboardComponent->getY(), getWidth() - offset, midiKeyboardComponent->getHeight());
-	}
     //[/UserResized]
-}
-
-void KeyboardComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
-{
-    //[UsercomboBoxChanged_Pre]
-    //[/UsercomboBoxChanged_Pre]
-
-    if (comboBoxThatHasChanged == channelComboBox.get())
-    {
-        //[UserComboBoxCode_channelComboBox] -- add your combo box handling code here..
-        settings.keyboardChannel = channelComboBox->getSelectedItemIndex() + 1;
-        settings.Save();
-        //[/UserComboBoxCode_channelComboBox]
-    }
-
-    //[UsercomboBoxChanged_Post]
-    //[/UsercomboBoxChanged_Post]
 }
 
 
@@ -179,13 +157,20 @@ void KeyboardComponent::handleNoteOn(MidiKeyboardState *source, int midiChannel,
 {
 	if (velocity > 0.0001)
 	{
-		pianoController.SendMidiMessage(MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity));
+		if (m_splitMode)
+		{
+			pianoController.SetSplitPoint(midiNoteNumber);
+		}
+		else
+		{
+			pianoController.SendMidiMessage(MidiMessage::noteOn(midiChannel, midiNoteNumber, velocity));
+		}
 	}
 }
 
 void KeyboardComponent::handleNoteOff(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity)
 {
-	if (velocity > 0.0001)
+	if (velocity > 0.0001 && !m_splitMode)
 	{
 		pianoController.SendMidiMessage(MidiMessage::noteOff(midiChannel, midiNoteNumber, velocity));
 	}
@@ -203,23 +188,25 @@ void KeyboardComponent::PianoNoteMessage(const MidiMessage& message)
 	}
 }
 
-void KeyboardComponent::changeListenerCallback(ChangeBroadcaster* source)
+void KeyboardComponent::PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel)
 {
-	if (source == &settings)
+	if (aspect == PianoController::apConnection ||
+		(aspect == PianoController::apActive && channel == PianoController::chLeft) ||
+		aspect == PianoController::apSplitPoint)
 	{
-		applySettings();
+		MessageManager::callAsync([=](){updateKeyboardState();});
 	}
 }
 
 void KeyboardComponent::applySettings()
 {
 	midiKeyboardComponent->setMidiChannel(settings.keyboardChannel);
-	channelComboBox->setSelectedItemIndex(settings.keyboardChannel - 1);
 }
 
 void KeyboardComponent::updateKeyboardState()
 {
 	updateEnabledControls();
+	midiKeyboardComponent->repaint();
 }
 
 void KeyboardComponent::updateEnabledControls()
@@ -229,6 +216,14 @@ void KeyboardComponent::updateEnabledControls()
 		co->setEnabled(pianoController.IsConnected());
 	}
 }
+
+void KeyboardComponent::SetSplitMode(bool splitMode)
+{
+	m_splitMode = splitMode;
+	midiKeyboardComponent->m_splitMode = splitMode;
+	midiKeyboardComponent->repaint();
+}
+
 //[/MiscUserCode]
 
 
@@ -243,25 +238,16 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="KeyboardComponent" componentName=""
                  parentClasses="public Component, public MidiKeyboardStateListener, public PianoController::Listener, public ChangeListener"
-                 constructorParams="PianoController&amp; pianoController, Settings&amp; settings"
-                 variableInitialisers="pianoController(pianoController), settings(settings)"
+                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController"
+                 variableInitialisers="settings(settings), pianoController(pianoController)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="600" initialHeight="70">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="0 0 0M 1" fill="solid: ff283237" hasStroke="0"/>
   </BACKGROUND>
   <GENERICCOMPONENT name="Midi Keyboard Component" id="d578dbfb8bf47c83" memberName="midiKeyboardComponent"
-                    virtualName="MidiKeyboardComponent" explicitFocusOrder="0" pos="0 2 0M 2M"
-                    class="Component" params="keyState, MidiKeyboardComponent::horizontalKeyboard"/>
-  <COMBOBOX name="Channel Combo Box" id="1961c4e77abdba4e" memberName="channelComboBox"
-            virtualName="" explicitFocusOrder="0" pos="12 26 56 24" tooltip="MIDI Channel"
-            editable="0" layout="36" items="1&#10;2&#10;3&#10;4&#10;5&#10;6&#10;7&#10;8&#10;9&#10;10&#10;11&#10;12&#10;13&#10;14&#10;15&#10;16"
-            textWhenNonSelected="" textWhenNoItems="(no choices)"/>
-  <LABEL name="new label" id="92ffa529bd029da5" memberName="label" virtualName=""
-         explicitFocusOrder="0" pos="8 2 64 24" edTextCol="ff000000" edBkgCol="0"
-         labelText="Channel" editableSingleClick="0" editableDoubleClick="0"
-         focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
-         kerning="0.0" bold="0" italic="0" justification="33"/>
+                    virtualName="SplitMidiKeyboardComponent" explicitFocusOrder="0"
+                    pos="0 0 0M 0M" class="Component" params="pianoController, keyState, MidiKeyboardComponent::horizontalKeyboard"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA

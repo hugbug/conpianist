@@ -38,44 +38,59 @@
 class KeyboardComponent  : public Component,
                            public MidiKeyboardStateListener,
                            public PianoController::Listener,
-                           public ChangeListener,
-                           public ComboBox::Listener
+                           public ChangeListener
 {
 public:
     //==============================================================================
-    KeyboardComponent (PianoController& pianoController, Settings& settings);
+    KeyboardComponent (Settings& settings, PianoController& pianoController);
     ~KeyboardComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void handleNoteOn(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
     void handleNoteOff(MidiKeyboardState *source, int midiChannel, int midiNoteNumber, float velocity) override;
+    void changeListenerCallback(ChangeBroadcaster* source) override { if (source == &settings) applySettings(); }
 	void PianoNoteMessage(const MidiMessage& message) override;
-    void changeListenerCallback(ChangeBroadcaster* source) override;
+    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
 	void applySettings();
-    void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override
-    	{ if (aspect == PianoController::apConnection) MessageManager::callAsync([=](){updateKeyboardState();}); }
     void updateKeyboardState();
 	void updateEnabledControls();
+	bool GetSplitMode() { return m_splitMode; }
+    void SetSplitMode(bool splitMode);
+
+	class SplitMidiKeyboardComponent : public MidiKeyboardComponent
+	{
+	public:
+		SplitMidiKeyboardComponent(PianoController& pianoController, MidiKeyboardState& state,
+			Orientation orientation) : MidiKeyboardComponent(state, orientation),
+			pianoController(pianoController) {}
+	protected:
+		virtual void drawWhiteNote(int midiNoteNumber, Graphics& g, Rectangle<float> area,
+			bool isDown, bool isOver, Colour lineColour, Colour textColour);
+		virtual void drawBlackNote(int midiNoteNumber, Graphics& g, Rectangle<float> area,
+			bool isDown, bool isOver, Colour noteFillColour);
+
+		PianoController& pianoController;
+    	bool m_splitMode = false;
+    	friend class KeyboardComponent;
+	};
     //[/UserMethods]
 
     void paint (Graphics& g) override;
     void resized() override;
-    void comboBoxChanged (ComboBox* comboBoxThatHasChanged) override;
 
 
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
 	MidiKeyboardState keyState;
+	Settings& settings;
     PianoController& pianoController;
-    Settings& settings;
+    bool m_splitMode = false;
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<MidiKeyboardComponent> midiKeyboardComponent;
-    std::unique_ptr<ComboBox> channelComboBox;
-    std::unique_ptr<Label> label;
+    std::unique_ptr<SplitMidiKeyboardComponent> midiKeyboardComponent;
 
 
     //==============================================================================

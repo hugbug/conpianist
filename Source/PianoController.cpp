@@ -89,6 +89,7 @@ void PianoController::InitEvents()
 	SendCspMessage(PianoMessage(Action::Events, Property::Present));
 	SendCspMessage(PianoMessage(Action::Events, Property::VoiceMidi));
 	SendCspMessage(PianoMessage(Action::Events, Property::SongName));
+	SendCspMessage(PianoMessage(Action::Events, Property::SplitPoint));
 }
 
 void PianoController::Sync()
@@ -147,6 +148,7 @@ void PianoController::ResyncStateFromPiano()
 	SendCspMessage(PianoMessage(Action::Get, Property::PartChannel, paRight, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::PartChannel, paLeft, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::PartAuto));
+	SendCspMessage(PianoMessage(Action::Get, Property::SplitPoint));
 }
 
 void PianoController::Reset()
@@ -484,6 +486,11 @@ void PianoController::SetActive(Channel ch, bool active)
 	SendCspMessage(PianoMessage(Action::Set, Property::Active, ch, active ? 1 : 0));
 }
 
+void PianoController::SetSplitPoint(int splitPoint)
+{
+	SendCspMessage(PianoMessage(Action::Set, Property::SplitPoint, 0, splitPoint));
+}
+
 void PianoController::IncomingMidiMessage(const MidiMessage& message)
 {
 	if (message.isSysEx() &&
@@ -628,6 +635,11 @@ void PianoController::IncomingMidiMessage(const MidiMessage& message)
 				m_loop = {{0,0},{0,0}};
 			}
 			NotifyChanged(apLoop);
+		}
+		else if (property == Property::SplitPoint)
+		{
+			m_splitPoint = intValue;
+			NotifyChanged(apSplitPoint);
 		}
 		else if (property == Property::VoicePreset)
 		{
