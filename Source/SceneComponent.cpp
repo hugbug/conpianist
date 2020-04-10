@@ -156,7 +156,7 @@ SceneComponent::SceneComponent (Settings& settings)
 
 	voiceComponent.reset(new VoiceComponent(pianoController));
 	scoreComponent.reset(ScoreComponent::Create(pianoController, settings));
-	mixerComponent.reset(new MixerComponent(pianoController));
+	mixerComponent.reset(new MixerComponent(settings, pianoController));
 	largeContentPanel->addChildComponent(voiceComponent.get());
     largeContentPanel->addChildComponent(scoreComponent.get());
 	largeContentPanel->addChildComponent(mixerComponent.get());
@@ -303,7 +303,7 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
     else if (buttonThatWasClicked == balanceButton.get())
     {
         //[UserButtonCode_balanceButton] -- add your button handler code here..
-		BalanceComponent::showDialog(pianoController);
+		BalanceComponent::showDialog(settings, pianoController);
         //[/UserButtonCode_balanceButton]
     }
     else if (buttonThatWasClicked == voiceButton.get())

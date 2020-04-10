@@ -41,7 +41,7 @@ class MixerComponent  : public Component,
 {
 public:
     //==============================================================================
-    MixerComponent (PianoController& pianoController);
+    MixerComponent (Settings& settings, PianoController& pianoController);
     ~MixerComponent() override;
 
     //==============================================================================

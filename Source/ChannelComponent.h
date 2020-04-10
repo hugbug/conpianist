@@ -22,6 +22,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include <JuceHeader.h>
 #include "PianoController.h"
+#include "Settings.h"
 //[/Headers]
 
 
@@ -36,16 +37,19 @@
 */
 class ChannelComponent  : public Component,
                           public PianoController::Listener,
+                          public ChangeListener,
                           public Button::Listener,
                           public Slider::Listener
 {
 public:
     //==============================================================================
-    ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable);
+    ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable);
     ~ChannelComponent() override;
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void changeListenerCallback(ChangeBroadcaster* source) override { if (source == &settings) applySettings(); }
+	void applySettings();
     void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
 		{ if (ch == channel || ap == PianoController::apConnection) MessageManager::callAsync([=](){updateChannelState(ap);}); }
 	void updateChannelState(PianoController::Aspect aspect);
@@ -64,6 +68,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    Settings& settings;
     PianoController& pianoController;
     PianoController::Channel channel;
     String title;
@@ -73,6 +78,7 @@ private:
     //[/UserVariables]
 
     //==============================================================================
+    std::unique_ptr<ImageButton> keyboardButton;
     std::unique_ptr<ImageButton> menuButton;
     std::unique_ptr<Label> partLabel;
     std::unique_ptr<Label> panLabel;

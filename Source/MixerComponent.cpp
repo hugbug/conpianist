@@ -28,7 +28,7 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-MixerComponent::MixerComponent (PianoController& pianoController)
+MixerComponent::MixerComponent (Settings& settings, PianoController& pianoController)
     : pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
@@ -37,7 +37,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     channelViewport.reset (new Viewport ("Channel Viewport"));
     addAndMakeVisible (channelViewport.get());
 
-    leftChannel.reset (new ChannelComponent (pianoController, PianoController::chMidiMaster, "Master", true, true, false, false, false));
+    leftChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMidiMaster, "Master", true, true, false, false, false));
     addAndMakeVisible (leftChannel.get());
     channelPanel.reset (new Component());
     addAndMakeVisible (channelPanel.get());
@@ -62,7 +62,7 @@ MixerComponent::MixerComponent (PianoController& pianoController)
     for (PianoController::Channel ch : PianoController::MidiChannels)
     {
     	std::unique_ptr<ChannelComponent> comp;
-    	comp.reset(new ChannelComponent(pianoController, ch,
+    	comp.reset(new ChannelComponent(settings, pianoController, ch,
     		String("Ch. ") + String(ch - PianoController::chMidi0), false, true, true, false, true));
     	channelPanel->addAndMakeVisible(comp.get());
 		channels.push_back(std::move(comp));
@@ -181,9 +181,10 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="MixerComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
-                 snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
-                 fixedSize="0" initialWidth="600" initialHeight="400">
+                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController"
+                 variableInitialisers="pianoController(pianoController)" snapPixels="8"
+                 snapActive="1" snapShown="1" overlayOpacity="0.330" fixedSize="0"
+                 initialWidth="600" initialHeight="400">
   <BACKGROUND backgroundColour="ff323e44">
     <RECT pos="84 10 1 20M" fill="solid: ff4e5b62" hasStroke="0"/>
   </BACKGROUND>
@@ -193,7 +194,7 @@ BEGIN_JUCER_METADATA
             contentClass="" constructorParams=""/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 8M" sourceFile="ChannelComponent.cpp"
-             constructorParams="pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true, true, false, false, false"/>
+             constructorParams="settings, pianoController, PianoController::chMidiMaster, &quot;Master&quot;, true, true, false, false, false"/>
   <GENERICCOMPONENT name="Channels" id="256e91213f333b3c" memberName="channelPanel"
                     virtualName="" explicitFocusOrder="0" pos="96 0 280 8M" class="Component"
                     params=""/>

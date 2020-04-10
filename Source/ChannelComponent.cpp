@@ -29,11 +29,23 @@ void Sleep(int milliseconds);
 //[/MiscUserDefs]
 
 //==============================================================================
-ChannelComponent::ChannelComponent (PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable)
-    : pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
+ChannelComponent::ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable)
+    : settings(settings), pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
+
+    keyboardButton.reset (new ImageButton ("Keyboard Button"));
+    addAndMakeVisible (keyboardButton.get());
+    keyboardButton->setTooltip (TRANS("Target for Virtual Keyboard"));
+    keyboardButton->setButtonText (TRANS("Menu"));
+    keyboardButton->addListener (this);
+
+    keyboardButton->setImages (false, true, true,
+                               ImageCache::getFromMemory (BinaryData::buttonkeyboardwide_png, BinaryData::buttonkeyboardwide_pngSize), 1.000f, Colour (0x00000000),
+                               Image(), 0.750f, Colour (0x00000000),
+                               Image(), 1.000f, Colour (0x00000000));
+    keyboardButton->setBounds (11, 96, 48, 16);
 
     menuButton.reset (new ImageButton ("Menu Button"));
     addAndMakeVisible (menuButton.get());
@@ -207,6 +219,8 @@ ChannelComponent::ChannelComponent (PianoController& pianoController, PianoContr
 
     pianoController.AddListener(this);
     updateChannelState(PianoController::apActive);
+    settings.addChangeListener(this);
+    applySettings();
     //[/Constructor]
 }
 
@@ -214,8 +228,10 @@ ChannelComponent::~ChannelComponent()
 {
     //[Destructor_pre]. You can add your own custom destruction code here..
     pianoController.RemoveListener(this);
+    settings.removeChangeListener(this);
     //[/Destructor_pre]
 
+    keyboardButton = nullptr;
     menuButton = nullptr;
     partLabel = nullptr;
     panLabel = nullptr;
@@ -267,7 +283,13 @@ void ChannelComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == menuButton.get())
+    if (buttonThatWasClicked == keyboardButton.get())
+    {
+        //[UserButtonCode_keyboardButton] -- add your button handler code here..
+        showMenu(buttonThatWasClicked);
+        //[/UserButtonCode_keyboardButton]
+    }
+    else if (buttonThatWasClicked == menuButton.get())
     {
         //[UserButtonCode_menuButton] -- add your button handler code here..
         showMenu(buttonThatWasClicked);
@@ -348,6 +370,7 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 
 	menuButton->setEnabled(enabled);
 	menuButton2->setEnabled(enabled);
+	keyboardButton->setEnabled(enabled);
 
 	partLabel->setText(pianoController.GetPartChannel(PianoController::paRight) == channel ? "R" : "L",
 		NotificationType::dontSendNotification);
@@ -355,6 +378,12 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 		(pianoController.GetPartChannel(PianoController::paRight) == channel ||
 		pianoController.GetPartChannel(PianoController::paLeft) == channel));
 	partLabel->setEnabled(enabled && active);
+}
+
+void ChannelComponent::applySettings()
+{
+	keyboardButton->setVisible(settings.keyboardVisible &&
+		settings.keyboardChannel == channel - PianoController::chMidi0);
 }
 
 void ChannelComponent::mouseDoubleClick(const MouseEvent& event)
@@ -388,6 +417,8 @@ void ChannelComponent::showMenu(Button* button)
 
 	menu.addSectionHeader("CHANNEL " + String(channel - PianoController::chMidi0));
 	menu.addItem(1, "Select Only This Channel");
+	menu.addItem(2, "Play on Virtual Keyboard", true,
+		settings.keyboardChannel == channel - PianoController::chMidi0);
 
 	menu.addSectionHeader("VOICE");
 	String voice = Presets::VoiceTitle(pianoController.GetVoice(channel));
@@ -412,6 +443,11 @@ void ChannelComponent::showMenu(Button* button)
 		{
 			pianoController.SetActive(ch, ch == channel);
 		}
+	}
+	else if (result == 2)
+	{
+		settings.keyboardChannel = channel - PianoController::chMidi0;
+		settings.Save();
 	}
 	else if (group == 1)
 	{
@@ -503,12 +539,19 @@ void ChannelComponent::toggleChannel()
 BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ChannelComponent" componentName=""
-                 parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable"
-                 variableInitialisers="pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
+                 parentClasses="public Component, public PianoController::Listener, public ChangeListener"
+                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable"
+                 variableInitialisers="settings(settings), pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
+  <IMAGEBUTTON name="Keyboard Button" id="311be94902dadf45" memberName="keyboardButton"
+               virtualName="" explicitFocusOrder="0" pos="11 96 48 16" posRelativeX="f4f376ddb622016f"
+               posRelativeY="c7b94b60aa96c6e2" tooltip="Target for Virtual Keyboard"
+               buttonText="Menu" connectedEdges="0" needsCallback="1" radioGroupId="0"
+               keepProportions="1" resourceNormal="BinaryData::buttonkeyboardwide_png"
+               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
+               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Menu Button" id="c87eaad1c0559e4c" memberName="menuButton"
                virtualName="" explicitFocusOrder="0" pos="4 66 28 28" posRelativeX="f4f376ddb622016f"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Context Menu" buttonText="Menu"

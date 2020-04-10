@@ -47,7 +47,7 @@ class BalanceComponent  : public Component,
 {
 public:
     //==============================================================================
-    BalanceComponent (PianoController& pianoController);
+    BalanceComponent (Settings& settings, PianoController& pianoController);
     ~BalanceComponent() override;
 
     //==============================================================================
@@ -56,7 +56,7 @@ public:
 		{ if (ap == PianoController::apConnection || ap == PianoController::apReverbEffect)
 			MessageManager::callAsync([=](){updateReverbEffectState();}); }
 	void updateReverbEffectState();
-	static void showDialog(PianoController& pianoController);
+	static void showDialog(Settings& settings, PianoController& pianoController);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
