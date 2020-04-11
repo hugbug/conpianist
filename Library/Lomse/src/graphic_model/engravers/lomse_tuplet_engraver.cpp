@@ -208,6 +208,9 @@ void TupletEngraver::compute_y_coordinates()
     GmoShapeNote* pStart = get_first_note();
     GmoShapeNote* pEnd = get_last_note();
 
+    if (!pStart || !pEnd)
+	    return; //imposible case unless all group are rests!
+
     GmoShapeBeam* pBeamShapeStart = static_cast<GmoShapeBeam*>(
                                     pStart->find_related_shape(GmoObj::k_shape_beam) );
     GmoShapeBeam* pBeamShapeEnd = static_cast<GmoShapeBeam*>(
