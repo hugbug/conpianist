@@ -314,9 +314,8 @@ String PianoController::DecodeSongName(String rawValue)
 	}
 
 	// Windows <-> Unix compatibility
-	name = File::createLegalPathName(name
-		.replaceCharacter('\\', File::getSeparatorChar())
-		.replaceCharacter('/', File::getSeparatorChar()));
+	name = name.replaceCharacter('\\', File::getSeparatorChar())
+		.replaceCharacter('/', File::getSeparatorChar());
 
 	return name;
 }
