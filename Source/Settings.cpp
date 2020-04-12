@@ -48,6 +48,8 @@ void Settings::Save()
 	prop.setValue("Window.Height", windowPos.getHeight());
 	prop.setValue("Keyboard.Visible", keyboardVisible);
 	prop.setValue("Keyboard.Channel", keyboardChannel);
+	prop.setValue("Score.InstrumentNames", scoreInstrumentNames);
+	prop.setValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 
 	prop.save();
 	sendChangeMessage();
@@ -66,4 +68,6 @@ void Settings::Load()
 	windowPos.setHeight(prop.getIntValue("Window.Height", windowPos.getHeight()));
 	keyboardVisible = prop.getIntValue("Keyboard.Visible", keyboardVisible);
 	keyboardChannel = prop.getIntValue("Keyboard.Channel", keyboardChannel);
+	scoreInstrumentNames = prop.getIntValue("Score.InstrumentNames", scoreInstrumentNames);
+	scoreShowMidiChannel = prop.getIntValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 }

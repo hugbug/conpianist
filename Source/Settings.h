@@ -35,6 +35,8 @@ public:
 	bool keyboardVisible = false;
 	int keyboardChannel = 1;
 	String resourcesPath;
+	int scoreInstrumentNames = 2;
+	bool scoreShowMidiChannel = true;
 
 private:
 	PropertiesFile::Options opt;

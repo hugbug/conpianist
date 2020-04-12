@@ -19,6 +19,8 @@
             file="Graphics/button-abloop.png"/>
       <FILE id="gP3lD1" name="button-balance.png" compile="0" resource="1"
             file="Graphics/button-balance.png"/>
+      <FILE id="O8WaTK" name="button-contextmenu-score.png" compile="0" resource="1"
+            file="Graphics/button-contextmenu-score.png"/>
       <FILE id="ylaXUZ" name="button-contextmenu.png" compile="0" resource="1"
             file="Graphics/button-contextmenu.png"/>
       <FILE id="PJo2ya" name="button-expand.png" compile="0" resource="1"
