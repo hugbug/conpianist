@@ -757,7 +757,7 @@ void ScoreLayouter::add_error_message(const string& msg)
 {
     ImoStyle* pStyle = m_pScore->get_default_style();
     TextEngraver engrv(m_libraryScope, m_pScoreMeter, msg, "en", pStyle);
-    LUnits x = m_pageCursor.x + 400.0f;
+    LUnits x = m_pageCursor.x + 1200.0f;
     LUnits y = m_pageCursor.y + 800.0f;
     GmoShape* pText = engrv.create_shape(nullptr, x, y);
     m_pItemMainBox->add_shape(pText, GmoShape::k_layer_top);
