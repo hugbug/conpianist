@@ -28,6 +28,22 @@ public:
 	void Save();
 	void Load();
 
+	enum ScoreInstrumentNames
+	{
+		siHidden,
+		siShort,
+		siMixed,
+		siFull
+	};
+
+	enum ScorePart
+	{
+		spAll,
+		spRightAndLeft,
+		spRight,
+		spLeft
+	};
+
 	String pianoIp = "192.168.0.150";
 	String midiPort;
 	float zoomUi = 1.0;
@@ -35,7 +51,8 @@ public:
 	bool keyboardVisible = false;
 	int keyboardChannel = 1;
 	String resourcesPath;
-	int scoreInstrumentNames = 2;
+	ScoreInstrumentNames scoreInstrumentNames = siMixed;
+	ScorePart scorePart = spRightAndLeft;
 	bool scoreShowMidiChannel = true;
 
 private:

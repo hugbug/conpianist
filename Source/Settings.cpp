@@ -49,6 +49,7 @@ void Settings::Save()
 	prop.setValue("Keyboard.Visible", keyboardVisible);
 	prop.setValue("Keyboard.Channel", keyboardChannel);
 	prop.setValue("Score.InstrumentNames", scoreInstrumentNames);
+	prop.setValue("Score.Part", scorePart);
 	prop.setValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 
 	prop.save();
@@ -68,6 +69,7 @@ void Settings::Load()
 	windowPos.setHeight(prop.getIntValue("Window.Height", windowPos.getHeight()));
 	keyboardVisible = prop.getIntValue("Keyboard.Visible", keyboardVisible);
 	keyboardChannel = prop.getIntValue("Keyboard.Channel", keyboardChannel);
-	scoreInstrumentNames = prop.getIntValue("Score.InstrumentNames", scoreInstrumentNames);
+	scoreInstrumentNames = (ScoreInstrumentNames)prop.getIntValue("Score.InstrumentNames", scoreInstrumentNames);
 	scoreShowMidiChannel = prop.getIntValue("Score.ShowMidiChannel", scoreShowMidiChannel);
+	scorePart = (ScorePart)prop.getIntValue("Score.Part", scorePart);
 }

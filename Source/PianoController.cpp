@@ -136,11 +136,6 @@ void PianoController::ResyncStateFromPiano()
 	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chMain, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLayer, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Octave, chLeft, 0));
-
-	SendCspMessage(PianoMessage(Action::Get, Property::SongName));
-	SendCspMessage(PianoMessage(Action::Get, Property::Length));
-	SendCspMessage(PianoMessage(Action::Get, Property::Position));
-	SendCspMessage(PianoMessage(Action::Get, Property::Loop));
 	SendCspMessage(PianoMessage(Action::Get, Property::Play));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paRight, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::Part, paLeft, 0));
@@ -149,6 +144,11 @@ void PianoController::ResyncStateFromPiano()
 	SendCspMessage(PianoMessage(Action::Get, Property::PartChannel, paLeft, 0));
 	SendCspMessage(PianoMessage(Action::Get, Property::PartAuto));
 	SendCspMessage(PianoMessage(Action::Get, Property::SplitPoint));
+
+	SendCspMessage(PianoMessage(Action::Get, Property::SongName));
+	SendCspMessage(PianoMessage(Action::Get, Property::Length));
+	SendCspMessage(PianoMessage(Action::Get, Property::Position));
+	SendCspMessage(PianoMessage(Action::Get, Property::Loop));
 }
 
 void PianoController::Reset()

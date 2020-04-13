@@ -36,6 +36,7 @@ class LomseScoreComponent : public ScoreComponent, public PianoController::Liste
 {
 public:
 	LomseScoreComponent(PianoController& pianoController, Settings& settings);
+	~LomseScoreComponent() override;
 
 	void paint (Graphics& g) override;
 	void resized() override;
@@ -65,6 +66,9 @@ private:
     std::unique_ptr<ImageButton> menuButton;
     std::vector<std::string> m_instrNames;
     std::vector<std::string> m_instrAbbrevs;
+    std::vector<ImoInstrument*> m_instruments;
+    PianoController::Channel m_rightChannel = PianoController::chMidi0;
+    PianoController::Channel m_leftChannel = PianoController::chMidi0;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -77,7 +81,11 @@ private:
 	void LoadScore(const URL& url);
 	void ChooseScoreFile();
 	void ShowMenu();
-	void ConfigureInstruments(bool init);
+	void PrepareInstruments();
+	void ConfigureInstruments();
+	void UpdateInstruments(bool force);
+	int MidiChannelOfInstrument(ImoInstrument* instr);
+	void Cleanup();
 
 	// Piano controller callbacks
 	void UpdateSongState();
@@ -129,6 +137,11 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	BuildControls();
 
 	pianoController.AddListener(this);
+}
+
+LomseScoreComponent::~LomseScoreComponent()
+{
+	Cleanup();
 }
 
 void LomseScoreComponent::BuildControls()
@@ -187,7 +200,8 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 	interactor->switch_task(TaskFactory::k_task_drag_view);
 
-	ConfigureInstruments(true);
+	PrepareInstruments();
+	ConfigureInstruments();
 
 	loop = {{0,0},{0,0}};
 }
@@ -378,6 +392,13 @@ void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, Pian
 	{
 		MessageManager::callAsync([=](){LoadSong();});
 	}
+	else if (aspect == PianoController::apPartChannel &&
+		m_settings.scorePart != Settings::spAll &&
+		(channel == m_pianoController.GetPartChannel(PianoController::paRight) ||
+		channel == m_pianoController.GetPartChannel(PianoController::paLeft)))
+	{
+		MessageManager::callAsync([=](){UpdateInstruments(false);});
+	}
 }
 
 void LomseScoreComponent::UpdateSongState()
@@ -446,7 +467,7 @@ void LomseScoreComponent::UpdateABMarks(bool force)
 
 void LomseScoreComponent::LoadSong()
 {
-	m_presenter = nullptr;
+	Cleanup();
 
 	File file = File(m_pianoController.GetSongName()).withFileExtension(".musicxml");
 	if (!file.existsAsFile())
@@ -468,7 +489,7 @@ void LomseScoreComponent::LoadSong()
 
 void LomseScoreComponent::LoadScore(const File& file)
 {
-	m_presenter = nullptr;
+	Cleanup();
 
 	LoadDocument(file.getFullPathName());
 
@@ -486,11 +507,16 @@ void LomseScoreComponent::ShowMenu()
 	PopupMenu menu;
 	menu.addSectionHeader("SCORE");
 	menu.addItem(1, "Load Score");
+	menu.addSectionHeader("PARTS");
+	menu.addItem(300 + Settings::spRight, "Right", true, m_settings.scorePart == Settings::spRight);
+	menu.addItem(300 + Settings::spLeft, "Left", true, m_settings.scorePart == Settings::spLeft);
+	menu.addItem(300 + Settings::spRightAndLeft, "Right and Left", true, m_settings.scorePart == Settings::spRightAndLeft);
+	menu.addItem(300 + Settings::spAll, "All", true, m_settings.scorePart == Settings::spAll);
 	menu.addSectionHeader("INSTRUMENT NAMES");
-	menu.addItem(100, "Hidden", true, m_settings.scoreInstrumentNames == 0);
-	menu.addItem(101, "Short", true, m_settings.scoreInstrumentNames == 1);
-	menu.addItem(102, "Mixed", true, m_settings.scoreInstrumentNames == 2);
-	menu.addItem(103, "Full", true, m_settings.scoreInstrumentNames == 3);
+	menu.addItem(100 + Settings::siHidden, "Hidden", true, m_settings.scoreInstrumentNames == Settings::siHidden);
+	menu.addItem(100 + Settings::siShort, "Short", true, m_settings.scoreInstrumentNames == Settings::siShort);
+	menu.addItem(100 + Settings::siMixed, "Mixed", true, m_settings.scoreInstrumentNames == Settings::siMixed);
+	menu.addItem(100 + Settings::siFull, "Full", true, m_settings.scoreInstrumentNames == Settings::siFull);
 	menu.addSeparator();
 	menu.addItem(201, "Show MIDI-Channel", true, m_settings.scoreShowMidiChannel);
 
@@ -503,82 +529,181 @@ void LomseScoreComponent::ShowMenu()
 	}
 	else if (group == 1)
 	{
-		m_settings.scoreInstrumentNames = result - 100;
+		m_settings.scoreInstrumentNames = Settings::ScoreInstrumentNames(result - 100);
 	}
 	else if (group == 2)
 	{
 		m_settings.scoreShowMidiChannel = !m_settings.scoreShowMidiChannel;
 	}
+	else if (group == 3)
+	{
+		m_settings.scorePart = Settings::ScorePart(result - 300);
+	}
 
-	if (group == 1 || group == 2)
+	if (group == 1 || group == 2 || group == 3)
 	{
 		m_settings.Save();
-
-		if (m_presenter)
-		{
-			ConfigureInstruments(false);
-			PrepareImage();
-			repaint();
-		}
+		UpdateInstruments(true);
 	}
 }
 
-void LomseScoreComponent::ConfigureInstruments(bool init)
+void LomseScoreComponent::UpdateInstruments(bool force)
 {
-	if (init)
+	if (m_presenter && (force ||
+		m_rightChannel != m_pianoController.GetPartChannel(PianoController::paRight) ||
+		m_leftChannel != m_pianoController.GetPartChannel(PianoController::paLeft)))
 	{
-		m_instrNames.clear();
-		m_instrAbbrevs.clear();
+		ConfigureInstruments();
+
+		m_rightChannel = m_pianoController.GetPartChannel(PianoController::paRight);
+		m_leftChannel = m_pianoController.GetPartChannel(PianoController::paLeft);
+
+		PrepareImage();
+		repaint();
+	}
+}
+
+void LomseScoreComponent::PrepareInstruments()
+{
+	m_instrNames.clear();
+	m_instrAbbrevs.clear();
+	m_instruments.clear();
+
+	ImoDocument* imoDoc = m_presenter->get_document_raw_ptr()->get_im_root();
+	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
+	if (!score) return;
+
+	m_scoreId = score->get_id();
+	while (score->get_num_instruments() > 0)
+	{
+		ImoInstrument* instr = score->get_instrument(0);
+
+		m_instruments.push_back(instr);
+		m_instrNames.push_back(instr->get_name().get_text());
+		m_instrAbbrevs.push_back(instr->get_abbrev().get_text());
+
+		//show measure numbers
+		instr->set_measures_numbering(ImoInstrument::k_system);
+
+		// hide instrument
+		score->get_instruments()->remove_child(instr);
+	}
+	score->end_of_changes();
+}
+
+void LomseScoreComponent::ConfigureInstruments()
+{
+	ImoDocument* imoDoc = m_presenter->get_document_raw_ptr()->get_im_root();
+	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
+	if (!score) return;
+
+	// hide all instruments
+	while (score->get_num_instruments() > 0)
+	{
+		ImoInstrument* instr = score->get_instrument(0);
+		score->get_instruments()->remove_child(instr);
 	}
 
-	Document* doc = m_presenter->get_document_raw_ptr();
-	ImoDocument* imoDoc = doc->get_im_root();
+	int num = 0;
+	for (ImoInstrument* instr : m_instruments)
+	{
+		//hide instrument names if necessary or restore names if were previously hidden
+		switch (m_settings.scoreInstrumentNames)
+		{
+			case Settings::siHidden:
+				instr->set_name("");
+				instr->set_abbrev("");
+				break;
+			case Settings::siShort:
+				instr->set_name(m_instrAbbrevs[num]);
+				instr->set_abbrev(m_instrAbbrevs[num]);
+				break;
+			case Settings::siMixed:
+				instr->set_name(m_instrNames[num]);
+				instr->set_abbrev(m_instrAbbrevs[num]);
+				break;
+			case Settings::siFull:
+				instr->set_name(m_instrNames[num]);
+				instr->set_abbrev(m_instrNames[num]);
+				break;
+		}
+
+		// add midi-channel(s) to instrument name
+		int midiChannel = MidiChannelOfInstrument(instr);
+		if (midiChannel > 0 && m_settings.scoreShowMidiChannel)
+		{
+			instr->set_name((String("#") + String(midiChannel) + " " + String(instr->get_name().get_text())).toStdString());
+			instr->set_abbrev((String("#") + String(midiChannel) + " " + String(instr->get_abbrev().get_text())).toStdString());
+		}
+
+		num++;
+	}
+
+	int rightChannel = m_pianoController.GetPartChannel(PianoController::paRight) - PianoController::chMidi0;
+	int leftChannel = m_pianoController.GetPartChannel(PianoController::paLeft) - PianoController::chMidi0;
+
+	// add right hand part to score
+	for (ImoInstrument* instr : m_instruments)
+	{
+		int midiChannel = MidiChannelOfInstrument(instr);
+		if (midiChannel == rightChannel &&
+			(m_settings.scorePart == Settings::spRight || m_settings.scorePart == Settings::spRightAndLeft))
+		{
+			score->add_instrument(instr);
+		}
+	}
+
+	// add left hand part to score
+	for (ImoInstrument* instr : m_instruments)
+	{
+		int midiChannel = MidiChannelOfInstrument(instr);
+		if (midiChannel == leftChannel &&
+			(m_settings.scorePart == Settings::spLeft || m_settings.scorePart == Settings::spRightAndLeft))
+		{
+			score->add_instrument(instr);
+		}
+	}
+
+	// add other parts to score
+	for (ImoInstrument* instr : m_instruments)
+	{
+		if (m_settings.scorePart == Settings::spAll ||
+			// add at least one instrument
+			score->get_num_instruments() == 0)
+		{
+			score->add_instrument(instr);
+		}
+	}
+
+	score->end_of_changes();
+}
+
+int LomseScoreComponent::MidiChannelOfInstrument(ImoInstrument* instr)
+{
+	int midiChannel = instr->get_num_sounds() > 0 && instr->get_sound_info(0)->get_midi_info() ?
+		instr->get_sound_info(0)->get_midi_info()->get_midi_channel() + 1 : 0;
+
+	return midiChannel;
+}
+
+void LomseScoreComponent::Cleanup()
+{
+	if (!m_presenter) return;
+
+	ImoDocument* imoDoc = m_presenter->get_document_raw_ptr()->get_im_root();
 	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
 	if (score)
 	{
-		m_scoreId = score->get_id();
-		for (int i = 0; i < score->get_num_instruments(); i++)
+		// move all instruments back to score to ensure they are deleted with the score
+		while (score->get_num_instruments() > 0)
 		{
-			if (init)
-			{
-				m_instrNames.push_back(score->get_instrument(i)->get_name().get_text());
-				m_instrAbbrevs.push_back(score->get_instrument(i)->get_abbrev().get_text());
-			}
-
-			ImoInstrument* instr = score->get_instrument(i);
-
-			//hide instrument names if necessary or restore names if were previously hidden
-			switch (m_settings.scoreInstrumentNames)
-			{
-				case 0:
-					instr->set_name("");
-					instr->set_abbrev("");
-					break;
-				case 1:
-					instr->set_name(m_instrAbbrevs[i]);
-					instr->set_abbrev(m_instrAbbrevs[i]);
-					break;
-				case 2:
-					instr->set_name(m_instrNames[i]);
-					instr->set_abbrev(m_instrAbbrevs[i]);
-					break;
-				case 3:
-					instr->set_name(m_instrNames[i]);
-					instr->set_abbrev(m_instrNames[i]);
-					break;
-			}
-
-			// add midi-channel(s) to instrument name
-			int midiChannel = instr->get_num_sounds() > 0 && instr->get_sound_info(0)->get_midi_info() ?
-				instr->get_sound_info(0)->get_midi_info()->get_midi_channel() + 1 : 0;
-			if (midiChannel > 0 && m_settings.scoreShowMidiChannel)
-			{
-				instr->set_name((String("#") + String(midiChannel) + " " + String(instr->get_name().get_text())).toStdString());
-				instr->set_abbrev((String("#") + String(midiChannel) + " " + String(instr->get_abbrev().get_text())).toStdString());
-			}
-
-			//show measure numbers
-			instr->set_measures_numbering(ImoInstrument::k_system);
+			score->get_instruments()->remove_child(score->get_instrument(0));
+		}
+		for (ImoInstrument* instr : m_instruments)
+		{
+			score->add_instrument(instr);
 		}
 	}
+
+	m_presenter = nullptr; // this destroys the score object
 }
