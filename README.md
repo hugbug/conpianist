@@ -1,26 +1,33 @@
 # ConPianist
 
-**ConPianist** or **Connected Pianist** is an app to control Yamaha digital pianos of CSP (Clavinova Smart Piano) series. This is an alternative to Yamaha's own app "Smart Pianist". As opposite to Smart Pianist, which works on iOS and Android, Connected Pianist is designed for desktop systems - macOS, Windows and Linux.
+**ConPianist** or **Connected Pianist** is an app to control Yamaha digital pianos of CSP (Clavinova Smart Piano) series. This is an alternative to Yamaha's own app "Smart Pianist". Unlike Smart Pianist, which works on iOS and Android, Connected Pianist is designed for desktop systems - macOS, Windows and Linux. It works on iPad too though.
 
 ## Features
 
-At current stage it is a no replacement for official app. Nonetheless the program can:
-- connect to piano via network (but can't connect via USB cable);
-- upload midi-files to piano;
-- playback control of uploaded midi-files (start, pause, position);
-- stream lights control (on, off);
-- guide mode control (on, off);
-- select parts (backing, left hand, right hand);
-- playback selected fragment;
+The program is not an adequate replacement for the official app yet. Nonetheless the program already can:
+- connect to piano via network or cable;
+- connect/reconnect without losing piano state: the program reads whole piano state on start and indicates it in the UI;
+- upload midi-files to piano via network (but can't upload via USB cable);
+- playback control of uploaded midi-files: start, pause, position;
+- stream lights control: on, off, slow, fast;
+- guide mode control: on, off, guide mode;
+- select parts: backing, right hand, left hand;
+- playback selected fragment in a loop;
 - volume, tempo, transpose;
 - select voices (all seven hundreds) for main, left and layer;
-- show scores with correct playback position - scores must be loaded from a separate muscixml-file (can't show scores directly from midi-file).
+- octave shift and split point (main/left) setting;
+- mixer with all classic functions: midi-channels on/off, volume, pan, reverb, reverb effect;
+- extra functions in mixer: part selection for midi-channels, voice selection directly from midi-channels;
+- balance for main/left/layer/song/mic/auxin: volume, pan, reverb, reverb effect;
+- show scores with correct playback position: scores must be provided in a separate muscixml-file (can't show scores directly from midi-file).
 
 ## Screenshots
 
-![Playback with scores](https://user-images.githubusercontent.com/3368402/64079783-1b11a480-ccec-11e9-9511-b94286b3855a.png)
+![Playback with scores](https://user-images.githubusercontent.com/3368402/79354560-d8c86b00-7f3c-11ea-8710-9c948982de3a.png)
 
-![Voice selection](https://user-images.githubusercontent.com/3368402/64079788-206eef00-ccec-11e9-9fe7-bc7ece795525.png)
+![Voice selection](https://user-images.githubusercontent.com/3368402/79355173-9f442f80-7f3d-11ea-828a-d26dced89d93.png)
+
+![Mixer](https://user-images.githubusercontent.com/3368402/79354913-4ffdff00-7f3d-11ea-8bf9-0ecda2180204.png)
 
 ## Acknowledgements
 
