@@ -1,6 +1,16 @@
+#ifdef __clang__
 #pragma clang diagnostic push
 // Ignore warnings in Lomse code: Implicit conversion loses integer precision
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
+#endif
+
+#if defined(__linux__)
+#include "../src/platform/lomse_linux.cpp"
+#elif defined(_WIN32)
+#include "../src/platform/lomse_windows.cpp"
+#else
+#include "../src/platform/lomse_other.cpp"
+#endif
 
 #include "../src/agg/src/agg_arc.cpp"
 #include "../src/agg/src/agg_bezier_arc.cpp"
@@ -40,7 +50,7 @@
 #include "../src/graphic_model/engravers/lomse_lyric_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_metronome_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_note_engraver.cpp"
-#include "../src/graphic_model/engravers/lomse_noterest_engraver.cpp"
+#include "../src/graphic_model/engravers/lomse_octave_shift_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_ornament_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_rest_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_slur_engraver.cpp"
@@ -50,6 +60,7 @@
 #include "../src/graphic_model/engravers/lomse_time_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_tuplet_engraver.cpp"
 #include "../src/graphic_model/engravers/lomse_volta_engraver.cpp"
+#include "../src/graphic_model/engravers/lomse_wedge_engraver.cpp"
 #include "../src/graphic_model/layouters/lomse_blocks_container_layouter.cpp"
 #include "../src/graphic_model/layouters/lomse_document_layouter.cpp"
 #include "../src/graphic_model/layouters/lomse_inlines_container_layouter.cpp"
@@ -63,14 +74,17 @@
 #include "../src/graphic_model/layouters/lomse_system_layouter.cpp"
 #include "../src/graphic_model/layouters/lomse_table_layouter.cpp"
 #include "../src/graphic_model/layouters/lomse_text_splitter.cpp"
+#include "../src/graphic_model/layouters/lomse_vertical_profile.cpp"
 #include "../src/graphic_model/lomse_box_score_page.cpp"
 #include "../src/graphic_model/lomse_box_slice.cpp"
 #include "../src/graphic_model/lomse_box_slice_instr.cpp"
 #include "../src/graphic_model/lomse_box_system.cpp"
 #include "../src/graphic_model/lomse_caret.cpp"
 #include "../src/graphic_model/lomse_caret_positioner.cpp"
+#include "../src/graphic_model/lomse_engravers_map.cpp"
 #include "../src/graphic_model/lomse_glyphs.cpp"
 #include "../src/graphic_model/lomse_gm_basic.cpp"
+#include "../src/graphic_model/lomse_gm_measures_table.cpp"
 #include "../src/graphic_model/lomse_graphical_model.cpp"
 #include "../src/graphic_model/lomse_handler.cpp"
 #include "../src/graphic_model/lomse_overlays_generator.cpp"
@@ -81,13 +95,14 @@
 #include "../src/graphic_model/lomse_shape_brace_bracket.cpp"
 #include "../src/graphic_model/lomse_shape_line.cpp"
 #include "../src/graphic_model/lomse_shape_note.cpp"
+#include "../src/graphic_model/lomse_shape_octave_shift.cpp"
 #include "../src/graphic_model/lomse_shape_staff.cpp"
 #include "../src/graphic_model/lomse_shape_text.cpp"
 #include "../src/graphic_model/lomse_shape_tie.cpp"
 #include "../src/graphic_model/lomse_shape_tuplet.cpp"
 #include "../src/graphic_model/lomse_shape_volta_bracket.cpp"
+#include "../src/graphic_model/lomse_shape_wedge.cpp"
 #include "../src/graphic_model/lomse_shapes.cpp"
-#include "../src/graphic_model/lomse_shapes_storage.cpp"
 #include "../src/graphic_model/lomse_sizers.cpp"
 #include "../src/graphic_model/lomse_tempo_line.cpp"
 #include "../src/graphic_model/lomse_time_grid.cpp"
@@ -104,10 +119,10 @@
 #include "../src/internal_model/lomse_im_attributes.cpp"
 #include "../src/internal_model/lomse_im_factory.cpp"
 #include "../src/internal_model/lomse_im_figured_bass.cpp"
+#include "../src/internal_model/lomse_im_measures_table.cpp"
 #include "../src/internal_model/lomse_im_note.cpp"
 #include "../src/internal_model/lomse_internal_model.cpp"
 #include "../src/internal_model/lomse_model_builder.cpp"
-#include "../src/internal_model/lomse_measures_table.cpp"
 #include "../src/internal_model/lomse_score_algorithms.cpp"
 #include "../src/internal_model/lomse_score_utilities.cpp"
 #include "../src/internal_model/lomse_staffobjs_table.cpp"
@@ -159,4 +174,6 @@
 	#include "../packages/minizip/unzip.c"
 #endif
 
+#ifdef __clang__
 #pragma clang diagnostic pop
+#endif

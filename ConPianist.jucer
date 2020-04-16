@@ -140,7 +140,7 @@
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2015 targetFolder="Builds/VisualStudio2015" bigIcon="dJQtiu" smallIcon=""
-            externalLibraries="freetype.lib">
+            externalLibraries="freetype.lib" extraCompilerFlags="/bigobj">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug" headerPath="..\..\..\ExternalLibraries\include"
                        libraryPath="..\..\..\ExternalLibraries\lib" winArchitecture="Win32"/>
@@ -209,5 +209,6 @@
   <JUCEOPTIONS/>
   <LIVE_SETTINGS>
     <OSX/>
+    <WINDOWS/>
   </LIVE_SETTINGS>
 </JUCERPROJECT>

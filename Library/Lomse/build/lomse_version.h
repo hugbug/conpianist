@@ -34,10 +34,10 @@
 // version strings
 //---------------------------------------------------------------------------------------
 #define LOMSE_VERSION_MAJOR    0
-#define LOMSE_VERSION_MINOR    26
+#define LOMSE_VERSION_MINOR    27
 #define LOMSE_VERSION_PATCH    0
 
-#define LOMSE_VERSION               "0.26.0"
-#define LOMSE_VERSION_LONG          "0.26.0+000000"
+#define LOMSE_VERSION               "0.27.0"
+#define LOMSE_VERSION_LONG          "0.27.0+6512208a"
 
 #endif  // __LOMSE_VERSION_H__

@@ -540,7 +540,7 @@ protected:
 
     //helper: dealing with ref.object
     inline ImoStaffObj* p_iter_object() { return (*m_it)->imo_object(); }
-    inline long p_iter_object_id() { return (*m_it)->element_id(); }
+    inline int p_iter_object_id() { return (int)(*m_it)->element_id(); }
     inline TimeUnits p_iter_object_time() { return (*m_it)->time(); }
     inline int p_iter_object_measure() { return (*m_it)->measure(); }
     inline int p_iter_object_staff() { return (*m_it)->staff(); }

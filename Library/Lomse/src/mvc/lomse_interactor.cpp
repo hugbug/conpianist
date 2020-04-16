@@ -1,6 +1,6 @@
 //---------------------------------------------------------------------------------------
 // This file is part of the Lomse library.
-// Lomse is copyrighted work (c) 2010-2018. All rights reserved.
+// Lomse is copyrighted work (c) 2010-2019. All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without modification,
 // are permitted provided that the following conditions are met:
@@ -2078,7 +2078,7 @@ string Interactor::dump_selection()
 }
 
 //---------------------------------------------------------------------------------------
-FragmentMark* const Interactor::add_fragment_mark_at_note_rest(ImoId scoreId,
+FragmentMark* Interactor::add_fragment_mark_at_note_rest(ImoId scoreId,
                                                                TimeUnits timepos)
 {
     FragmentMark* pMark = nullptr;
@@ -2092,7 +2092,7 @@ FragmentMark* const Interactor::add_fragment_mark_at_note_rest(ImoId scoreId,
 }
 
 //---------------------------------------------------------------------------------------
-FragmentMark* const Interactor::add_fragment_mark_at_barline(ImoId scoreId,
+FragmentMark* Interactor::add_fragment_mark_at_barline(ImoId scoreId,
                                                                TimeUnits timepos)
 {
     FragmentMark* pMark = nullptr;
@@ -2106,8 +2106,7 @@ FragmentMark* const Interactor::add_fragment_mark_at_barline(ImoId scoreId,
 }
 
 //---------------------------------------------------------------------------------------
-FragmentMark* const Interactor::add_fragment_mark_at_staffobj(ImoId scoreId,
-                                                              ImoStaffObj* pSO)
+FragmentMark* Interactor::add_fragment_mark_at_staffobj(ImoStaffObj* pSO)
 {
     FragmentMark* pMark = nullptr;
     GraphicView* pGView = dynamic_cast<GraphicView*>(m_pView);
@@ -2119,7 +2118,7 @@ FragmentMark* const Interactor::add_fragment_mark_at_staffobj(ImoId scoreId,
         if (!pSO)
             return nullptr;
 
-        pMark = pGView->add_fragment_mark_at_staffobj(scoreId, pSO);
+        pMark = pGView->add_fragment_mark_at_staffobj(pSO);
         request_window_update();
     }
 
@@ -2127,7 +2126,7 @@ FragmentMark* const Interactor::add_fragment_mark_at_staffobj(ImoId scoreId,
 }
 
 //---------------------------------------------------------------------------------------
-void Interactor::remove_mark(VisualEffect* mark)
+void Interactor::remove_mark(ApplicationMark* mark)
 {
     GraphicView* pGView = dynamic_cast<GraphicView*>(m_pView);
     pGView->remove_mark(mark);

@@ -74,7 +74,7 @@ LomseDoorway::~LomseDoorway()
 void LomseDoorway::clear_forensic_log()
 {
     ofstream logger;
-    //logger.open("forensic_log.txt");
+    logger.open("forensic_log.txt");
     logger.close();
 }
 

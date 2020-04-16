@@ -1544,7 +1544,7 @@ bool GraphicView::is_valid_viewport()
 }
 
 //---------------------------------------------------------------------------------------
-FragmentMark* const GraphicView::add_fragment_mark_at(ImoId scoreId, TimeUnits timepos,
+FragmentMark* GraphicView::add_fragment_mark_at(ImoId scoreId, TimeUnits timepos,
                                                       bool fBarline)
 {
     GraphicModel* pGModel = get_graphic_model();
@@ -1563,15 +1563,14 @@ FragmentMark* const GraphicView::add_fragment_mark_at(ImoId scoreId, TimeUnits t
 
     FragmentMark* pMark = LOMSE_NEW FragmentMark(this, m_libraryScope);
     pMark->set_visible(true);
-    pMark->initialize(xLeft, pBoxSystem);
+    pMark->initialize(xLeft, pBoxSystem, fBarline);
 
     add_visual_effect(pMark);
     return pMark;
 }
 
 //---------------------------------------------------------------------------------------
-FragmentMark* const GraphicView::add_fragment_mark_at_staffobj(ImoId scoreId,
-                                                               ImoStaffObj* pSO)
+FragmentMark* GraphicView::add_fragment_mark_at_staffobj(ImoStaffObj* pSO)
 {
     GraphicModel* pGModel = get_graphic_model();
     if (!pGModel)
