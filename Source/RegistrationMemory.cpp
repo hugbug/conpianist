@@ -68,23 +68,12 @@ void RegistrationMemory::Save()
 		SaveSettings();
 	}
 
-	// generate access token on sandboxed platforms (iOS)
-	std::unique_ptr<OutputStream> outp(url.createOutputStream());
-	outp.reset();
-
-	// delete file to make sure we write into it from the beginning
-	url.getLocalFile().deleteFile();
-
-	// now write into file
-	outp.reset(url.createOutputStream());
-	state.writeTo(*outp.get());
+	state.writeTo(file);
 }
 
 void RegistrationMemory::Load()
 {
-	std::unique_ptr<InputStream> inp(url.createInputStream(false));
-	String content = inp->readEntireStreamAsString();
-	std::unique_ptr<XmlElement> savedState = XmlDocument::parse(content);
+	std::unique_ptr<XmlElement> savedState = XmlDocument::parse(file);
 	if (!savedState) return;
 
 	root = savedState.get();

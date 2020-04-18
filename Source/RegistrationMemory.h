@@ -37,8 +37,8 @@ public:
 		bool settings = true;
 	};
 
-	RegistrationMemory(PianoController& pianoController, Settings& settings, const Options options, const URL url) :
-		pianoController(pianoController), settings(settings), options(options), url(url) {}
+	RegistrationMemory(PianoController& pianoController, Settings& settings, const Options options, const File file) :
+		pianoController(pianoController), settings(settings), options(options), file(file) {}
 	void Save();
 	void Load();
 
@@ -46,7 +46,7 @@ private:
 	PianoController& pianoController;
 	Settings& settings;
 	Options options;
-	URL url;
+	File file;
 	XmlElement* root = nullptr;
 
 	void SaveChannel(PianoController::Channel channel, String name);

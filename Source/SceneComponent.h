@@ -68,6 +68,7 @@ public:
 	void switchLargePanel(Button* button);
 	void saveState();
 	void loadState();
+	void loadSongState();
     //[/UserMethods]
 
     void paint (Graphics& g) override;

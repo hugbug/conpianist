@@ -353,6 +353,10 @@ void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	{
 		MessageManager::callAsync([=](){updateKeyboard();});
 	}
+	else if (aspect == PianoController::apSongName)
+	{
+		MessageManager::callAsync([=](){loadSongState();});
+	}
 }
 
 void SceneComponent::updateSettingsState()
@@ -567,8 +571,12 @@ void SceneComponent::saveState()
     	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
     	settings.Save();
 		MessageManager::callAsync([=](){
+			// generate access token on sandboxed platforms (iOS)
+			std::unique_ptr<OutputStream> outp(url.createOutputStream());
+			outp.reset();
+
 			RegistrationMemory::Options opts;
-			RegistrationMemory regmem(pianoController, settings, opts, url);
+			RegistrationMemory regmem(pianoController, settings, opts, url.getLocalFile());
 			regmem.Save();
 		});
     }
@@ -584,11 +592,23 @@ void SceneComponent::loadState()
     	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
     	settings.Save();
 		MessageManager::callAsync([=](){
-			RegistrationMemory::Options opts;
-			RegistrationMemory regmem(pianoController, settings, opts, url);
+			// generate access token on sandboxed platforms (iOS)
+			std::unique_ptr<InputStream> inp(url.createInputStream(false));
+
+			RegistrationMemory regmem(pianoController, settings, {}, url.getLocalFile());
 			regmem.Load();
 		});
     }
+}
+
+void SceneComponent::loadSongState()
+{
+	File file = File(pianoController.GetSongName()).withFileExtension(".conmem");
+	if (file.existsAsFile() && file.getSize() > 0)
+	{
+		RegistrationMemory regmem(pianoController, settings, {}, file);
+		regmem.Load();
+	}
 }
 //[/MiscUserCode]
 
