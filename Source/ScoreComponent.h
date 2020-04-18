@@ -26,5 +26,5 @@
 class ScoreComponent : public Component
 {
 public:
-	static ScoreComponent* Create(PianoController& pianoController, Settings& settings);
+	static ScoreComponent* Create(Settings& settings, PianoController& pianoController);
 };

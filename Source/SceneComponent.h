@@ -66,6 +66,8 @@ public:
     void toggleKeyboard();
     void updateKeyboard();
 	void switchLargePanel(Button* button);
+	void saveState();
+	void loadState();
     //[/UserMethods]
 
     void paint (Graphics& g) override;

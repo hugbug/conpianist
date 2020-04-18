@@ -33,6 +33,8 @@ Settings::Settings()
 	opt.applicationName = "ConPianist";
 	opt.osxLibrarySubFolder = "Application Support";
 	opt.filenameSuffix = "settings";
+
+	workingDirectory = File::getSpecialLocation(File::userHomeDirectory).getFullPathName();
 }
 
 void Settings::Save()
@@ -51,6 +53,7 @@ void Settings::Save()
 	prop.setValue("Score.InstrumentNames", scoreInstrumentNames);
 	prop.setValue("Score.Part", scorePart);
 	prop.setValue("Score.ShowMidiChannel", scoreShowMidiChannel);
+	prop.setValue("WorkingDirectory", workingDirectory);
 
 	prop.save();
 	sendChangeMessage();
@@ -72,4 +75,5 @@ void Settings::Load()
 	scoreInstrumentNames = (ScoreInstrumentNames)prop.getIntValue("Score.InstrumentNames", scoreInstrumentNames);
 	scoreShowMidiChannel = prop.getIntValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 	scorePart = (ScorePart)prop.getIntValue("Score.Part", scorePart);
+	workingDirectory = prop.getValue("WorkingDirectory", workingDirectory);
 }

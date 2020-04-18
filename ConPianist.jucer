@@ -51,6 +51,10 @@
             file="Graphics/button-zoomout.png"/>
     </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
+      <FILE id="r8h20P" name="RegistrationMemory.cpp" compile="1" resource="0"
+            file="Source/RegistrationMemory.cpp"/>
+      <FILE id="A463AW" name="RegistrationMemory.h" compile="0" resource="0"
+            file="Source/RegistrationMemory.h"/>
       <FILE id="dvOqsg" name="PianoMessage.cpp" compile="1" resource="0"
             file="Source/PianoMessage.cpp"/>
       <FILE id="A7TUpP" name="PianoMessage.h" compile="0" resource="0" file="Source/PianoMessage.h"/>

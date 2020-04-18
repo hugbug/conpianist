@@ -27,8 +27,8 @@
 //[/MiscUserDefs]
 
 //==============================================================================
-PlaybackComponent::PlaybackComponent (PianoController& pianoController)
-    : pianoController(pianoController)
+PlaybackComponent::PlaybackComponent (Settings& settings, PianoController& pianoController)
+    : settings(settings), pianoController(pianoController)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -527,12 +527,13 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void PlaybackComponent::chooseSong()
 {
-	File initialLocation = File::getSpecialLocation(File::userHomeDirectory);
-	initialLocation = initialLocation.getFullPathName() + "/Midi";
+	File initialLocation(settings.workingDirectory);
 	FileChooser chooser ("Please select the song you want to load...", initialLocation, "*.mid");
     if (chooser.browseForFileToOpen())
     {
     	URL url = chooser.getURLResult();
+    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+    	settings.Save();
 		songLabel->setText(TRANS("Loading..."), NotificationType::dontSendNotification);
 		MessageManager::callAsync([=](){loadSong(url);});
     }
@@ -788,7 +789,8 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="PlaybackComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener"
-                 constructorParams="PianoController&amp; pianoController" variableInitialisers="pianoController(pianoController)"
+                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController"
+                 variableInitialisers="settings(settings), pianoController(pianoController)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="290" initialHeight="410">
   <BACKGROUND backgroundColour="ff323e44">

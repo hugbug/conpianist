@@ -20,6 +20,7 @@
 //[Headers] You can add your own extra header files here...
 #include "ConnectionComponent.h"
 #include "BalanceComponent.h"
+#include "RegistrationMemory.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -148,14 +149,14 @@ SceneComponent::SceneComponent (Settings& settings)
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
     topbarPanel->setText("");
 
-	playbackComponent.reset(new PlaybackComponent(pianoController));
+	playbackComponent.reset(new PlaybackComponent(settings, pianoController));
 	playbackPanel->addAndMakeVisible(playbackComponent.get());
 
 	keyboardComponent.reset(new KeyboardComponent(settings, pianoController));
 	keyboardPanel->addAndMakeVisible(keyboardComponent.get());
 
 	voiceComponent.reset(new VoiceComponent(pianoController));
-	scoreComponent.reset(ScoreComponent::Create(pianoController, settings));
+	scoreComponent.reset(ScoreComponent::Create(settings, pianoController));
 	mixerComponent.reset(new MixerComponent(settings, pianoController));
 	largeContentPanel->addChildComponent(voiceComponent.get());
     largeContentPanel->addChildComponent(scoreComponent.get());
@@ -381,9 +382,12 @@ void SceneComponent::showMenu()
 	menu.addItem(1, "Connection Settings");
 	menu.addItem(2, "Resync State from Piano");
 	menu.addItem(3, "Reset Piano to Default State");
+	menu.addSectionHeader("REGISTRATION MEMORY");
+	menu.addItem(101, "Load Piano State");
+	menu.addItem(102, "Save Piano State");
 	menu.addSectionHeader("ABOUT");
-	menu.addItem(99, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
-	menu.addItem(100, "Homepage");
+	menu.addItem(998, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
+	menu.addItem(999, "Homepage");
 
 	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
 
@@ -400,7 +404,13 @@ void SceneComponent::showMenu()
 			statusLabel->setText("Resetting...", NotificationType::dontSendNotification);
 			MessageManager::callAsync([=](){pianoController.Reset();});
 			break;
-		case 100:
+		case 101:
+			loadState();
+			break;
+		case 102:
+			saveState();
+			break;
+		case 999:
 			URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
 			break;
 	}
@@ -538,6 +548,48 @@ void SceneComponent::switchLargePanel(Button* button)
 	updateKeyboard();
 }
 
+void SceneComponent::saveState()
+{
+	File initialLocation;
+	String songname = pianoController.GetSongName();
+	if (songname.isEmpty())
+	{
+		initialLocation = File(settings.workingDirectory + File::getSeparatorString() + "Untitled.conmem");
+	}
+	else
+	{
+		initialLocation = File(songname).withFileExtension(".conmem");
+	}
+	FileChooser chooser("Please select the name for registration memory file...", initialLocation, "*.conmem");
+    if (chooser.browseForFileToSave(true))
+    {
+    	URL url = chooser.getURLResult();
+    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+    	settings.Save();
+		MessageManager::callAsync([=](){
+			RegistrationMemory::Options opts;
+			RegistrationMemory regmem(pianoController, settings, opts, url);
+			regmem.Save();
+		});
+    }
+}
+
+void SceneComponent::loadState()
+{
+	File initialLocation(settings.workingDirectory);
+	FileChooser chooser("Please select the registration memory file to load...", initialLocation, "*.conmem");
+    if (chooser.browseForFileToOpen())
+    {
+    	URL url = chooser.getURLResult();
+    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+    	settings.Save();
+		MessageManager::callAsync([=](){
+			RegistrationMemory::Options opts;
+			RegistrationMemory regmem(pianoController, settings, opts, url);
+			regmem.Load();
+		});
+    }
+}
 //[/MiscUserCode]
 
 

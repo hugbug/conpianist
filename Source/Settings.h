@@ -54,6 +54,7 @@ public:
 	ScoreInstrumentNames scoreInstrumentNames = siMixed;
 	ScorePart scorePart = spRightAndLeft;
 	bool scoreShowMidiChannel = true;
+	String workingDirectory;
 
 private:
 	PropertiesFile::Options opt;

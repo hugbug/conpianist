@@ -32,10 +32,10 @@
 using namespace lomse;
 
 class LomseScoreComponent : public ScoreComponent, public PianoController::Listener,
-	public Button::Listener
+	public Button::Listener, public ChangeListener
 {
 public:
-	LomseScoreComponent(PianoController& pianoController, Settings& settings);
+	LomseScoreComponent(Settings& settings, PianoController& pianoController);
 	~LomseScoreComponent() override;
 
 	void paint (Graphics& g) override;
@@ -48,14 +48,15 @@ public:
     void buttonClicked (Button* buttonThatWasClicked) override;
 
 	void PianoStateChanged(PianoController::Aspect aspect, PianoController::Channel channel) override;
+    void changeListenerCallback(ChangeBroadcaster* source) override { if (source == &m_settings) ApplySettings(); }
 
 private:
+	Settings& m_settings;
+	PianoController& m_pianoController;
 	lomse::LomseDoorway m_lomse;
 	std::unique_ptr<Presenter> m_presenter;
 	RenderingBuffer m_rbuf_window;
 	std::unique_ptr<juce::Image> m_image;
-	PianoController& m_pianoController;
-	Settings& m_settings;
 	float m_scale = 1;
 	int m_scoreId = 0;
 	PianoController::Loop loop{{0,0},{0,0}};
@@ -69,6 +70,9 @@ private:
     std::vector<ImoInstrument*> m_instruments;
     PianoController::Channel m_rightChannel = PianoController::chMidi0;
     PianoController::Channel m_leftChannel = PianoController::chMidi0;
+	Settings::ScoreInstrumentNames m_scoreInstrumentNames = Settings::siMixed;
+	Settings::ScorePart m_scorePart = Settings::spRightAndLeft;
+	bool m_scoreShowMidiChannel = true;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -81,6 +85,7 @@ private:
 	void LoadScore(const URL& url);
 	void ChooseScoreFile();
 	void ShowMenu();
+	void ApplySettings();
 	void PrepareInstruments();
 	void ConfigureInstruments();
 	void UpdateInstruments(bool force);
@@ -101,13 +106,13 @@ private:
 };
 
 
-ScoreComponent* ScoreComponent::Create(PianoController& pianoController, Settings& settings)
+ScoreComponent* ScoreComponent::Create(Settings& settings, PianoController& pianoController)
 {
-	return new LomseScoreComponent(pianoController, settings);
+	return new LomseScoreComponent(settings, pianoController);
 }
 
-LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Settings& settings) :
-	m_pianoController(pianoController), m_settings(settings)
+LomseScoreComponent::LomseScoreComponent(Settings& settings, PianoController& pianoController) :
+	m_settings(settings), m_pianoController(pianoController)
 {
 	m_scale = m_settings.zoomUi * Desktop::getInstance().getDisplays().getMainDisplay().scale;
 	int resolution = int(96 * m_scale);
@@ -137,6 +142,7 @@ LomseScoreComponent::LomseScoreComponent(PianoController& pianoController, Setti
 	BuildControls();
 
 	pianoController.AddListener(this);
+	settings.addChangeListener(this);
 }
 
 LomseScoreComponent::~LomseScoreComponent()
@@ -303,14 +309,15 @@ void LomseScoreComponent::buttonClicked(Button* buttonThatWasClicked)
 
 void LomseScoreComponent::ChooseScoreFile()
 {
-	File initialLocation = File::getSpecialLocation(File::userHomeDirectory);
-	initialLocation = initialLocation.getFullPathName() + "/Midi";
+	File initialLocation(m_settings.workingDirectory);
 	String songName = File(m_pianoController.GetSongName()).getFileNameWithoutExtension();
 	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
 	FileChooser chooser(title, initialLocation, "*.xml;*.musicxml");
     if (chooser.browseForFileToOpen())
     {
     	URL url = chooser.getURLResult();
+    	m_settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+    	m_settings.Save();
 		MessageManager::callAsync([=](){LoadScore(url);});
     }
 }
@@ -543,7 +550,6 @@ void LomseScoreComponent::ShowMenu()
 	if (group == 1 || group == 2 || group == 3)
 	{
 		m_settings.Save();
-		UpdateInstruments(true);
 	}
 }
 
@@ -593,6 +599,10 @@ void LomseScoreComponent::PrepareInstruments()
 
 void LomseScoreComponent::ConfigureInstruments()
 {
+	m_scoreInstrumentNames = m_settings.scoreInstrumentNames;
+	m_scorePart = m_settings.scorePart;
+	m_scoreShowMidiChannel = m_settings.scoreShowMidiChannel;
+
 	ImoDocument* imoDoc = m_presenter->get_document_raw_ptr()->get_im_root();
 	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
 	if (!score) return;
@@ -706,4 +716,14 @@ void LomseScoreComponent::Cleanup()
 	}
 
 	m_presenter = nullptr; // this destroys the score object
+}
+
+void LomseScoreComponent::ApplySettings()
+{
+	if (m_scoreInstrumentNames != m_settings.scoreInstrumentNames ||
+		m_scorePart != m_settings.scorePart ||
+		m_scoreShowMidiChannel != m_settings.scoreShowMidiChannel)
+	{
+		UpdateInstruments(true);
+	}
 }

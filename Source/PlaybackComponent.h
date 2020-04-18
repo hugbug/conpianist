@@ -22,6 +22,7 @@
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "PianoController.h"
+#include "Settings.h"
 //[/Headers]
 
 
@@ -41,7 +42,7 @@ class PlaybackComponent  : public Component,
 {
 public:
     //==============================================================================
-    PlaybackComponent (PianoController& pianoController);
+    PlaybackComponent (Settings& settings, PianoController& pianoController);
     ~PlaybackComponent() override;
 
     //==============================================================================
@@ -69,6 +70,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    Settings& settings;
     PianoController& pianoController;
     bool menuShown = false;
     //[/UserVariables]
