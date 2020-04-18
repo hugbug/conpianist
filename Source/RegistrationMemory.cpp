@@ -143,7 +143,7 @@ void RegistrationMemory::LoadChannel(PianoController::Channel channel, String na
 	if (!chElem) return;
 
 	XmlElement* el;
-	if ((el = chElem->getChildByName("Active")))
+	if ((el = chElem->getChildByName("Active")) && channel != PianoController::chAuxIn)
 	{
 		String value = el->getAllSubText();
 		pianoController.SetActive(channel, value.equalsIgnoreCase("yes"));

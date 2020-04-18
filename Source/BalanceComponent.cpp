@@ -34,17 +34,17 @@ BalanceComponent::BalanceComponent (Settings& settings, PianoController& pianoCo
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    leftChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chLeft, "Left", true, true, false, true, false));
+    leftChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chLeft, "Left", true, false, true, false));
     addAndMakeVisible (leftChannel.get());
-    mainChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMain, "Main", false, true, false, true, false));
+    mainChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMain, "Main", false, false, true, false));
     addAndMakeVisible (mainChannel.get());
-    layerChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chLayer, "Layer", false, true, false, true, false));
+    layerChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chLayer, "Layer", false, false, true, false));
     addAndMakeVisible (layerChannel.get());
-    songChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMidiMaster, "Song", false, true, false, true, false));
+    songChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMidiMaster, "Song", false, false, true, false));
     addAndMakeVisible (songChannel.get());
-    micChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMic, "Mic", false, true, false, true, false));
+    micChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chMic, "Mic", false, false, true, false));
     addAndMakeVisible (micChannel.get());
-    auxInChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chAuxIn, "Aux In", false, false, false, true, false));
+    auxInChannel.reset (new ChannelComponent (settings, pianoController, PianoController::chAuxIn, "Aux In", false, false, true, false));
     addAndMakeVisible (auxInChannel.get());
     effectComboBox.reset (new ComboBox ("Reverb Effect Combo Box"));
     addAndMakeVisible (effectComboBox.get());
@@ -185,22 +185,22 @@ BEGIN_JUCER_METADATA
   <BACKGROUND backgroundColour="ff323e44"/>
   <JUCERCOMP name="Left Channel" id="97f9a699004cae9a" memberName="leftChannel"
              virtualName="" explicitFocusOrder="0" pos="8 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chLeft, &quot;Left&quot;, true, true, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chLeft, &quot;Left&quot;, true, false, true, false"/>
   <JUCERCOMP name="Main Channel" id="74e25a6d700b5cc9" memberName="mainChannel"
              virtualName="" explicitFocusOrder="0" pos="78 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chMain, &quot;Main&quot;, false, true, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chMain, &quot;Main&quot;, false, false, true, false"/>
   <JUCERCOMP name="Layer Channel" id="ef551064ccb187e2" memberName="layerChannel"
              virtualName="" explicitFocusOrder="0" pos="148 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chLayer, &quot;Layer&quot;, false, true, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chLayer, &quot;Layer&quot;, false, false, true, false"/>
   <JUCERCOMP name="Song Channel" id="ea486fd33cd44e31" memberName="songChannel"
              virtualName="" explicitFocusOrder="0" pos="218 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false, true, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chMidiMaster, &quot;Song&quot;, false, false, true, false"/>
   <JUCERCOMP name="Mic Channel" id="8f4c373ee8ae253f" memberName="micChannel"
              virtualName="" explicitFocusOrder="0" pos="288 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chMic, &quot;Mic&quot;, false, true, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chMic, &quot;Mic&quot;, false, false, true, false"/>
   <JUCERCOMP name="AuxIn Channel" id="7ffff5d33c7b27f" memberName="auxInChannel"
              virtualName="" explicitFocusOrder="0" pos="358 0 70 0M" sourceFile="ChannelComponent.cpp"
-             constructorParams="settings, pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false, false, false, true, false"/>
+             constructorParams="settings, pianoController, PianoController::chAuxIn, &quot;Aux In&quot;, false, false, true, false"/>
   <COMBOBOX name="Reverb Effect Combo Box" id="486cacdf50ec1ba7" memberName="effectComboBox"
             virtualName="" explicitFocusOrder="0" pos="74 176 176 24" tooltip="Reverb Effect"
             editable="0" layout="33" items="Real Large Hall&#10;Real Medium Hall&#10;Concert Hall"

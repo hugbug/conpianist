@@ -43,7 +43,7 @@ class ChannelComponent  : public Component,
 {
 public:
     //==============================================================================
-    ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable);
+    ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool showMenu, bool shrinkMenu, bool scrollable);
     ~ChannelComponent() override;
 
     //==============================================================================
@@ -72,7 +72,6 @@ private:
     PianoController& pianoController;
     PianoController::Channel channel;
     String title;
-    bool canPanAndReverb;
     bool showMenuRow;
     bool shrinkMenu;
     //[/UserVariables]

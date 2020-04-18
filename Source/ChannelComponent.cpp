@@ -29,8 +29,8 @@ void Sleep(int milliseconds);
 //[/MiscUserDefs]
 
 //==============================================================================
-ChannelComponent::ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable)
-    : settings(settings), pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
+ChannelComponent::ChannelComponent (Settings& settings, PianoController& pianoController, PianoController::Channel channel, String title, bool showLabels, bool showMenu, bool shrinkMenu, bool scrollable)
+    : settings(settings), pianoController(pianoController), channel(channel), title(title), showMenuRow(showMenu), shrinkMenu(shrinkMenu)
 {
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
@@ -360,8 +360,8 @@ void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 	reverbLabel->setEnabled(pianoController.IsConnected());
 	volumeLabel->setEnabled(pianoController.IsConnected());
 
-	panSlider->setEnabled(enabled && active && canPanAndReverb);
-	reverbSlider->setEnabled(enabled && active && canPanAndReverb);
+	panSlider->setEnabled(enabled && active && channel != PianoController::chAuxIn);
+	reverbSlider->setEnabled(enabled && active && channel != PianoController::chAuxIn);
 	volumeSlider->setEnabled(enabled && active);
 
 	panSlider->setValue(pianoController.GetPan(channel), NotificationType::dontSendNotification);
@@ -521,7 +521,7 @@ void ChannelComponent::toggleChannel()
 			Sleep(20);
 		}
 	}
-	else
+	else if (channel != PianoController::chAuxIn)
 	{
        	pianoController.SetActive(channel, !pianoController.GetActive(channel));
 	}
@@ -540,8 +540,8 @@ BEGIN_JUCER_METADATA
 
 <JUCER_COMPONENT documentType="Component" className="ChannelComponent" componentName=""
                  parentClasses="public Component, public PianoController::Listener, public ChangeListener"
-                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool canPanAndReverb, bool showMenu, bool shrinkMenu, bool scrollable"
-                 variableInitialisers="settings(settings), pianoController(pianoController), channel(channel), title(title), canPanAndReverb(canPanAndReverb), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
+                 constructorParams="Settings&amp; settings, PianoController&amp; pianoController, PianoController::Channel channel, String title, bool showLabels, bool showMenu, bool shrinkMenu, bool scrollable"
+                 variableInitialisers="settings(settings), pianoController(pianoController), channel(channel), title(title), showMenuRow(showMenu), shrinkMenu(shrinkMenu)"
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="70" initialHeight="560">
   <BACKGROUND backgroundColour="ff323e44"/>
