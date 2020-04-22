@@ -84,7 +84,7 @@ void MidiSocket::flush()
 // https://www.arduino.cc/en/Reference/EthernetUDPParsePacket
 int MidiSocket::parsePacket()
 {
-	return 1;
+	return m_socket.waitUntilReady(true, 1);
 }
 
 // Read up to len bytes from the current packet and place them into buffer

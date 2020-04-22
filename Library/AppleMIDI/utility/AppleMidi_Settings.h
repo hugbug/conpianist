@@ -71,12 +71,12 @@
 // Set to 0 if you have troubles controlling your hardware.
 #define APPLEMIDI_USE_RUNNING_STATUS         0
 
-#define MIDI_SYSEX_ARRAY_SIZE           255
+#define MIDI_SYSEX_ARRAY_SIZE           2048
 
 #define MIDI_SYSEX_ARRAY_SIZE_CONTENT   (MIDI_SYSEX_ARRAY_SIZE - 2)
 
 // Max size of dissectable packet
-#define PACKET_MAX_SIZE 350
+#define PACKET_MAX_SIZE 4096
 
 // -----------------------------------------------------------------------------
 

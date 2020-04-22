@@ -104,8 +104,6 @@ void RtpMidiConnector::run()
 
 		// process incoming messages
 		rtpMidi.run();
-
-		Thread::sleep(10);
 	}
 }
 
