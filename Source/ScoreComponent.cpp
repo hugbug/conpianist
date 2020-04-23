@@ -58,6 +58,7 @@ private:
 	RenderingBuffer m_rbuf_window;
 	std::unique_ptr<juce::Image> m_image;
 	float m_scale = 1;
+	float m_docScale = 1;
 	int m_scoreId = 0;
 	PianoController::Loop loop{{0,0},{0,0}};
 	PianoController::Position loopStart{0,0};
@@ -214,14 +215,8 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 void LomseScoreComponent::PrepareImage()
 {
-	m_image.reset(new juce::Image(juce::Image::PixelFormat::ARGB,
-		int(getWidth() * m_scale), int(getHeight() * m_scale), false, SoftwareImageType()));
-
-	//creates a bitmap of specified size and associates it to the rendering
-	//buffer for the view. Any existing buffer is automatically deleted
-	juce::Image::BitmapData bitmap(*m_image, juce::Image::BitmapData::readWrite);
-
-	m_rbuf_window.attach(bitmap.data, m_image->getWidth(), m_image->getHeight(), bitmap.lineStride);
+	int width = int(getWidth() * m_scale);
+	int height = int(getHeight() * m_scale);
 
 	//adjust the number of measures to fit the area size
 	//adjust page size
@@ -230,9 +225,9 @@ void LomseScoreComponent::PrepareImage()
 	ImoDocument* imoDoc = doc->get_im_root();
 	ImoPageInfo* pageInfo = imoDoc->get_page_info();
 
-	pageInfo->set_page_width(ScaledUnits(m_image->getWidth()));
-	pageInfo->set_page_height(ScaledUnits(m_image->getHeight()));
-
+	imoDoc->set_page_content_scale(1.0); // reset scale
+	pageInfo->set_page_width(ScaledUnits(width));
+	pageInfo->set_page_height(ScaledUnits(height));
 	pageInfo->set_top_margin(500);
 	pageInfo->set_left_margin(300);
 	pageInfo->set_right_margin(300);
@@ -240,6 +235,17 @@ void LomseScoreComponent::PrepareImage()
 	pageInfo->set_binding_margin(0);
 
 	interactor->on_document_updated();  //This rebuilds GraphicModel
+
+	m_docScale = imoDoc->get_page_content_scale(); // Scale is calculated when rebuliding GraphicModel
+
+	// create image to fit the whole page
+	m_image.reset(new juce::Image(juce::Image::PixelFormat::ARGB,
+		int(width / m_docScale), int(height / m_docScale), false, SoftwareImageType()));
+	//creates a bitmap of specified size and associates it to the rendering
+	//buffer for the view. Any existing buffer is automatically deleted
+	juce::Image::BitmapData bitmap(*m_image, juce::Image::BitmapData::readWrite);
+	m_rbuf_window.attach(bitmap.data, m_image->getWidth(), m_image->getHeight(), bitmap.lineStride);
+
 	interactor->redraw_bitmap();
 	UpdateABMarks(true);
 	UpdateTempoLine(false);
