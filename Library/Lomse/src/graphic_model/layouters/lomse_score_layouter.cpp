@@ -200,19 +200,24 @@ void ScoreLayouter::layout_in_box()
                 msg << "  Page size too small for " << m_pScore->get_num_instruments()
                     << " instruments.";
                 add_error_message(msg.str());
-                set_layout_is_finished(true);
+                set_layout_result(k_layout_success);
                 delete_system();
                 return;
-            #else
+            #elseif (0)
                 //Overrun paper
                 add_system_to_page();
                 fSystemsAdded = true;
+            #else
+                auto_scale();
+                set_layout_result(k_layout_failed_auto_scale);
+                delete_system();
+                return;
             #endif
         }
         else
         {
             //inform parent layouter for allocating a new page.
-            set_layout_is_finished(false);
+            set_layout_result(k_layout_not_finished);
             return;
         }
     }
@@ -227,7 +232,7 @@ void ScoreLayouter::layout_in_box()
         remove_unused_space();
     }
 
-    set_layout_is_finished( !fMoreColumns );
+    set_layout_result(fMoreColumns ? k_layout_not_finished : k_layout_success);
     m_pageCursor = m_cursor;
 }
 
@@ -261,6 +266,17 @@ void ScoreLayouter::create_system()
     create_system_layouter();
     create_system_box();
     engrave_system();
+}
+
+//---------------------------------------------------------------------------------------
+void ScoreLayouter::auto_scale()
+{
+    LUnits systemHeight = m_pCurBoxSystem->get_height();
+    LUnits pageHeight = m_pCurBoxPage->get_height();
+    float scale = pageHeight / systemHeight;
+    ImoDocument* pDoc = m_pScore->get_document();
+    scale *= pDoc->get_page_content_scale();
+    pDoc->set_page_content_scale(scale);
 }
 
 //---------------------------------------------------------------------------------------
@@ -1547,9 +1563,10 @@ void LinesBreakerOptimal::compute_optimal_break_sequence()
 
                 if (fTrace)
                 {
-                    dbgLogger << "Penalty for (" << i << ", " << j << ")= "
-                              << (prevPenalty + newPenalty) << ". Current= "
-                              << m_entries[j].penalty << endl;
+                    dbgLogger << "prevPenalty for (" << i << ", " << j << ")= "
+                              << prevPenalty << ", New= " << newPenalty << ". Next= "
+                              << m_entries[j].penalty << ", prev+new= "
+                              << (prevPenalty + newPenalty) << endl;
                 }
 
                 if (fSystemBreak || m_pSpAlgorithm->is_better_option(prevPenalty, newPenalty,
@@ -1557,7 +1574,8 @@ void LinesBreakerOptimal::compute_optimal_break_sequence()
                 {
                     if (fTrace)
                     {
-                        dbgLogger << (prevPenalty + newPenalty) << " is better option than "
+                        dbgLogger << "    " << (prevPenalty + newPenalty)
+                                  << " is better option than "
                                   << m_entries[j].penalty << " for entry " << j << endl;
                     }
 
