@@ -240,7 +240,7 @@ void PianoController::SetLocalControl(bool enabled)
 {
 	m_localControl = enabled;
 	MidiMessage localControlMessage = MidiMessage::controllerEvent(1, 122, enabled ? 127 : 0);
-	m_midiConnector->SendMessage(localControlMessage);
+	SendMidiMessage(localControlMessage);
 	NotifyChanged(apLocalControl);
 }
 
@@ -324,7 +324,7 @@ void PianoController::SendCspMessage(const PianoMessage& message)
 {
 	MidiMessage midiMessage = MidiMessage::createSysExMessage(
 		message.GetSysExData().getData(), (int)message.GetSysExData().getSize());
-	m_midiConnector->SendMessage(midiMessage);
+	SendMidiMessage(midiMessage);
 }
 
 void PianoController::ResetSong()
@@ -492,6 +492,8 @@ void PianoController::SetSplitPoint(int splitPoint)
 
 void PianoController::IncomingMidiMessage(const MidiMessage& message)
 {
+	PrintLog("RECV", message);
+
 	if (message.isSysEx() &&
 		PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize()))
 	{
@@ -691,6 +693,7 @@ void PianoController::RemoveListener(Listener* listener)
 
 void PianoController::SendMidiMessage(const MidiMessage& message)
 {
+	PrintLog("SEND", message);
 	m_midiConnector->SendMessage(message);
 }
 
@@ -707,5 +710,22 @@ void PianoController::NotifyNoteMessage(const MidiMessage& message)
 	for (auto listener : m_listeners)
 	{
 		listener->PianoNoteMessage(message);
+	}
+}
+
+void PianoController::PrintLog(const String& prefix, const MidiMessage& message)
+{
+	if (Logger::getCurrentLogger())
+	{
+		int size = message.getRawDataSize();
+		const uint8* data = message.getRawData();
+		String text("[MIDI] " + prefix + " " + String::toHexString(data, size, 1) + "  ");
+		for (int i = 0; i < size; i++)
+		{
+			uint8 b = data[i];
+			char ch = b >= 32 && b < 128 ? b : '.';
+			text += ch;
+		}
+		Logger::writeToLog(text);
 	}
 }

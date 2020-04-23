@@ -255,4 +255,5 @@ private:
 	void NotifyNoteMessage(const MidiMessage& message);
 	void ResyncStateFromPiano();
 	String DecodeSongName(String rawValue);
+	void PrintLog(const String& prefix, const MidiMessage& message);
 };

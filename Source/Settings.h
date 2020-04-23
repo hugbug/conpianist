@@ -55,6 +55,7 @@ public:
 	ScorePart scorePart = spRightAndLeft;
 	bool scoreShowMidiChannel = true;
 	String workingDirectory;
+	bool logging = false;
 
 private:
 	PropertiesFile::Options opt;

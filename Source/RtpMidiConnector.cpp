@@ -27,7 +27,7 @@ class RtpMidi : public appleMidi::AppleMidi_Class<appleMidi::MidiSocket>
 public:
 	RtpMidi(MidiConnector::Listener* listener, bool& connected)
 		: m_listener(listener), m_connected(connected) {}
-	void CheckConenction();
+	void CheckConnection();
 	void OnActiveSensing(void* sender) override;
 	void OnSysEx(void* sender, const byte* data, uint16_t size) override;
 
@@ -42,6 +42,7 @@ void RtpMidi::OnActiveSensing(void* sender)
 {
 	appleMidi::AppleMidi_Class<appleMidi::MidiSocket>::OnActiveSensing(sender);
 	m_lastSensing = appleMidi::millis();
+	if (!m_connected) Logger::writeToLog("[RTP-MIDI] Connected");
 	m_connected = true;
 }
 
@@ -68,7 +69,7 @@ void RtpMidi::OnSysEx(void* sender, const byte* data, uint16_t size)
 	}
 }
 
-void RtpMidi::CheckConenction()
+void RtpMidi::CheckConnection()
 {
 	unsigned long lastTime = Sessions[0].syncronization.lastTime;
 	if (lastTime > 0)
@@ -76,6 +77,7 @@ void RtpMidi::CheckConenction()
 		unsigned long delta = appleMidi::millis() - m_lastSensing;
 		if (delta > 3000)
 		{
+			if (m_connected) Logger::writeToLog("[RTP-MIDI] Disconnected");
 			DeleteSession(0);
 			m_connected = false;
 		}
@@ -96,9 +98,10 @@ void RtpMidiConnector::run()
 	while (!threadShouldExit())
 	{
 		// check connection lost and reinvite
-		rtpMidi.CheckConenction();
+		rtpMidi.CheckConnection();
 		if (rtpMidi.GetFreeSessionSlot() == 0)
 		{
+			Logger::writeToLog("[RTP-MIDI] Inviting");
 			rtpMidi.invite(remoteIp);
 		}
 

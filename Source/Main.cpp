@@ -75,6 +75,25 @@ public:
 		}
 	}
 
+    class ConFileLogger : public FileLogger
+    {
+    public:
+    	ConFileLogger() : FileLogger(getSystemLogFileFolder()
+    	#ifdef WIN32
+    		.getChildFile("ConPianist")
+		#endif
+    		.getChildFile("ConPianist.log"), String("ConPianist ") +
+    		JUCEApplication::getInstance()->getApplicationVersion()) {}
+	protected:
+    	void logMessage(const String& message) override
+    	{
+			Time time = Time::getCurrentTime();
+			String timestr = time.formatted("%Y-%m-%d %H:%M:%S.") + String(time.getMilliseconds()).paddedLeft('0', 3);
+			String text(timestr + " " + message);
+			FileLogger::logMessage(text);
+		}
+	};
+
     //==============================================================================
     /*
         This class implements the desktop window that contains an instance of
@@ -89,6 +108,12 @@ public:
                                                     DocumentWindow::allButtons)
         {
 			settings.Load();
+
+			if (settings.logging)
+			{
+				logger.reset(new ConFileLogger());
+				Logger::setCurrentLogger(logger.get());
+			}
 
             setUsingNativeTitleBar (true);
             setContentOwned (new SceneComponent(settings), true);
@@ -111,6 +136,8 @@ public:
 		{
 			settings.windowPos = getBounds();
 			settings.Save();
+			Logger::writeToLog("Application ended gracefully");
+			Logger::setCurrentLogger(nullptr);
 		}
 
         void closeButtonPressed() override
@@ -131,6 +158,7 @@ public:
     private:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
         Settings settings;
+    	std::unique_ptr<FileLogger> logger;
     };
 
 private:

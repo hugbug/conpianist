@@ -54,6 +54,7 @@ void Settings::Save()
 	prop.setValue("Score.Part", scorePart);
 	prop.setValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 	prop.setValue("WorkingDirectory", workingDirectory);
+	prop.setValue("Logging", logging);
 
 	prop.save();
 	sendChangeMessage();
@@ -76,4 +77,5 @@ void Settings::Load()
 	scoreShowMidiChannel = prop.getIntValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 	scorePart = (ScorePart)prop.getIntValue("Score.Part", scorePart);
 	workingDirectory = prop.getValue("WorkingDirectory", workingDirectory);
+	logging = prop.getIntValue("Logging", logging);
 }
