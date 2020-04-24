@@ -74,6 +74,7 @@ private:
 	Settings::ScoreInstrumentNames m_scoreInstrumentNames = Settings::siMixed;
 	Settings::ScorePart m_scorePart = Settings::spRightAndLeft;
 	bool m_scoreShowMidiChannel = true;
+	String m_error;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -215,40 +216,51 @@ void LomseScoreComponent::LoadDocument(String filename)
 
 void LomseScoreComponent::PrepareImage()
 {
-	int width = int(getWidth() * m_scale);
-	int height = int(getHeight() * m_scale);
+	try
+	{
+		m_image.reset();
 
-	//adjust the number of measures to fit the area size
-	//adjust page size
-	SpInteractor interactor = m_presenter->get_interactor(0).lock();
-	Document* doc = m_presenter->get_document_raw_ptr();
-	ImoDocument* imoDoc = doc->get_im_root();
-	ImoPageInfo* pageInfo = imoDoc->get_page_info();
+		int width = int(getWidth() * m_scale);
+		int height = int(getHeight() * m_scale);
 
-	imoDoc->set_page_content_scale(1.0); // reset scale
-	pageInfo->set_page_width(ScaledUnits(width));
-	pageInfo->set_page_height(ScaledUnits(height));
-	pageInfo->set_top_margin(500);
-	pageInfo->set_left_margin(300);
-	pageInfo->set_right_margin(300);
-	pageInfo->set_bottom_margin(500);
-	pageInfo->set_binding_margin(0);
+		//adjust the number of measures to fit the area size
+		//adjust page size
+		SpInteractor interactor = m_presenter->get_interactor(0).lock();
+		Document* doc = m_presenter->get_document_raw_ptr();
+		ImoDocument* imoDoc = doc->get_im_root();
+		ImoPageInfo* pageInfo = imoDoc->get_page_info();
 
-	interactor->on_document_updated();  //This rebuilds GraphicModel
+		imoDoc->set_page_content_scale(1.0); // reset scale
+		pageInfo->set_page_width(ScaledUnits(width));
+		pageInfo->set_page_height(ScaledUnits(height));
+		pageInfo->set_top_margin(500);
+		pageInfo->set_left_margin(300);
+		pageInfo->set_right_margin(300);
+		pageInfo->set_bottom_margin(500);
+		pageInfo->set_binding_margin(0);
 
-	m_docScale = imoDoc->get_page_content_scale(); // Scale is calculated when rebuliding GraphicModel
+		interactor->on_document_updated();  //This rebuilds GraphicModel
 
-	// create image to fit the whole page
-	m_image.reset(new juce::Image(juce::Image::PixelFormat::ARGB,
-		int(width / m_docScale), int(height / m_docScale), false, SoftwareImageType()));
-	//creates a bitmap of specified size and associates it to the rendering
-	//buffer for the view. Any existing buffer is automatically deleted
-	juce::Image::BitmapData bitmap(*m_image, juce::Image::BitmapData::readWrite);
-	m_rbuf_window.attach(bitmap.data, m_image->getWidth(), m_image->getHeight(), bitmap.lineStride);
+		m_docScale = imoDoc->get_page_content_scale(); // Scale is calculated when rebuliding GraphicModel
 
-	interactor->redraw_bitmap();
-	UpdateABMarks(true);
-	UpdateTempoLine(false);
+		// create image to fit the whole page
+		m_image.reset(new juce::Image(juce::Image::PixelFormat::ARGB,
+			int(width / m_docScale), int(height / m_docScale), false, SoftwareImageType()));
+		//creates a bitmap of specified size and associates it to the rendering
+		//buffer for the view. Any existing buffer is automatically deleted
+		juce::Image::BitmapData bitmap(*m_image, juce::Image::BitmapData::readWrite);
+		m_rbuf_window.attach(bitmap.data, m_image->getWidth(), m_image->getHeight(), bitmap.lineStride);
+
+		interactor->redraw_bitmap();
+
+		UpdateABMarks(true);
+		UpdateTempoLine(false);
+	}
+	catch (runtime_error e)
+	{
+		m_error = e.what();
+		juce::Logger::writeToLog("[SCORE] runtime_error: " + m_error);
+	}
 }
 
 LUnits LomseScoreComponent::ScaledUnits(int pixels)
@@ -285,9 +297,19 @@ void LomseScoreComponent::resized()
 
 void LomseScoreComponent::paint(Graphics& g)
 {
-	if (m_presenter)
+	if (m_presenter && m_image)
 	{
 		g.drawImage(*m_image, 0, 0, getWidth(), getHeight(), 0, 0, m_image->getWidth(), m_image->getHeight());
+	}
+	else if (m_presenter && !m_image)
+	{
+		String text = "An error occured when drawing the score:\n" + m_error;
+		g.setColour(Colours::white);
+		g.fillRect(0, 0, getWidth(), getHeight());
+		g.setColour(Colours::red);
+		g.setFont(16);
+		juce::Rectangle<int> rec(20, 80, getWidth() - 40, getHeight() - 100);
+		g.drawFittedText(text, rec, Justification::centredTop, 100, 1);
 	}
 	else
 	{
@@ -338,7 +360,7 @@ void LomseScoreComponent::LoadScore(const URL& url)
 
 void LomseScoreComponent::mouseDown(const MouseEvent& event)
 {
-	if (!m_presenter) return;
+	if (!m_presenter || !m_image) return;
 
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_button_down(int(event.getMouseDownScreenX() * m_scale),
@@ -347,7 +369,7 @@ void LomseScoreComponent::mouseDown(const MouseEvent& event)
 
 void LomseScoreComponent::mouseUp(const MouseEvent& event)
 {
-	if (!m_presenter) return;
+	if (!m_presenter || !m_image) return;
 
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_button_up(int(event.getMouseDownScreenX() * m_scale),
@@ -356,7 +378,7 @@ void LomseScoreComponent::mouseUp(const MouseEvent& event)
 
 void LomseScoreComponent::mouseMove(const MouseEvent& event)
 {
-	if (!m_presenter) return;
+	if (!m_presenter || !m_image) return;
 
 	SpInteractor interactor = m_presenter->get_interactor(0).lock();
 	interactor->on_mouse_move(int(event.getMouseDownScreenX() * m_scale),
@@ -370,7 +392,7 @@ void LomseScoreComponent::mouseDrag(const MouseEvent& event)
 
 void LomseScoreComponent::mouseWheelMove(const MouseEvent& event, const MouseWheelDetails& details)
 {
-	if (!m_presenter) return;
+	if (!m_presenter || !m_image) return;
 
 	float scrollY = details.deltaY * 256;
 
@@ -416,7 +438,7 @@ void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, Pian
 
 void LomseScoreComponent::UpdateSongState()
 {
-	if (!m_presenter) return;
+	if (!m_presenter || !m_image) return;
 
 	UpdateABMarks(false);
 	UpdateTempoLine(true);
