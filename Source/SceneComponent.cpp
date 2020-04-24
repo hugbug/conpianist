@@ -472,6 +472,9 @@ void SceneComponent::applySettings()
 			rtpMidiConnector->stopThread(1000);
 		}
 
+		localMidiConnector.reset();
+		rtpMidiConnector.reset();
+
 		if (settings.midiPort == "")
 		{
 			rtpMidiConnector.reset(new RtpMidiConnector(settings.pianoIp));
