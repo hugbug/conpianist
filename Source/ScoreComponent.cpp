@@ -69,6 +69,7 @@ private:
     std::vector<std::string> m_instrNames;
     std::vector<std::string> m_instrAbbrevs;
     std::vector<ImoInstrument*> m_instruments;
+    std::vector<ImoInstrGroup*> m_instrgroups;
     PianoController::Channel m_rightChannel = PianoController::chMidi0;
     PianoController::Channel m_leftChannel = PianoController::chMidi0;
 	Settings::ScoreInstrumentNames m_scoreInstrumentNames = Settings::siMixed;
@@ -602,6 +603,7 @@ void LomseScoreComponent::PrepareInstruments()
 	m_instrNames.clear();
 	m_instrAbbrevs.clear();
 	m_instruments.clear();
+	m_instrgroups.clear();
 
 	ImoDocument* imoDoc = m_presenter->get_document_raw_ptr()->get_im_root();
 	ImoScore* score = dynamic_cast<ImoScore*>(imoDoc->get_content_item(0));
@@ -622,6 +624,15 @@ void LomseScoreComponent::PrepareInstruments()
 		// hide instrument
 		score->get_instruments()->remove_child(instr);
 	}
+
+	while (score->get_instrument_groups() &&
+		score->get_instrument_groups()->get_num_items() > 0)
+	{
+		ImoInstrGroup* group = (ImoInstrGroup*)score->get_instrument_groups()->get_child(0);
+		m_instrgroups.push_back(group);
+		score->get_instrument_groups()->remove_child(group);
+	}
+
 	score->end_of_changes();
 }
 
@@ -640,6 +651,14 @@ void LomseScoreComponent::ConfigureInstruments()
 	{
 		ImoInstrument* instr = score->get_instrument(0);
 		score->get_instruments()->remove_child(instr);
+	}
+
+	// hide all groups
+	while (score->get_instrument_groups() &&
+		score->get_instrument_groups()->get_num_items() > 0)
+	{
+		ImoInstrGroup* group = (ImoInstrGroup*)score->get_instrument_groups()->get_child(0);
+		score->get_instrument_groups()->remove_child(group);
 	}
 
 	int num = 0;
@@ -710,6 +729,20 @@ void LomseScoreComponent::ConfigureInstruments()
 			score->get_num_instruments() == 0)
 		{
 			score->add_instrument(instr);
+		}
+	}
+
+	// add groups for added instruments
+	for (ImoInstrGroup* group : m_instrgroups)
+	{
+		for (int i = 0; i < score->get_num_instruments(); i++)
+		{
+			ImoInstrument* instr = score->get_instrument(i);
+			if (group->get_first_instrument() == instr)
+			{
+				score->add_instruments_group(group);
+				break;
+			}
 		}
 	}
 
