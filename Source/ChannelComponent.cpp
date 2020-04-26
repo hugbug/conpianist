@@ -25,7 +25,6 @@
 
 
 //[MiscUserDefs] You can add your own user definitions and misc code here...
-void Sleep(int milliseconds);
 //[/MiscUserDefs]
 
 //==============================================================================
@@ -473,7 +472,6 @@ void ChannelComponent::showMenu(Button* button)
 			if (pianoController.GetPartChannel(PianoController::paLeft) == channel)
 			{
 				pianoController.SetPartChannel(PianoController::paLeft, PianoController::chMidi0);
-				Sleep(20);
 			}
 			pianoController.SetPartChannel(PianoController::paRight, channel);
 		}
@@ -482,7 +480,6 @@ void ChannelComponent::showMenu(Button* button)
 			if (pianoController.GetPartChannel(PianoController::paRight) == channel)
 			{
 				pianoController.SetPartChannel(PianoController::paRight, PianoController::chMidi0);
-				Sleep(20);
 			}
 			pianoController.SetPartChannel(PianoController::paLeft, channel);
 		}
@@ -496,9 +493,7 @@ void ChannelComponent::showMenu(Button* button)
 
 		if (playng)
 		{
-			Sleep(200);
 			pianoController.SetPosition(pos);
-			Sleep(100);
 			pianoController.Play();
 		}
 	}
@@ -518,7 +513,6 @@ void ChannelComponent::toggleChannel()
 		for (PianoController::Channel ch : PianoController::MidiChannels)
 		{
 			pianoController.SetActive(ch, !allChannelsActive);
-			Sleep(20);
 		}
 	}
 	else if (channel != PianoController::chAuxIn)

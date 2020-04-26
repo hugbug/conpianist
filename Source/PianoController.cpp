@@ -30,13 +30,6 @@ const std::vector<PianoController::Channel> PianoController::MidiChannels = {
 	chMidi1, chMidi2, chMidi3, chMidi4, chMidi5, chMidi6, chMidi7, chMidi8,
 	chMidi9, chMidi10, chMidi11, chMidi12, chMidi13, chMidi14, chMidi15, chMidi16 };
 
-// This is a convenience function, which should be replaced
-// with wait-for-confirmation functionality.
-void Sleep(int milliseconds)
-{
-	Time::waitForMillisecondCounter(Time::getMillisecondCounter() + milliseconds);
-}
-
 PianoController::PianoController()
 {
 	// set internal state for channels
@@ -117,10 +110,6 @@ void PianoController::ResyncStateFromPiano()
 		}
 
 		m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Volume, ch, 0));
-
-		// Sleep is not nice, we should wait for confirmation messages instead.
-		// Without waiting the piano may miss some commands because there are too many.
-		Sleep(10);
 	}
 
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Guide));
@@ -162,28 +151,9 @@ void PianoController::Reset()
 
 	InitEvents();
 
-	// Sleep is not nice, we should wait for a confirmation message instead.
-	// Without waiting the config-commands below do not issue change events.
-	Sleep(50);
-
 	Stop();
 
-	// Sleep is not nice, we should wait for a confirmation message instead.
-	// Without waiting the config-commands below do not issue change events.
-	Sleep(250);
-
 	ResetSong();
-
-	// Sleep is not nice, we should wait for a confirmation message instead.
-	// Without waiting the config-commands below do not issue change events.
-	Sleep(500);
-
-	// second attempt
-	ResetSong();
-
-	// Sleep is not nice, we should wait for a confirmation message instead.
-	// Without waiting the config-commands below do not issue change events.
-	Sleep(500);
 
 	SetLocalControl(true);
 
@@ -196,10 +166,6 @@ void PianoController::Reset()
 		ResetVolume(ch);
 		ResetPan(ch);
 		ResetReverb(ch);
-
-		// Sleep is not nice, we should wait for confirmation messages instead.
-		// Without waiting the piano may miss some commands because there are too many.
-		Sleep(20);
 	}
 
 	ResetTempo();
@@ -210,19 +176,14 @@ void PianoController::Reset()
 	SetOctave(chLayer, 0);
 	SetOctave(chLeft, 0);
 
-	Sleep(20);
 	SetActive(chMain, true);
 	SetActive(chLayer, false);
 	SetActive(chLeft, false);
 	SetActive(chMic, true);
 
-	Sleep(50);
 	SetVoice(chMain, "PRESET:/VOICE/Piano/Grand Piano/CFX Grand.T542.VRM");
-	Sleep(50);
 	SetVoice(chLayer, "PRESET:/VOICE/Strings & Vocal/String Ensemble/Real Strings.T250.SAR");
-	Sleep(50);
 	SetVoice(chLeft, "PRESET:/VOICE/Piano/FM E.Piano/Sweet DX.T232.CLV");
-	Sleep(50);
 
 	ResyncStateFromPiano();
 }
@@ -280,7 +241,6 @@ bool PianoController::UploadSong(const File& file)
 	file.loadFileAsData(message);
 
 	Pause();
-	Sleep(10);   // this is not nice, we should wait for a confirmation message instead
 
 	char response[16];
 	StreamingSocket socket;

@@ -20,8 +20,6 @@
 #include "RegistrationMemory.h"
 #include "Presets.h"
 
-void Sleep(int milliseconds);
-
 void RegistrationMemory::Save()
 {
 	XmlElement state("ConPianistRegistrationMemory");
@@ -147,25 +145,21 @@ void RegistrationMemory::LoadChannel(PianoController::Channel channel, String na
 	{
 		String value = el->getAllSubText();
 		pianoController.SetActive(channel, value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = chElem->getChildByName("Volume")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetVolume(channel, value);
-		Sleep(10);
 	}
 	if ((el = chElem->getChildByName("Pan")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetPan(channel, value);
-		Sleep(10);
 	}
 	if ((el = chElem->getChildByName("Reverb")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetReverb(channel, value);
-		Sleep(10);
 	}
 }
 
@@ -199,13 +193,11 @@ void RegistrationMemory::LoadVoice(PianoController::Channel channel, String name
 	{
 		String value = el->getAllSubText();
 		pianoController.SetVoice(channel, value);
-		Sleep(30);
 	}
 	if ((el = chElem->getChildByName("Octave")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetOctave(channel, value);
-		Sleep(10);
 	}
 }
 
@@ -228,7 +220,6 @@ void RegistrationMemory::LoadSplitPoint()
 	if (!chElem) return;
 
 	pianoController.SetSplitPoint(chElem->getAllSubText().getIntValue());
-	Sleep(10);
 }
 
 void RegistrationMemory::SaveReverbEffect()
@@ -250,7 +241,6 @@ void RegistrationMemory::LoadReverbEffect()
 	if (!chElem) return;
 
 	pianoController.SetReverbEffect(chElem->getAllSubText().getIntValue());
-	Sleep(20);
 }
 
 void RegistrationMemory::SavePlayback()
@@ -294,19 +284,16 @@ void RegistrationMemory::LoadPlayback()
 	{
 		String value = el->getAllSubText();
 		pianoController.SetStreamLights(value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("StreamLightsSpeed")))
 	{
 		String value = el->getAllSubText();
 		pianoController.SetStreamFast(value.equalsIgnoreCase("fast"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Guide")))
 	{
 		String value = el->getAllSubText();
 		pianoController.SetGuide(value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("GuideType")))
 	{
@@ -314,49 +301,41 @@ void RegistrationMemory::LoadPlayback()
 		pianoController.SetGuideType(value.equalsIgnoreCase("any-key") ? PianoController::gtAnyKey :
 			value.equalsIgnoreCase("your-tempo") ? PianoController::gtYourTempo :
 			PianoController::gtCorrectKey);
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Tempo")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetTempo(value);
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Transpose")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetTranspose(value);
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("RightChannel")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetPartChannel(PianoController::paRight, PianoController::Channel(value + PianoController::chMidi0));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("LeftChannel")))
 	{
 		int value = el->getAllSubText().getIntValue();
 		pianoController.SetPartChannel(PianoController::paLeft, PianoController::Channel(value + PianoController::chMidi0));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Right")))
 	{
 		String value = el->getAllSubText();
 		pianoController.SetPart(PianoController::paRight, value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Left")))
 	{
 		String value = el->getAllSubText();
 		pianoController.SetPart(PianoController::paLeft, value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Backing")))
 	{
 		String value = el->getAllSubText();
 		pianoController.SetPart(PianoController::paBacking, value.equalsIgnoreCase("yes"));
-		Sleep(10);
 	}
 	if ((el = listElement->getChildByName("Loop")))
 	{
@@ -389,7 +368,6 @@ void RegistrationMemory::LoadPlayback()
 					{
 						pianoController.SetLoop(loop);
 					}
-					Sleep(30);
 				}
 			}
 		}
@@ -403,7 +381,6 @@ void RegistrationMemory::LoadPlayback()
 			int measure = value.substring(0, delim).getIntValue();
 			int beat = value.substring(delim + 1).getIntValue();
 			pianoController.SetPosition({measure, beat});
-			Sleep(20);
 		}
 	}
 }
