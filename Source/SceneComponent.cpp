@@ -171,6 +171,7 @@ SceneComponent::SceneComponent (Settings& settings)
 
 
     //[Constructor] You can add your own custom stuff here..
+    pianoController.SetPianoConnector(&pianoConnector);
     pianoController.AddListener(this);
     settings.addChangeListener(this);
 	applySettings();
@@ -477,18 +478,18 @@ void SceneComponent::applySettings()
 
 		if (settings.midiPort == "")
 		{
-			rtpMidiConnector.reset(new RtpMidiConnector(settings.pianoIp));
+			rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp);
 			midiConnector = rtpMidiConnector.get();
-			pianoController.SetMidiConnector(midiConnector);
+			pianoConnector.SetMidiConnector(midiConnector);
 			rtpMidiConnector->startThread();
 		}
 		else
 		{
 			audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
 			audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
-			localMidiConnector.reset(new LocalMidiConnector(&audioDeviceManager));
+			localMidiConnector = std::make_unique<LocalMidiConnector>(&audioDeviceManager);
 			midiConnector = localMidiConnector.get();
-			pianoController.SetMidiConnector(midiConnector);
+			pianoConnector.SetMidiConnector(midiConnector);
 		}
 
 		currentPianoIp = settings.pianoIp;

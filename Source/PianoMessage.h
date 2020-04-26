@@ -170,6 +170,7 @@ public:
 	PianoMessage(const Action action, const Property property, int index, const uint8_t* value, int size);
 	PianoMessage(const Action action, const Property property, int index, String value);
 	PianoMessage(const uint8_t* sysExData, int size);
+	PianoMessage(const PianoMessage& other) : m_data(other.m_data) {}
 	const bool DataEqualsTo(const PianoMessage& other) const;
 	const MemoryBlock& GetSysExData() const { return m_data; }
 	static const bool IsCspMessage(const uint8_t* sysExData, int size);

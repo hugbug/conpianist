@@ -6,9 +6,6 @@
               headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
               id="MqsAFh">
   <MAINGROUP id="LcKf1o" name="ConPianist">
-    <GROUP id="{55F16F24-1229-2B19-7C82-4DE9AF5D9B4B}" name="Library">
-      <FILE id="oUYthh" name="lomse.cpp" compile="1" resource="0" file="Library/Lomse/build/lomse.cpp"/>
-    </GROUP>
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
       <FILE id="RrB2f9" name="app-icon-ios.svg" compile="0" resource="0"
             file="Graphics/app-icon-ios.svg"/>
@@ -50,72 +47,81 @@
       <FILE id="gOuJpc" name="button-zoomout.png" compile="0" resource="1"
             file="Graphics/button-zoomout.png"/>
     </GROUP>
+    <GROUP id="{55F16F24-1229-2B19-7C82-4DE9AF5D9B4B}" name="Library">
+      <FILE id="oUYthh" name="lomse.cpp" compile="1" resource="0" file="Library/Lomse/build/lomse.cpp"/>
+    </GROUP>
     <GROUP id="{9D23CCCC-4317-9F3D-30D3-08E77E7C490C}" name="Source">
-      <FILE id="r8h20P" name="RegistrationMemory.cpp" compile="1" resource="0"
-            file="Source/RegistrationMemory.cpp"/>
-      <FILE id="A463AW" name="RegistrationMemory.h" compile="0" resource="0"
-            file="Source/RegistrationMemory.h"/>
-      <FILE id="dvOqsg" name="PianoMessage.cpp" compile="1" resource="0"
-            file="Source/PianoMessage.cpp"/>
-      <FILE id="A7TUpP" name="PianoMessage.h" compile="0" resource="0" file="Source/PianoMessage.h"/>
-      <FILE id="mKSQXG" name="MixerComponent.cpp" compile="1" resource="0"
-            file="Source/MixerComponent.cpp"/>
-      <FILE id="naZ410" name="MixerComponent.h" compile="0" resource="0"
-            file="Source/MixerComponent.h"/>
-      <FILE id="FISPuS" name="ChannelComponent.cpp" compile="1" resource="0"
-            file="Source/ChannelComponent.cpp"/>
-      <FILE id="rFMiAS" name="ChannelComponent.h" compile="0" resource="0"
-            file="Source/ChannelComponent.h"/>
       <FILE id="qRmb9r" name="BalanceComponent.cpp" compile="1" resource="0"
             file="Source/BalanceComponent.cpp"/>
       <FILE id="g8JSIL" name="BalanceComponent.h" compile="0" resource="0"
             file="Source/BalanceComponent.h"/>
-      <FILE id="myytNU" name="ScoreComponent.cpp" compile="1" resource="0"
-            file="Source/ScoreComponent.cpp"/>
-      <FILE id="mXObOJ" name="ScoreComponent.h" compile="0" resource="0"
-            file="Source/ScoreComponent.h"/>
-      <FILE id="L2k2nC" name="KeyboardComponent.cpp" compile="1" resource="0"
-            file="Source/KeyboardComponent.cpp"/>
-      <FILE id="y3QpUl" name="KeyboardComponent.h" compile="0" resource="0"
-            file="Source/KeyboardComponent.h"/>
-      <FILE id="Vtq9ds" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
-      <FILE id="Uj90i0" name="Presets.h" compile="0" resource="0" file="Source/Presets.h"/>
-      <FILE id="WjBZkT" name="VoiceComponent.cpp" compile="1" resource="0"
-            file="Source/VoiceComponent.cpp"/>
-      <FILE id="nn6Eq1" name="VoiceComponent.h" compile="0" resource="0"
-            file="Source/VoiceComponent.h"/>
-      <FILE id="LMd3D8" name="Settings.cpp" compile="1" resource="0" file="Source/Settings.cpp"/>
-      <FILE id="euWCno" name="Settings.h" compile="0" resource="0" file="Source/Settings.h"/>
-      <FILE id="xAI2R7" name="LocalMidiConnector.cpp" compile="1" resource="0"
-            file="Source/LocalMidiConnector.cpp"/>
-      <FILE id="QXgKBk" name="LocalMidiConnector.h" compile="0" resource="0"
-            file="Source/LocalMidiConnector.h"/>
-      <FILE id="lJUC5J" name="MidiConnector.h" compile="0" resource="0" file="Source/MidiConnector.h"/>
-      <FILE id="GiMFc0" name="RtpMidiConnector.cpp" compile="1" resource="0"
-            file="Source/RtpMidiConnector.cpp"/>
-      <FILE id="rDuod0" name="RtpMidiConnector.h" compile="0" resource="0"
-            file="Source/RtpMidiConnector.h"/>
-      <FILE id="Gr0GeF" name="MidiSocket.cpp" compile="1" resource="0" file="Source/MidiSocket.cpp"/>
-      <FILE id="eipjpN" name="MidiSocket.h" compile="0" resource="0" file="Source/MidiSocket.h"/>
-      <FILE id="QzvRE7" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
-      <FILE id="AoMl9j" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
-      <FILE id="F9hRC0" name="PlaybackComponent.cpp" compile="1" resource="0"
-            file="Source/PlaybackComponent.cpp"/>
-      <FILE id="jTu8hN" name="PlaybackComponent.h" compile="0" resource="0"
-            file="Source/PlaybackComponent.h"/>
+      <FILE id="FISPuS" name="ChannelComponent.cpp" compile="1" resource="0"
+            file="Source/ChannelComponent.cpp"/>
+      <FILE id="rFMiAS" name="ChannelComponent.h" compile="0" resource="0"
+            file="Source/ChannelComponent.h"/>
       <FILE id="RrTKjG" name="ConnectionComponent.cpp" compile="1" resource="0"
             file="Source/ConnectionComponent.cpp"/>
       <FILE id="q3B7qa" name="ConnectionComponent.h" compile="0" resource="0"
             file="Source/ConnectionComponent.h"/>
+      <FILE id="L2k2nC" name="KeyboardComponent.cpp" compile="1" resource="0"
+            file="Source/KeyboardComponent.cpp"/>
+      <FILE id="y3QpUl" name="KeyboardComponent.h" compile="0" resource="0"
+            file="Source/KeyboardComponent.h"/>
+      <FILE id="xAI2R7" name="LocalMidiConnector.cpp" compile="1" resource="0"
+            file="Source/LocalMidiConnector.cpp"/>
+      <FILE id="QXgKBk" name="LocalMidiConnector.h" compile="0" resource="0"
+            file="Source/LocalMidiConnector.h"/>
+      <FILE id="QzvRE7" name="LookAndFeel.cpp" compile="1" resource="0" file="Source/LookAndFeel.cpp"/>
+      <FILE id="AoMl9j" name="LookAndFeel.h" compile="0" resource="0" file="Source/LookAndFeel.h"/>
+      <FILE id="cjF4iJ" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="lJUC5J" name="MidiConnector.h" compile="0" resource="0" file="Source/MidiConnector.h"/>
+      <FILE id="Gr0GeF" name="MidiSocket.cpp" compile="1" resource="0" file="Source/MidiSocket.cpp"/>
+      <FILE id="eipjpN" name="MidiSocket.h" compile="0" resource="0" file="Source/MidiSocket.h"/>
+      <FILE id="mKSQXG" name="MixerComponent.cpp" compile="1" resource="0"
+            file="Source/MixerComponent.cpp"/>
+      <FILE id="naZ410" name="MixerComponent.h" compile="0" resource="0"
+            file="Source/MixerComponent.h"/>
+      <FILE id="d92pnk" name="PianoConnector.h" compile="0" resource="0"
+            file="Source/PianoConnector.h"/>
       <FILE id="lUlOfq" name="PianoController.cpp" compile="1" resource="0"
             file="Source/PianoController.cpp"/>
       <FILE id="HktPbc" name="PianoController.h" compile="0" resource="0"
             file="Source/PianoController.h"/>
+      <FILE id="dvOqsg" name="PianoMessage.cpp" compile="1" resource="0"
+            file="Source/PianoMessage.cpp"/>
+      <FILE id="A7TUpP" name="PianoMessage.h" compile="0" resource="0" file="Source/PianoMessage.h"/>
+      <FILE id="F9hRC0" name="PlaybackComponent.cpp" compile="1" resource="0"
+            file="Source/PlaybackComponent.cpp"/>
+      <FILE id="jTu8hN" name="PlaybackComponent.h" compile="0" resource="0"
+            file="Source/PlaybackComponent.h"/>
+      <FILE id="Vtq9ds" name="Presets.cpp" compile="1" resource="0" file="Source/Presets.cpp"/>
+      <FILE id="Uj90i0" name="Presets.h" compile="0" resource="0" file="Source/Presets.h"/>
+      <FILE id="r8h20P" name="RegistrationMemory.cpp" compile="1" resource="0"
+            file="Source/RegistrationMemory.cpp"/>
+      <FILE id="A463AW" name="RegistrationMemory.h" compile="0" resource="0"
+            file="Source/RegistrationMemory.h"/>
+      <FILE id="GiMFc0" name="RtpMidiConnector.cpp" compile="1" resource="0"
+            file="Source/RtpMidiConnector.cpp"/>
+      <FILE id="rDuod0" name="RtpMidiConnector.h" compile="0" resource="0"
+            file="Source/RtpMidiConnector.h"/>
       <FILE id="Nx8Yie" name="SceneComponent.cpp" compile="1" resource="0"
             file="Source/SceneComponent.cpp"/>
       <FILE id="eF3Bqz" name="SceneComponent.h" compile="0" resource="0"
             file="Source/SceneComponent.h"/>
-      <FILE id="cjF4iJ" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
+      <FILE id="myytNU" name="ScoreComponent.cpp" compile="1" resource="0"
+            file="Source/ScoreComponent.cpp"/>
+      <FILE id="mXObOJ" name="ScoreComponent.h" compile="0" resource="0"
+            file="Source/ScoreComponent.h"/>
+      <FILE id="NT2Sf5" name="SeqPianoConnector.cpp" compile="1" resource="0"
+            file="Source/SeqPianoConnector.cpp"/>
+      <FILE id="XCRhyA" name="SeqPianoConnector.h" compile="0" resource="0"
+            file="Source/SeqPianoConnector.h"/>
+      <FILE id="LMd3D8" name="Settings.cpp" compile="1" resource="0" file="Source/Settings.cpp"/>
+      <FILE id="euWCno" name="Settings.h" compile="0" resource="0" file="Source/Settings.h"/>
+      <FILE id="WjBZkT" name="VoiceComponent.cpp" compile="1" resource="0"
+            file="Source/VoiceComponent.cpp"/>
+      <FILE id="nn6Eq1" name="VoiceComponent.h" compile="0" resource="0"
+            file="Source/VoiceComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>

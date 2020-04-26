@@ -21,11 +21,9 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-#include "MidiConnector.h"
+#include "PianoConnector.h"
 
-class PianoMessage;
-
-class PianoController : public MidiConnector::Listener
+class PianoController : public PianoConnector::Listener
 {
 public:
 	static const int MinVolume = 0;
@@ -147,7 +145,7 @@ public:
 
 	PianoController();
 	~PianoController();
-	void SetMidiConnector(MidiConnector* midiConnector);
+	void SetPianoConnector(PianoConnector* pianoConnector);
 	void AddListener(Listener* listener);
 	void RemoveListener(Listener* listener);
 	void SetRemoteIp(const String& remoteIp) { m_remoteIp = remoteIp; }
@@ -218,11 +216,12 @@ public:
 	void SetSplitPoint(int splitPoint);
 	const String& GetSongName() { return m_songName; }
 
-	void SendMidiMessage(const MidiMessage& message);
+	void SendMidiMessage(const MidiMessage& message) { m_pianoConnector->SendMidiMessage(message); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
+	void IncomingPianoMessage(const PianoMessage& message) override;
 
 private:
-	MidiConnector* m_midiConnector;
+	PianoConnector* m_pianoConnector;
 	std::vector<Listener*> m_listeners;
 	String m_remoteIp;
 	String m_model;
@@ -250,10 +249,8 @@ private:
 	int m_splitPoint = 0;
 	std::unique_ptr<PianoMessage> lastMessage;
 
-	void SendCspMessage(const PianoMessage& message);
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
 	void NotifyNoteMessage(const MidiMessage& message);
 	void ResyncStateFromPiano();
 	String DecodeSongName(String rawValue);
-	void PrintLog(const String& prefix, const MidiMessage& message);
 };

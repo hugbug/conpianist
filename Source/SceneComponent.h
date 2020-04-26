@@ -29,6 +29,7 @@
 #include "KeyboardComponent.h"
 #include "LocalMidiConnector.h"
 #include "RtpMidiConnector.h"
+#include "SeqPianoConnector.h"
 #include "Settings.h"
 //[/Headers]
 
@@ -81,6 +82,7 @@ private:
     //[UserVariables]   -- You can add your own custom variables in this section.
     AudioDeviceManager audioDeviceManager;
     PianoController pianoController;
+	SeqPianoConnector pianoConnector;
     std::unique_ptr<PlaybackComponent> playbackComponent;
     std::unique_ptr<VoiceComponent> voiceComponent;
     std::unique_ptr<ScoreComponent> scoreComponent;
