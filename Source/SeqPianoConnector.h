@@ -23,19 +23,29 @@
 
 #include "PianoConnector.h"
 #include "MidiConnector.h"
+#include "PianoMessage.h"
 
-class SeqPianoConnector : public PianoConnector, public MidiConnector::Listener
+class SeqPianoConnector : public PianoConnector, public MidiConnector::Listener, public Thread
 {
 public:
-	SeqPianoConnector() {}
+	SeqPianoConnector() : Thread("SeqPianoConnector") {}
+	~SeqPianoConnector() {}
 	void SetMidiConnector(MidiConnector* midiConnector);
 	void SendMidiMessage(const MidiMessage& message) override;
 	void SendPianoMessage(const PianoMessage& message) override;
 	bool IsConnected() override { return m_midiConnector->IsConnected(); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
+	void run() override;
 
 private:
 	MidiConnector* m_midiConnector;
+	std::deque<MidiMessage> m_queue;
+	std::mutex m_mutex;
+	MidiMessage m_lastMessage;
+	bool m_waitConfirmation = false;
+	Time m_lastTime;
+	int m_attempt = 0;
 
+	void ProcessQueue();
 	void PrintLog(const String& prefix, const MidiMessage& message);
 };

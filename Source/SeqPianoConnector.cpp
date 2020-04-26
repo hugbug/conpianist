@@ -23,21 +23,25 @@
 
 void SeqPianoConnector::SetMidiConnector(MidiConnector* midiConnector)
 {
+	std::lock_guard<std::mutex> guard(m_mutex);
 	m_midiConnector = midiConnector;
 	m_midiConnector->SetListener(this);
 }
 
 void SeqPianoConnector::SendMidiMessage(const MidiMessage& message)
 {
-	PrintLog("SEND", message);
-	m_midiConnector->SendMessage(message);
+	PrintLog("QUEU", message);
+	std::lock_guard<std::mutex> guard(m_mutex);
+	m_queue.push_back(message);
 }
 
 void SeqPianoConnector::SendPianoMessage(const PianoMessage& message)
 {
 	MidiMessage midiMessage = MidiMessage::createSysExMessage(
 		message.GetSysExData().getData(), (int)message.GetSysExData().getSize());
-	SendMidiMessage(midiMessage);
+	PrintLog("QUEU", midiMessage);
+	std::lock_guard<std::mutex> guard(m_mutex);
+	m_queue.push_back(midiMessage);
 }
 
 void SeqPianoConnector::IncomingMidiMessage(const MidiMessage& message)
@@ -48,6 +52,19 @@ void SeqPianoConnector::IncomingMidiMessage(const MidiMessage& message)
 		PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize()))
 	{
 		PianoMessage pianoMessage(message.getSysExData(), message.getSysExDataSize());
+		{
+			std::lock_guard<std::mutex> guard(m_mutex);
+			if (m_waitConfirmation)
+			{
+				PianoMessage prevMessage = PianoMessage(m_lastMessage.getSysExData(), m_lastMessage.getSysExDataSize());
+				if (prevMessage.GetProperty() == pianoMessage.GetProperty() &&
+					prevMessage.GetIndex() == pianoMessage.GetIndex())
+				{
+					m_waitConfirmation = false;
+					PrintLog("CNFR", message);
+				}
+			}
+		}
 		m_listener->IncomingPianoMessage(pianoMessage);
 	}
 	else
@@ -72,3 +89,53 @@ void SeqPianoConnector::PrintLog(const String& prefix, const MidiMessage& messag
 		Logger::writeToLog(text);
 	}
 }
+
+void SeqPianoConnector::run()
+{
+	while (!threadShouldExit())
+	{
+		ProcessQueue();
+		Thread::sleep(1);
+	}
+}
+
+void SeqPianoConnector::ProcessQueue()
+{
+	while (true)
+	{
+		std::lock_guard<std::mutex> guard(m_mutex);
+		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > 3000)
+		{
+			if (m_attempt >= 3)
+			{
+				Logger::writeToLog("[MIDI] ERROR RECOVERY CLEAR QUEUE");
+				m_queue.clear();
+				m_waitConfirmation = false;
+			}
+			else
+			{
+				PrintLog((m_attempt == 1 ? "SEN2" : "SEN3"), m_lastMessage);
+				m_midiConnector->SendMessage(m_lastMessage);
+				m_lastTime = Time::getCurrentTime();
+				m_attempt++;
+			}
+		}
+		if (m_queue.empty() || m_waitConfirmation)
+		{
+			return;
+		}
+		MidiMessage message = m_queue.front();
+		m_queue.pop_front();
+
+		PrintLog("SEND", message);
+		m_midiConnector->SendMessage(message);
+		m_waitConfirmation = PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize());
+		if (m_waitConfirmation)
+		{
+			m_lastMessage = message;
+			m_lastTime = Time::getCurrentTime();
+			m_attempt = 1;
+		}
+	}
+}
+

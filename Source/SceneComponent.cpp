@@ -171,6 +171,7 @@ SceneComponent::SceneComponent (Settings& settings)
 
 
     //[Constructor] You can add your own custom stuff here..
+	pianoConnector.startThread();
     pianoController.SetPianoConnector(&pianoConnector);
     pianoController.AddListener(this);
     settings.addChangeListener(this);
@@ -190,6 +191,8 @@ SceneComponent::~SceneComponent()
     {
 		rtpMidiConnector->stopThread(1000);
 	}
+	pianoConnector.stopThread(1000);
+
     //[/Destructor_pre]
 
     topbarPanel = nullptr;
