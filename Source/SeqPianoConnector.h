@@ -35,6 +35,8 @@ public:
 	void SendPianoMessage(const PianoMessage& message) override;
 	bool IsConnected() override { return m_midiConnector->IsConnected(); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
+	void SetRepeatInterval(int repeatInterval) { m_repeatInterval = repeatInterval; };
+	int GetAttempt() { return m_attempt; }
 	void run() override;
 	int QueueSize();
 	void ClearQueue();
@@ -47,6 +49,7 @@ private:
 	bool m_waitConfirmation = false;
 	Time m_lastTime;
 	int m_attempt = 0;
+	int m_repeatInterval = 5000;
 
 	void ProcessQueue();
 	void PrintLog(const String& prefix, const MidiMessage& message);

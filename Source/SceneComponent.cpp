@@ -467,6 +467,8 @@ void SceneComponent::checkConnection()
 		{
 			statusLabel->setText("Connected and ready", NotificationType::dontSendNotification);
 		}
+		statusLabel->setColour(Label::textColourId,
+			queueSize > 0 && pianoConnector.GetAttempt() > 1 ? Colours::red : Colours::white);
 	}
 }
 

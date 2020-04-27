@@ -104,25 +104,12 @@ void SeqPianoConnector::ProcessQueue()
 	while (true)
 	{
 		std::lock_guard<std::mutex> guard(m_mutex);
-		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > 5000)
+		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > m_repeatInterval)
 		{
-			if (m_attempt >= 3)
-			{
-				Logger::writeToLog("[MIDI] CLEAR STALLED QUEUE");
-				for (const MidiMessage& message : m_queue)
-				{
-					PrintLog("DELETE   " , message);
-				}
-				m_queue.clear();
-				m_waitConfirmation = false;
-			}
-			else
-			{
-				PrintLog((m_attempt == 1 ? "REPEAT " : "REPEAT2"), m_lastMessage);
-				m_midiConnector->SendMessage(m_lastMessage);
-				m_lastTime = Time::getCurrentTime();
-				m_attempt++;
-			}
+			PrintLog("REPEAT" + String(m_attempt), m_lastMessage);
+			m_midiConnector->SendMessage(m_lastMessage);
+			m_lastTime = Time::getCurrentTime();
+			m_attempt++;
 		}
 		if (m_queue.empty() || m_waitConfirmation)
 		{
@@ -133,12 +120,12 @@ void SeqPianoConnector::ProcessQueue()
 
 		PrintLog("SEND   ", message);
 		m_midiConnector->SendMessage(message);
+		m_attempt = 1;
 		m_waitConfirmation = PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize());
 		if (m_waitConfirmation)
 		{
 			m_lastMessage = message;
 			m_lastTime = Time::getCurrentTime();
-			m_attempt = 1;
 		}
 	}
 }
