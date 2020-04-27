@@ -409,8 +409,6 @@ void RegistrationMemory::SaveSettings()
 		settings.scorePart == Settings::spRightAndLeft ? "right-and-left" :
 		"all"));
 	elem->createNewChildElement("ShowMidiChannel")->addTextElement(settings.scoreShowMidiChannel ? "yes" : "no");
-
-	listElement->createNewChildElement("WorkingDirectory")->addTextElement(settings.workingDirectory);
 }
 
 void RegistrationMemory::LoadSettings()
@@ -461,12 +459,6 @@ void RegistrationMemory::LoadSettings()
 			String value = el->getAllSubText();
 			settings.scoreShowMidiChannel = value.equalsIgnoreCase("yes");
 		}
-	}
-
-	if ((el = listElement->getChildByName("WorkingDirectory")))
-	{
-		String value = el->getAllSubText();
-		settings.workingDirectory = value;
 	}
 
 	settings.sendChangeMessage();
