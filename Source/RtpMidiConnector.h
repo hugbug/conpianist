@@ -35,4 +35,6 @@ private:
 	String m_remoteIp;
 	void* m_socket = nullptr;
 	bool m_connected = false;
+
+	int FindFreePort();
 };

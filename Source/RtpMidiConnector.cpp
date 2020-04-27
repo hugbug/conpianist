@@ -93,7 +93,15 @@ void RtpMidiConnector::run()
 	RtpMidi rtpMidi(m_listener, m_connected);
 	m_socket = &rtpMidi;
 
-	rtpMidi.begin("ConPianist", 5006);
+	int port = FindFreePort();
+	if (port == 0)
+	{
+		Logger::writeToLog("[RTP-MIDI] ERROR: could not find free port");
+		return;
+	}
+
+	Logger::writeToLog("[RTP-MIDI] Starting session on port " + String(port));
+	rtpMidi.begin("ConPianist", port);
 
 	while (!threadShouldExit())
 	{
@@ -108,6 +116,19 @@ void RtpMidiConnector::run()
 		// process incoming messages
 		rtpMidi.run();
 	}
+}
+
+int RtpMidiConnector::FindFreePort()
+{
+	DatagramSocket socket1;
+	DatagramSocket socket2;
+	int port = 5004;
+	while ((!socket1.bindToPort(port) || !socket2.bindToPort(port+1)) && port < 65534)
+	{
+		port += 2;
+	}
+
+	return port >= 65534 ? 0 : port;
 }
 
 void RtpMidiConnector::SendMessage(const MidiMessage& message)
