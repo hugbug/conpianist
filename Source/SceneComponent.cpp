@@ -365,13 +365,6 @@ void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 
 void SceneComponent::updateSettingsState()
 {
-	if (pianoController.IsConnected())
-	{
-		statusLabel->setText(String("Connected to ") + pianoController.GetModel() +
-			" (" + pianoController.GetVersion() + ")",
-			NotificationType::dontSendNotification);
-	}
-
 	bool mute = !pianoController.GetLocalControl() && pianoController.IsConnected();
 	muteButton->setImages(false, true, true, ImageCache::getFromMemory(
 			mute ? BinaryData::buttonmute_png : BinaryData::buttonvolume_png,
@@ -387,6 +380,10 @@ void SceneComponent::showMenu()
 {
 	PopupMenu menu;
 	menu.addSectionHeader("INSTRUMENT");
+	if (pianoController.IsConnected())
+	{
+		menu.addItem(10, pianoController.GetModel() + " • Firmware " + pianoController.GetVersion(), false, false);
+	}
 	menu.addItem(1, "Connection Settings");
 	menu.addItem(2, "Resync State from Piano");
 	menu.addItem(3, "Reset Piano to Default State");
@@ -405,11 +402,9 @@ void SceneComponent::showMenu()
 			ConnectionComponent::showDialog(settings);
 			break;
 		case 2:
-			statusLabel->setText("Resyncing...", NotificationType::dontSendNotification);
 			MessageManager::callAsync([=](){pianoController.Sync();});
 			break;
 		case 3:
-			statusLabel->setText("Resetting...", NotificationType::dontSendNotification);
 			MessageManager::callAsync([=](){pianoController.Reset();});
 			break;
 		case 101:
@@ -452,7 +447,25 @@ void SceneComponent::checkConnection()
 
 		if (midiConnector->IsConnected())
 		{
+			pianoConnector.ClearQueue();
 			pianoController.Connect();
+		}
+	}
+	else
+	{
+		int queueSize = pianoConnector.QueueSize();
+		if (queueSize > 0)
+		{
+			String status = statusLabel->getText();
+			int pos = status.indexOf(".");
+			int numDots = pos == -1 ? 0 : status.length() - pos;
+			numDots = numDots < 10 ? numDots + 1 : 0;
+			status = "Exchanging " + String(queueSize) + " messages" + String::repeatedString(".", numDots);
+			statusLabel->setText(status, NotificationType::dontSendNotification);
+		}
+		else
+		{
+			statusLabel->setText("Connected and ready", NotificationType::dontSendNotification);
 		}
 	}
 }

@@ -30,7 +30,7 @@ void SeqPianoConnector::SetMidiConnector(MidiConnector* midiConnector)
 
 void SeqPianoConnector::SendMidiMessage(const MidiMessage& message)
 {
-	PrintLog("QUEU", message);
+	PrintLog("ENQUEUE", message);
 	std::lock_guard<std::mutex> guard(m_mutex);
 	m_queue.push_back(message);
 }
@@ -39,14 +39,14 @@ void SeqPianoConnector::SendPianoMessage(const PianoMessage& message)
 {
 	MidiMessage midiMessage = MidiMessage::createSysExMessage(
 		message.GetSysExData().getData(), (int)message.GetSysExData().getSize());
-	PrintLog("QUEU", midiMessage);
+	PrintLog("ENQUEUE", midiMessage);
 	std::lock_guard<std::mutex> guard(m_mutex);
 	m_queue.push_back(midiMessage);
 }
 
 void SeqPianoConnector::IncomingMidiMessage(const MidiMessage& message)
 {
-	PrintLog("RECV", message);
+	PrintLog("RECEIVE", message);
 
 	if (message.isSysEx() &&
 		PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize()))
@@ -61,7 +61,7 @@ void SeqPianoConnector::IncomingMidiMessage(const MidiMessage& message)
 					prevMessage.GetIndex() == pianoMessage.GetIndex())
 				{
 					m_waitConfirmation = false;
-					PrintLog("CNFR", message);
+					PrintLog("CONFIRM", m_lastMessage);
 				}
 			}
 		}
@@ -104,17 +104,21 @@ void SeqPianoConnector::ProcessQueue()
 	while (true)
 	{
 		std::lock_guard<std::mutex> guard(m_mutex);
-		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > 3000)
+		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > 5000)
 		{
 			if (m_attempt >= 3)
 			{
-				Logger::writeToLog("[MIDI] ERROR RECOVERY CLEAR QUEUE");
+				Logger::writeToLog("[MIDI] CLEAR STALLED QUEUE");
+				for (const MidiMessage& message : m_queue)
+				{
+					PrintLog("DELETE   " , message);
+				}
 				m_queue.clear();
 				m_waitConfirmation = false;
 			}
 			else
 			{
-				PrintLog((m_attempt == 1 ? "SEN2" : "SEN3"), m_lastMessage);
+				PrintLog((m_attempt == 1 ? "REPEAT " : "REPEAT2"), m_lastMessage);
 				m_midiConnector->SendMessage(m_lastMessage);
 				m_lastTime = Time::getCurrentTime();
 				m_attempt++;
@@ -127,7 +131,7 @@ void SeqPianoConnector::ProcessQueue()
 		MidiMessage message = m_queue.front();
 		m_queue.pop_front();
 
-		PrintLog("SEND", message);
+		PrintLog("SEND   ", message);
 		m_midiConnector->SendMessage(message);
 		m_waitConfirmation = PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize());
 		if (m_waitConfirmation)
@@ -139,3 +143,15 @@ void SeqPianoConnector::ProcessQueue()
 	}
 }
 
+int SeqPianoConnector::QueueSize()
+{
+	std::lock_guard<std::mutex> guard(m_mutex);
+	return (int)m_queue.size();
+}
+
+void SeqPianoConnector::ClearQueue()
+{
+	std::lock_guard<std::mutex> guard(m_mutex);
+	m_queue.clear();
+	m_waitConfirmation = false;
+}

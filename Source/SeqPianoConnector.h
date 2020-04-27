@@ -36,6 +36,8 @@ public:
 	bool IsConnected() override { return m_midiConnector->IsConnected(); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
 	void run() override;
+	int QueueSize();
+	void ClearQueue();
 
 private:
 	MidiConnector* m_midiConnector;
