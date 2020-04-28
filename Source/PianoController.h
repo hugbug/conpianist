@@ -113,6 +113,7 @@ public:
 		apConnection,
 		apLocalControl,
 		apSongName,
+		apSongLoaded,
 		apLength,
 		apPosition,
 		apPlayback,
@@ -246,6 +247,7 @@ private:
 	int m_reverbEffect = 0;
 	String m_songName;
 	bool m_songLoaded = false;
+	bool m_songLoading = false;
 	int m_splitPoint = 0;
 	std::unique_ptr<PianoMessage> lastMessage;
 

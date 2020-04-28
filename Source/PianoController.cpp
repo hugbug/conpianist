@@ -242,12 +242,16 @@ bool PianoController::UploadSong(const File& file)
 
 	Pause();
 
+	Thread::sleep(100);
+
+	m_songLoading = true;
 	char response[16];
 	StreamingSocket socket;
 	bool ok = socket.connect(m_remoteIp, 10504) &&
 		socket.write(message.getData(), (int)message.getSize()) &&
 		socket.read(response, 16, true);
 
+	m_songLoading &= ok;
 	return ok;
 }
 
@@ -622,6 +626,11 @@ void PianoController::IncomingPianoMessage(const PianoMessage& message)
 		//TODO: make thread safe
 		m_songName = name;
 		NotifyChanged(apSongName);
+		if (m_songLoading)
+		{
+			m_songLoading = false;
+			NotifyChanged(apSongLoaded);
+		}
 	}
 
 	lastMessage = std::move(pm);

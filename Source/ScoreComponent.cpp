@@ -424,7 +424,7 @@ void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, Pian
 	{
 		MessageManager::callAsync([=](){UpdateSongState();});
 	}
-	else if (aspect == PianoController::apSongName)
+	else if (aspect == PianoController::apSongLoaded)
 	{
 		MessageManager::callAsync([=](){LoadSong();});
 	}

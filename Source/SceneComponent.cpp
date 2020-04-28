@@ -357,7 +357,7 @@ void SceneComponent::PianoStateChanged(PianoController::Aspect aspect, PianoCont
 	{
 		MessageManager::callAsync([=](){updateKeyboard();});
 	}
-	else if (aspect == PianoController::apSongName)
+	else if (aspect == PianoController::apSongLoaded)
 	{
 		MessageManager::callAsync([=](){loadSongState();});
 	}
