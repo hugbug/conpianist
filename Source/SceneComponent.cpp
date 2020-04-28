@@ -491,15 +491,13 @@ void SceneComponent::applySettings()
 			rtpMidiConnector->stopThread(1000);
 		}
 
-		localMidiConnector.reset();
-		rtpMidiConnector.reset();
-
 		if (settings.midiPort == "")
 		{
 			rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp);
 			midiConnector = rtpMidiConnector.get();
 			pianoConnector.SetMidiConnector(midiConnector);
 			rtpMidiConnector->startThread();
+			localMidiConnector.reset();
 		}
 		else
 		{
@@ -508,6 +506,7 @@ void SceneComponent::applySettings()
 			localMidiConnector = std::make_unique<LocalMidiConnector>(&audioDeviceManager);
 			midiConnector = localMidiConnector.get();
 			pianoConnector.SetMidiConnector(midiConnector);
+			rtpMidiConnector.reset();
 		}
 
 		currentPianoIp = settings.pianoIp;
