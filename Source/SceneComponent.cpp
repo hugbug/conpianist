@@ -444,10 +444,12 @@ void SceneComponent::checkConnection()
 			status = prefix;
 		}
 		statusLabel->setText(status, NotificationType::dontSendNotification);
+		statusLabel->setColour(Label::textColourId, Colours::white);
+
+		pianoConnector.ClearQueue();
 
 		if (midiConnector->IsConnected())
 		{
-			pianoConnector.ClearQueue();
 			pianoController.Connect();
 		}
 	}
