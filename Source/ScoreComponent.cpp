@@ -76,6 +76,7 @@ private:
 	Settings::ScorePart m_scorePart = Settings::spRightAndLeft;
 	bool m_scoreShowMidiChannel = true;
 	String m_error;
+	bool m_firstSync = true;
 
 	void LoadDocument(String filename);
 	void PrepareImage();
@@ -424,8 +425,10 @@ void LomseScoreComponent::PianoStateChanged(PianoController::Aspect aspect, Pian
 	{
 		MessageManager::callAsync([=](){UpdateSongState();});
 	}
-	else if (aspect == PianoController::apSongLoaded)
+	else if (aspect == PianoController::apSongLoaded ||
+		(aspect == PianoController::apSongName && m_firstSync))
 	{
+		m_firstSync = false;
 		MessageManager::callAsync([=](){LoadSong();});
 	}
 	else if (aspect == PianoController::apPartChannel &&
