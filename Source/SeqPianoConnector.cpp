@@ -103,30 +103,36 @@ void SeqPianoConnector::ProcessQueue()
 {
 	while (true)
 	{
-		std::lock_guard<std::mutex> guard(m_mutex);
-		if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > m_repeatInterval)
+		MidiMessage message;
 		{
-			PrintLog("REPEAT" + String(m_attempt), m_lastMessage);
-			m_midiConnector->SendMessage(m_lastMessage);
-			m_lastTime = Time::getCurrentTime();
-			m_attempt++;
-		}
-		if (m_queue.empty() || m_waitConfirmation)
-		{
-			return;
-		}
-		MidiMessage message = m_queue.front();
-		m_queue.pop_front();
+			std::lock_guard<std::mutex> guard(m_mutex);
 
-		PrintLog("SEND   ", message);
-		m_midiConnector->SendMessage(message);
-		m_attempt = 1;
-		m_waitConfirmation = PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize());
-		if (m_waitConfirmation)
-		{
-			m_lastMessage = message;
-			m_lastTime = Time::getCurrentTime();
+			if (m_waitConfirmation && (Time::getCurrentTime() - m_lastTime).inMilliseconds() > m_repeatInterval)
+			{
+				message = m_lastMessage;
+			}
+			else if (m_queue.empty() || m_waitConfirmation)
+			{
+				return;
+			}
+			else
+			{
+				message = m_queue.front();
+				m_queue.pop_front();
+				m_attempt = 0;
+			}
+
+			m_attempt++;
+			m_waitConfirmation = PianoMessage::IsCspMessage(message.getSysExData(), message.getSysExDataSize());
+			if (m_waitConfirmation)
+			{
+				m_lastMessage = message;
+				m_lastTime = Time::getCurrentTime();
+			}
 		}
+
+		PrintLog(m_attempt == 1 ? "SEND   " : "REPEAT" + String(m_attempt - 1), message);
+		m_midiConnector->SendMessage(message);
 	}
 }
 
