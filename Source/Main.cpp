@@ -116,7 +116,8 @@ public:
 			}
 
             setUsingNativeTitleBar (true);
-            setContentOwned (new SceneComponent(settings), true);
+            content = std::make_unique<SceneComponent>(settings);
+            setContentNonOwned(content.get(), true);
             setResizable (true, true);
             centreWithSize (getWidth(), getHeight());
 
@@ -136,6 +137,7 @@ public:
 		{
 			settings.windowPos = getBounds();
 			settings.Save();
+			content = nullptr; // this destroys the SceneComponent
 			Logger::writeToLog("Application ended gracefully");
 			Logger::setCurrentLogger(nullptr);
 		}
@@ -159,6 +161,7 @@ public:
         JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (MainWindow)
         Settings settings;
     	std::unique_ptr<FileLogger> logger;
+    	std::unique_ptr<SceneComponent> content;
     };
 
 private:
