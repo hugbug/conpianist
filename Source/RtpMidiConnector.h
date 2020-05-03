@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,15 +26,17 @@
 class RtpMidiConnector : public MidiConnector, public Thread
 {
 public:
-	RtpMidiConnector(String remoteIp) : Thread("RtpMidiConnector"), m_remoteIp(remoteIp) {}
+	RtpMidiConnector(String remoteIp, bool detailLogging) :
+		Thread("RtpMidiConnector"), m_remoteIp(remoteIp), m_detailLogging(detailLogging) {}
 	void SendMessage(const MidiMessage& message) override;
 	bool IsConnected() override { return m_connected; }
 	void run() override;
 
 private:
 	String m_remoteIp;
-	void* m_socket = nullptr;
 	bool m_connected = false;
+	std::mutex m_mutex;
+	bool m_detailLogging = false;
 
 	int FindFreePort();
 };

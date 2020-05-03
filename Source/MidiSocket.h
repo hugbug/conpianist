@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,11 +19,7 @@
 
 #pragma once
 
-#include "../JuceLibraryCode/JuceHeader.h"
-
-#include "AppleMidi.h"
-
-BEGIN_APPLEMIDI_NAMESPACE
+#include "AppleMIDI.h"
 
 class MidiSocket
 {
@@ -49,6 +45,8 @@ public:
 	// https://www.arduino.cc/en/Reference/EthernetUDPWrite
 	size_t write(const uint8_t* buf, size_t len);
 
+	size_t write(uint8_t value) { return write(&value, 1); }
+
 	// Waits until all outgoing characters in buffer have been sent. 
 	// https://www.arduino.cc/en/Reference/ClientFlush
 	void flush();
@@ -58,6 +56,11 @@ public:
 	// Returns the size of the packet in bytes, or 0 if no packets are available
 	// https://www.arduino.cc/en/Reference/EthernetUDPParsePacket
 	int parsePacket();
+
+	// Get the number of bytes (characters) available for reading from the buffer. This is data that's already arrived.
+	// This function can only be successfully called after UDP.parsePacket().
+	// https://www.arduino.cc/en/Reference/EthernetUDPAvailable
+	int available();
 
 	// Read up to len bytes from the current packet and place them into buffer
 	// Returns the number of bytes read, or 0 if none are available
@@ -72,96 +75,19 @@ public:
 
 	uint16_t remotePort() { return m_remotePort; }
 
+	void ResetDataTransferred() { m_dataTransferred = false; }
+	bool WasDataTransferred() { return m_dataTransferred; }
+
 private:
+	static const int MAX_PACKET_SIZE = 1024*4;
+
 	appleMidi::IPAddress m_remoteIp;
 	uint16_t m_remotePort = 0;
 	juce::DatagramSocket m_socket;
-	std::vector<byte> m_packet;
+	byte m_outPacket[MAX_PACKET_SIZE];
+	byte m_inPacket[MAX_PACKET_SIZE];
+	int m_outSize = 0;
+	int m_inSize = 0;
+	int m_inIndex = 0;
+	bool m_dataTransferred = false;
 };
-
-END_APPLEMIDI_NAMESPACE
-
-
-/* USAGE EXAMPLE:
-
-#include "../JuceLibraryCode/JuceHeader.h"
-#include <cstring>
-#include <chrono>
-#include <thread>
-
-#include "AppleMidi.h"
-#include "MidiSocket.h"
-
-class RtpMidi : public appleMidi::AppleMidi_Class<appleMidi::MidiSocket>
-{
-public:
-	void CheckConenction();
-	virtual void OnActiveSensing(void* sender);
-private:
-	unsigned long m_lastSensing = 0;
-};
-
-void RtpMidi::OnActiveSensing(void* sender)
-{
-	appleMidi::AppleMidi_Class<appleMidi::MidiSocket>::OnActiveSensing(sender);
-	m_lastSensing = appleMidi::millis();
-}
-
-void RtpMidi::CheckConenction()
-{
-	unsigned long lastTime = Sessions[0].syncronization.lastTime;
-	if (lastTime > 0)
-	{
-		unsigned long delta = appleMidi::millis() - m_lastSensing;
-		if (delta > 3000)
-		{
-			DeleteSession(0);
-		}
-	}
-};
-
-
-int main(int argc, char* argv[])
-{
-	std::srand((unsigned int)juce::Time::currentTimeMillis());
-
-	appleMidi::IPAddress remoteIp("192.168.1.235");
-	RtpMidi rtpMidi;
-
-	rtpMidi.begin("Midi-Session", 5006);
-	rtpMidi.invite(remoteIp);
-
-	unsigned long t0 = appleMidi::millis();
-
-	while (true)
-	{
-		// check connection lost and reinvite
-		rtpMidi.CheckConenction();
-		if (rtpMidi.GetFreeSessionSlot() == 0)
-		{
-			rtpMidi.invite(remoteIp);
-		}
-
-		// Listen to incoming notes
-		rtpMidi.run();
-
-		// send a note every second
-		if ((appleMidi::millis() - t0) > 1000)
-		{
-			t0 = appleMidi::millis();
-			printf(".");
-
-			int note = 45;
-			int velocity = 55;
-			int channel = 1;
-
-			rtpMidi.noteOn(note, velocity, channel);
-			rtpMidi.noteOff(note, velocity, channel);
-		}
-
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
-
-    return 0;
-}
-*/

@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2018-2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,18 +17,8 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "../JuceLibraryCode/JuceHeader.h"
 #include "MidiSocket.h"
-
-BEGIN_APPLEMIDI_NAMESPACE
-
-#if (APPLEMIDI_DEBUG)
-SerialClass Serial;
-#endif
-
-unsigned long millis()
-{
-	return (unsigned long)juce::Time::currentTimeMillis();
-}
 
 // Initializes the ethernet UDP library and network settings. 
 // Returns: 1 if successful, 0 if there are no sockets available to use. 
@@ -46,8 +36,7 @@ int MidiSocket::beginPacket(appleMidi::IPAddress ip, uint16_t port)
 {
 	m_remoteIp = ip;
 	m_remotePort = port;
-	m_packet.clear();
-	m_packet.reserve(1024);
+	m_outSize = 0;
 	return 1;
 }
 
@@ -57,9 +46,9 @@ int MidiSocket::beginPacket(appleMidi::IPAddress ip, uint16_t port)
 // https://www.arduino.cc/en/Reference/EthernetUDPWrite
 size_t MidiSocket::write(const uint8_t* buf, size_t len)
 {
-	size_t oldsz = m_packet.size();
-	m_packet.resize(oldsz + len);
-	memcpy(m_packet.data() + oldsz, buf, len);
+	len = std::min(len, sizeof(m_outPacket) - m_outSize);
+	memcpy(m_outPacket + m_outSize, buf, len);
+	m_outSize += len;
 	return len;
 }
 
@@ -68,7 +57,8 @@ size_t MidiSocket::write(const uint8_t* buf, size_t len)
 // https://www.arduino.cc/en/Reference/EthernetUDPEndPacket
 int MidiSocket::endPacket()
 {
-	int ret = m_socket.write((const char*)m_remoteIp, m_remotePort, m_packet.data(), (int)m_packet.size());
+	m_dataTransferred = true;
+	int ret = m_socket.write((const char*)m_remoteIp, m_remotePort, m_outPacket, m_outSize);
 	return ret > 0;
 }
 
@@ -84,18 +74,18 @@ void MidiSocket::flush()
 // https://www.arduino.cc/en/Reference/EthernetUDPParsePacket
 int MidiSocket::parsePacket()
 {
-	return m_socket.waitUntilReady(true, 1);
-}
-
-// Read up to len bytes from the current packet and place them into buffer
-// Returns the number of bytes read, or 0 if none are available
-// This function can only be successfully called after parsePacket(). 
-// https://www.arduino.cc/en/Reference/EthernetUDPRead
-int MidiSocket::read(unsigned char* buffer, size_t len)
-{
 	juce::String ip;
 	int port;
-	int ret = m_socket.read(buffer, (int)len, false, ip, port);
+
+	if (!m_socket.waitUntilReady(true, 1))
+	{
+		return 0;
+	}
+
+	int ret = m_socket.read(m_inPacket, sizeof(m_inPacket), false, ip, port);
+
+	m_inSize = std::max(ret, 0);
+	m_inIndex = 0;
 
 	if (ret > 0 && !ip.isEmpty())
 	{
@@ -104,7 +94,29 @@ int MidiSocket::read(unsigned char* buffer, size_t len)
 
 	m_remotePort = port;
 
-	return ret;
+	return m_inSize;
 }
 
-END_APPLEMIDI_NAMESPACE
+// Get the number of bytes (characters) available for reading from the buffer. This is data that's already arrived.
+// This function can only be successfully called after UDP.parsePacket().
+// https://www.arduino.cc/en/Reference/EthernetUDPAvailable
+int MidiSocket::available()
+{
+	return m_inSize;
+}
+
+// Read up to len bytes from the current packet and place them into buffer
+// Returns the number of bytes read, or 0 if none are available
+// This function can only be successfully called after parsePacket(). 
+// https://www.arduino.cc/en/Reference/EthernetUDPRead
+int MidiSocket::read(unsigned char* buffer, size_t len)
+{
+	int ret = std::min((int)len, m_inSize);
+	memcpy(buffer, m_inPacket + m_inIndex, ret);
+
+	m_inIndex += ret;
+	m_inSize -= ret;
+	m_dataTransferred = true;
+
+	return ret;
+}

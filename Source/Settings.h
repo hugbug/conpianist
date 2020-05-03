@@ -56,6 +56,7 @@ public:
 	bool scoreShowMidiChannel = true;
 	String workingDirectory;
 	bool logging = false;
+	bool rtpLogging = false;
 
 private:
 	PropertiesFile::Options opt;

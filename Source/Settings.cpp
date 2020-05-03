@@ -55,6 +55,7 @@ void Settings::Save()
 	prop.setValue("Score.ShowMidiChannel", scoreShowMidiChannel);
 	prop.setValue("WorkingDirectory", workingDirectory);
 	prop.setValue("Logging", logging);
+	prop.setValue("RtpLogging", rtpLogging);
 
 	prop.save();
 	sendChangeMessage();
@@ -78,4 +79,5 @@ void Settings::Load()
 	scorePart = (ScorePart)prop.getIntValue("Score.Part", scorePart);
 	workingDirectory = prop.getValue("WorkingDirectory", workingDirectory);
 	logging = prop.getIntValue("Logging", logging);
+	rtpLogging = prop.getIntValue("RtpLogging", rtpLogging);
 }

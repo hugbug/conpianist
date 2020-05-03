@@ -495,7 +495,7 @@ void SceneComponent::applySettings()
 
 		if (settings.midiPort == "")
 		{
-			rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp);
+			rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp, settings.rtpLogging);
 			midiConnector = rtpMidiConnector.get();
 			pianoConnector.SetMidiConnector(midiConnector);
 			rtpMidiConnector->startThread();
