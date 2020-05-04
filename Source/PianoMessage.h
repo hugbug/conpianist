@@ -56,13 +56,15 @@ struct Action
 
 struct Property
 {
-	Property(const char* signature, int length);
-	Property(int signature, int length) : signature(signature), length(length) {}
+	Property(const char* signature, int valueLength, int repeatInterval);
+	Property(int signature, int valueLength, int repeatInterval) :
+		signature(signature), valueLength(valueLength), repeatInterval(repeatInterval) {}
 	bool operator==(const Property& other) const { return other.signature == signature; }
 	bool operator!=(const Property& other) const { return other.signature != signature; }
 
 	int signature;
-	int length;
+	int valueLength;
+	int repeatInterval;
 
 	// PROPERTIES
 
@@ -157,6 +159,8 @@ struct Property
 
 	// Value: 21(A1)..108(C7)
 	const static Property SplitPoint;
+
+	static const std::vector<Property> AllProperties;
 };
 
 class PianoMessage
@@ -175,7 +179,7 @@ public:
 	const MemoryBlock& GetSysExData() const { return m_data; }
 	static const bool IsCspMessage(const uint8_t* sysExData, int size);
 	const Action GetAction() const;
-	const Property GetProperty() const;
+	const Property GetProperty(bool full = false) const;
 	const int GetIndex() const;
 	const int GetIntValue() const;
 	const String GetStrValue() const;

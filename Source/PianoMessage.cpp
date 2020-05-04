@@ -61,97 +61,102 @@ const Action Action::Events = Action("02 00");
 // PROPERTIES
 
 // Unknown Property (may occur only when parsing sysex)
-const Property Property::Unknown = Property("ff ff ff ff", 0);
+const Property Property::Unknown = Property("ff ff ff ff", 0, 0);
 
 // Value: Piano Model Name (variable length)
-const Property Property::PianoModel = Property("0f 01 18 01", 0);
+const Property Property::PianoModel = Property("0f 01 18 01", 0, 100);
 
 // Value: Firmware Version String (variable length)
-const Property Property::FirmwareVersion = Property("0f 01 0b 01", 0);
+const Property Property::FirmwareVersion = Property("0f 01 0b 01", 0, 100);
 
 // Value: 0 - Guide Off, 1 - Guide On
-const Property Property::Guide = Property("04 03 00 01", 1);
+const Property Property::Guide = Property("04 03 00 01", 1, 100);
 
 // Value: 0 - Correct Key, 1 - Any Key, 5 - Your Tempo
-const Property Property::GuideType = Property("04 03 01 01", 1);
+const Property Property::GuideType = Property("04 03 01 01", 1, 100);
 
 // Value (4 Bytes): 2 Bytes for Measure; 2 Bytes for Beat
-const Property Property::Position = Property("04 00 0a 01", 4);
+const Property Property::Position = Property("04 00 0a 01", 4, 200);
 
 // Value (4 Bytes): 2 Bytes for Measure; 2 Bytes for Beat
-const Property Property::Length = Property("04 00 1b 01", 4);
+const Property Property::Length = Property("04 00 1b 01", 4, 100);
 
 // Value: 0 - Stream Lights Off; 1 - Stream Light On
-const Property Property::StreamLights = Property("04 02 00 01", 1);
+const Property Property::StreamLights = Property("04 02 00 01", 1, 100);
 
 // Value: 0 - Slow; 1 - Fast
-const Property Property::StreamSpeed = Property("04 02 02 01", 1);
+const Property Property::StreamSpeed = Property("04 02 02 01", 1, 100);
 
 // Value: 0 - Stop; 1 - Play; 2 - Pause
-const Property Property::Play = Property("04 00 05 01", 1);
+const Property Property::Play = Property("04 00 05 01", 1, 500);
 
 // Index: 0 - Right Hand; 1 - Left Hand; 3 - Backing
 // Value: 0 - Off; 1 - On
-const Property Property::Part = Property("04 00 0e 01", 1);
+const Property Property::Part = Property("04 00 0e 01", 1, 100);
 
 // Index: 0 - Right Hand, 1 - Left Hand, 3 - Backing
 // Value: 0..F (Midi-Channel 1..16)
-const Property Property::PartChannel = Property("04 00 0f 01", 1);
+const Property Property::PartChannel = Property("04 00 0f 01", 1, 500);
 
 // Value: 0 - Off, 1 - On
-const Property Property::PartAuto = Property("04 00 10 01", 1);
+const Property Property::PartAuto = Property("04 00 10 01", 1, 200);
 
 // Value: Song Name (variable length)
-const Property Property::SongName = Property("04 00 01 01", 0);
+const Property Property::SongName = Property("04 00 01 01", 0, 500);
 
 // Index: Channel; Value: 0..127
-const Property Property::Volume = Property("0c 00 00 01", 1);
+const Property Property::Volume = Property("0c 00 00 01", 1, 100);
 
 // Index: Channel; Value: 0..127
-const Property Property::Pan = Property("0c 00 03 01", 1);
+const Property Property::Pan = Property("0c 00 03 01", 1, 100);
 
 // Index: Channel; Value: 0..127
-const Property Property::Reverb = Property("0c 00 04 01", 1);
+const Property Property::Reverb = Property("0c 00 04 01", 1, 100);
 
 // Index: Channel; Value: -2..+2 (Base 0x40)
-const Property Property::Octave = Property("0c 00 12 01", 1);
+const Property Property::Octave = Property("0c 00 12 01", 1, 200);
 
 // Value: 5..280 (2 Bytes)
-const Property Property::Tempo = Property("08 00 00 01", 2);
+const Property Property::Tempo = Property("08 00 00 01", 2, 200);
 
 // Index: 2 (const); Value: -12..+12 (Base 0x40)
-const Property Property::Transpose = Property("0a 00 00 01", 1);
+const Property Property::Transpose = Property("0a 00 00 01", 1, 200);
 
 // Value: 3 Bytes
-const Property Property::ReverbEffect = Property("0c 01 00 01", 3);
+const Property Property::ReverbEffect = Property("0c 01 00 01", 3, 500);
 
 // Value: 9 Bytes:
 //   1 byte: 0 - Loop Off; 1 - Loop On
 //   4 bytes: Start Position (Measure + Beat)
 //   4 bytes: End Position (Measure + Beat)
 // For Loop Off Use Start Position 1/1 and End Position 2/1 (00 00 01 00 01 00 02 00 01)
-const Property Property::Loop = Property("04 00 0d 01", 9);
+const Property Property::Loop = Property("04 00 0d 01", 9, 500);
 
 // Index: Channel; Value: Voice Name from Presets (variable length)
-const Property Property::VoicePreset = Property("02 00 00 01", 0);
+const Property Property::VoicePreset = Property("02 00 00 01", 0, 500);
 
 // Index: Channel; Value: 4 Bytes
 // Value: combine four 7-bit MIDI-bytes into an integer; then split it into four 8-bit bytes:
 //   0x00MMLLPP (MM - MSB; LL - LSB; PP - PC)
-const Property Property::VoiceMidi = Property("02 00 01 01", 4);
+const Property Property::VoiceMidi = Property("02 00 01 01", 4, 100);
 
 // Index: Channel; Value: 0 - Inactive; 1 - Active
-const Property Property::Active = Property("0c 00 01 01", 1);
+const Property Property::Active = Property("0c 00 01 01", 1, 200);
 
 // Index: Channel; Value: 0 - Not Present; 1 - Channel is Present in MIDI-Song
-const Property Property::Present = Property("04 01 00 01", 1);
+const Property Property::Present = Property("04 01 00 01", 1, 200);
 
 // Value: 0 Bytes
-const Property Property::SongReset = Property("04 00 00 01", 0);
+const Property Property::SongReset = Property("04 00 00 01", 0, 5000);
 
 // Value: 21(A1)..108(C7)
-const Property Property::SplitPoint = Property("09 00 00 01", 1);
+const Property Property::SplitPoint = Property("09 00 00 01", 1, 200);
 
+const std::vector<Property> Property::AllProperties = {
+	PianoModel, FirmwareVersion, Guide, GuideType, Position, Length, StreamLights,
+	StreamSpeed, Play, Part, PartChannel, PartAuto, SongName, Volume, Pan, Reverb,
+	Octave, Tempo, Transpose, ReverbEffect, Loop, VoicePreset, VoiceMidi, Active,
+	Present, SongReset, SplitPoint };
 
 constexpr char CharToCode(char ch)
 {
@@ -179,8 +184,8 @@ Action::Action(const char* signature) :
 {
 }
 
-Property::Property(const char* signature, int length) :
-	signature(Signature4(signature)), length(length)
+Property::Property(const char* signature, int valueLength, int repeatInterval) :
+	signature(Signature4(signature)), valueLength(valueLength), repeatInterval(repeatInterval)
 {
 }
 
@@ -332,24 +337,24 @@ PianoMessage::PianoMessage(const Action action, const Property property, int ind
 	uint8_t data[4];
 	int pos = 0;
 
-	if (property.length >= 4)
+	if (property.valueLength >= 4)
 	{
 		data[pos++] = (value >> 21) & 0x7f;
 	}
-	if (property.length >= 3)
+	if (property.valueLength >= 3)
 	{
 		data[pos++] = (value >> 14) & 0x7f;
 	}
-	if (property.length >= 2)
+	if (property.valueLength >= 2)
 	{
 		data[pos++] = (value >> 7) & 0x7f;
 	}
-	if (property.length >= 1)
+	if (property.valueLength >= 1)
 	{
 		data[pos++] = (value >> 0) & 0x7f;
 	}
 
-	Init(action, property, index, data, property.length);
+	Init(action, property, index, data, property.valueLength);
 }
 
 PianoMessage::PianoMessage(const Action action, const Property property, int index,
@@ -425,16 +430,27 @@ const Action PianoMessage::GetAction() const
 	return Action::Unknown;
 }
 
-const Property PianoMessage::GetProperty() const
+const Property PianoMessage::GetProperty(bool full) const
 {
 	if (m_data.getSize() >= CSP_COMMAND_PREFIX_LENGTH + 2 + 4)
 	{
-		return Property(
+		int signature =
 			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 0] << 24) +
 			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 1] << 16) +
 			(m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 2] << 8) +
-			m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 3],
-			0);
+			m_data[CSP_COMMAND_PREFIX_LENGTH + 2 + 3];
+
+		if (full)
+		{
+			for (Property prop : Property::AllProperties)
+			{
+				if (prop.signature == signature)
+				{
+					return prop;
+				}
+			}
+		}
+		return Property(signature, 0, 0);
 	}
 	return Property::Unknown;
 }
