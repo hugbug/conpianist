@@ -128,6 +128,10 @@ void SeqPianoConnector::ProcessQueue()
 			{
 				m_lastMessage = message;
 				m_lastTime = Time::getCurrentTime();
+				if (m_attempt == 1)
+				{
+					m_stallTime = m_lastTime;
+				}
 				PianoMessage pm(message.getSysExData(), message.getSysExDataSize());
 				m_repeatInterval = pm.GetProperty(true).repeatInterval;
 				m_repeatInterval = m_repeatInterval > 0 ? m_repeatInterval : DefaultRepeatInterval;

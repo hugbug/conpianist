@@ -36,6 +36,7 @@ public:
 	bool IsConnected() override { return m_midiConnector->IsConnected(); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
 	int GetAttempt() { return m_attempt; }
+	Time GetStallTime() { return m_stallTime; }
 	void run() override;
 	int QueueSize();
 	void ClearQueue();
@@ -47,6 +48,7 @@ private:
 	MidiMessage m_lastMessage;
 	bool m_waitConfirmation = false;
 	Time m_lastTime;
+	Time m_stallTime;
 	int m_attempt = 0;
 	int m_repeatInterval = 0;
 	const static int DefaultRepeatInterval = 5000;
