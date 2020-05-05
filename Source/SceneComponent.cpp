@@ -431,6 +431,8 @@ void SceneComponent::checkConnection()
 		pianoController.Disconnect();
 	}
 
+	Time curTime = Time::getCurrentTime();
+
 	if (!pianoController.IsConnected())
 	{
 		String prefix = midiConnector->IsConnected() ? "Connecting to the instrument" : "Looking for the instrument";
@@ -446,12 +448,20 @@ void SceneComponent::checkConnection()
 		statusLabel->setText(status, NotificationType::dontSendNotification);
 		statusLabel->setColour(Label::textColourId, Colours::white);
 
-		pianoConnector.ClearQueue();
-
-		if (midiConnector->IsConnected())
+		if (midiConnector->IsConnected() && pianoConnector.QueueSize() == 0)
 		{
 			pianoController.Connect();
 		}
+
+		if ((pianoConnector.GetAttempt() > 2 && (curTime - pianoConnector.GetStallTime()).inSeconds() > ResetStalledInterval) ||
+			(curTime - lastResetTime).inSeconds() > ResetConnectingInterval)
+		{
+			resetMidiConnector();
+		}
+	}
+	else if (pianoConnector.GetAttempt() > 2 && (curTime - pianoConnector.GetStallTime()).inSeconds() > ResetStalledInterval)
+	{
+		resetMidiConnector();
 	}
 	else
 	{
@@ -470,7 +480,7 @@ void SceneComponent::checkConnection()
 			statusLabel->setText("Connected and ready", NotificationType::dontSendNotification);
 		}
 		bool stalled = queueSize > 0 && pianoConnector.GetAttempt() > 1 &&
-			(Time::getCurrentTime() - pianoConnector.GetStallTime()).inMilliseconds() > 1000;
+			(curTime - pianoConnector.GetStallTime()).inSeconds() > IndicateStalledInterval;
 		statusLabel->setColour(Label::textColourId, stalled ? Colours::red : Colours::white);
 	}
 }
@@ -481,37 +491,7 @@ void SceneComponent::applySettings()
 		currentMidiPort != settings.midiPort ||
 		!midiConnector)
 	{
-		pianoController.Disconnect();
-		if (midiConnector)
-		{
-			midiConnector->SetListener(nullptr);
-		}
-
-		pianoController.SetRemoteIp(settings.pianoIp);
-
-		if (rtpMidiConnector)
-		{
-			rtpMidiConnector->stopThread(1000);
-		}
-
-		if (settings.midiPort == "")
-		{
-			rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp, settings.rtpLogging);
-			midiConnector = rtpMidiConnector.get();
-			pianoConnector.SetMidiConnector(midiConnector);
-			rtpMidiConnector->startThread();
-			localMidiConnector.reset();
-		}
-		else
-		{
-			audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
-			audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
-			localMidiConnector = std::make_unique<LocalMidiConnector>(&audioDeviceManager);
-			midiConnector = localMidiConnector.get();
-			pianoConnector.SetMidiConnector(midiConnector);
-			rtpMidiConnector.reset();
-		}
-
+		resetMidiConnector();
 		currentPianoIp = settings.pianoIp;
 		currentMidiPort = settings.midiPort;
 	}
@@ -522,6 +502,46 @@ void SceneComponent::applySettings()
 	Desktop::getInstance().setGlobalScaleFactor(scale);
 
 	updateKeyboard();
+}
+
+void SceneComponent::resetMidiConnector()
+{
+	Logger::writeToLog(midiConnector ? "Reset Midi-Connector" : "Init Midi-Connector");
+
+	pianoController.Disconnect();
+	pianoConnector.ClearQueue();
+
+	if (midiConnector)
+	{
+		midiConnector->SetListener(nullptr);
+	}
+
+	pianoController.SetRemoteIp(settings.pianoIp);
+
+	if (rtpMidiConnector)
+	{
+		rtpMidiConnector->stopThread(1000);
+	}
+
+	if (settings.midiPort == "")
+	{
+		rtpMidiConnector = std::make_unique<RtpMidiConnector>(settings.pianoIp, settings.rtpLogging);
+		midiConnector = rtpMidiConnector.get();
+		pianoConnector.SetMidiConnector(midiConnector);
+		rtpMidiConnector->startThread();
+		localMidiConnector.reset();
+	}
+	else
+	{
+		audioDeviceManager.setMidiInputEnabled(settings.midiPort, true);
+		audioDeviceManager.setDefaultMidiOutput(settings.midiPort);
+		localMidiConnector = std::make_unique<LocalMidiConnector>(&audioDeviceManager);
+		midiConnector = localMidiConnector.get();
+		pianoConnector.SetMidiConnector(midiConnector);
+		rtpMidiConnector.reset();
+	}
+
+	lastResetTime = Time::getCurrentTime();
 }
 
 void SceneComponent::zoomUi(bool zoomIn)

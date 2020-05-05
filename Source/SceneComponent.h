@@ -70,6 +70,7 @@ public:
 	void saveState();
 	void loadState();
 	void loadSongState();
+	void resetMidiConnector();
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -95,6 +96,10 @@ private:
 	String currentMidiPort;
 	Settings& settings;
 	bool keyboardManuallyHidden = false;
+	Time lastResetTime;
+	const static int IndicateStalledInterval = 2; // seconds
+	const static int ResetStalledInterval = 10; // seconds
+	const static int ResetConnectingInterval = 15; // seconds
     //[/UserVariables]
 
     //==============================================================================

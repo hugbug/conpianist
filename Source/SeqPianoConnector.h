@@ -52,6 +52,7 @@ private:
 	int m_attempt = 0;
 	int m_repeatInterval = 0;
 	const static int DefaultRepeatInterval = 5000;
+	const static int StallRepeatInterval = 500;
 
 	void ProcessQueue();
 	void PrintLog(const String& prefix, const MidiMessage& message);
