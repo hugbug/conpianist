@@ -131,6 +131,7 @@ public:
 	bool WasDataTransferred();
 
 	bool wantsInvite = true;
+	int64 lastSensing = 0;
 
 private:
 	MidiConnector::Listener* m_listener = nullptr;
@@ -154,8 +155,8 @@ private:
 
 typedef midi::MidiInterface<RtpMidi,MidiSettings,MidiPlatform> Midi_t;
 
-RtpMidi* g_rtpMidi = nullptr;
-Midi_t* g_midi = nullptr;
+std::unique_ptr<RtpMidi> g_rtpMidi;
+std::unique_ptr<Midi_t> g_midi;
 
 void RtpMidi::SetupEvents()
 {
@@ -188,6 +189,7 @@ void RtpMidi::OnAppleMidiDisconnected(const appleMidi::ssrc_t & ssrc)
 void RtpMidi::OnAppleMidiReceivedRtp(const appleMidi::ssrc_t&, const appleMidi::Rtp_t&, const int32_t&)
 {
 	if (g_rtpMidi->m_detailLogging) Logger::writeToLog("[RTP-MIDI] ReceivedRtp");
+	g_rtpMidi->lastSensing = juce::Time::currentTimeMillis();
 }
 
 void RtpMidi::OnMidiActiveSensing()
@@ -279,6 +281,55 @@ void RtpMidiConnector::run()
 {
 	std::srand((unsigned int)juce::Time::currentTimeMillis());
 
+	appleMidi::IPAddress remoteIp(m_remoteIp.getCharPointer());
+
+	ResetMidi();
+
+	while (!threadShouldExit())
+	{
+		bool processed = false;
+		{
+			std::lock_guard<std::mutex> guard(m_mutex);
+
+			if ((m_connected && g_rtpMidi->lastSensing > 0 &&
+				juce::Time::currentTimeMillis() - g_rtpMidi->lastSensing > 2000) ||
+				m_wantReset)
+			{
+				Logger::writeToLog("[RTP-MIDI] Connection lost, full reset");
+				m_connected = false;
+				m_wantReset = false;
+				ResetMidi();
+			}
+
+			g_rtpMidi->ResetDataTransferred();
+
+			// reinvite if necessary
+			if (g_rtpMidi->wantsInvite)
+			{
+				g_rtpMidi->wantsInvite = false;
+				if (m_detailLogging) Logger::writeToLog("[RTP-MIDI] Inviting");
+				g_rtpMidi->sendInvite(remoteIp);
+			}
+
+			// process incoming messages
+			g_midi->read();
+
+			processed = g_rtpMidi->WasDataTransferred();
+		}
+
+		if (!processed)
+		{
+			Thread::sleep(5);
+		}
+	}
+
+	g_rtpMidi->sendEndSession();
+	g_midi.reset();
+	g_rtpMidi.reset();
+}
+
+void RtpMidiConnector::ResetMidi()
+{
 	int port = FindFreePort();
 	if (port == 0)
 	{
@@ -288,44 +339,12 @@ void RtpMidiConnector::run()
 
 	Logger::writeToLog("[RTP-MIDI] Starting session on port " + String(port));
 
-	appleMidi::IPAddress remoteIp(m_remoteIp.getCharPointer());
-	RtpMidi rtpMidi(m_listener, m_connected, m_detailLogging, "ConPianist", port);
-	g_rtpMidi = &rtpMidi;
-	Midi_t midi(rtpMidi);
-	g_midi = &midi;
+	g_rtpMidi = std::make_unique<RtpMidi>(m_listener, m_connected, m_detailLogging, "ConPianist", port);
+	g_midi = std::make_unique<Midi_t>(*g_rtpMidi.get());
 
-	rtpMidi.SetupEvents();
+	g_rtpMidi->SetupEvents();
 
-	midi.begin(MIDI_CHANNEL_OMNI);
-
-	while (!threadShouldExit())
-	{
-		bool processed = false;
-		{
-			std::lock_guard<std::mutex> guard(m_mutex);
-			rtpMidi.ResetDataTransferred();
-
-			// reinvite if necessary
-			if (rtpMidi.wantsInvite)
-			{
-				rtpMidi.wantsInvite = false;
-				if (m_detailLogging) Logger::writeToLog("[RTP-MIDI] Inviting");
-				rtpMidi.sendInvite(remoteIp);
-			}
-
-			// process incoming messages
-			midi.read();
-
-			processed = rtpMidi.WasDataTransferred();
-		}
-
-		if (!processed)
-		{
-			Thread::sleep(5);
-		}
-	}
-
-	rtpMidi.sendEndSession();
+	g_midi->begin(MIDI_CHANNEL_OMNI);
 }
 
 int RtpMidiConnector::FindFreePort()

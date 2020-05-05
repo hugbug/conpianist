@@ -37,6 +37,8 @@ private:
 	bool m_connected = false;
 	std::mutex m_mutex;
 	bool m_detailLogging = false;
+	bool m_wantReset = false;
 
+	void ResetMidi();
 	int FindFreePort();
 };
