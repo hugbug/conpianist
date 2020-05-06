@@ -617,8 +617,11 @@ void PianoController::IncomingPianoMessage(const PianoMessage& message)
 	{
 		//TODO: make thread safe
 		m_version = pm->GetStrValue();
-		m_connected = true;
-		NotifyChanged(apConnection);
+		if (!m_connected)
+		{
+			m_connected = true;
+			NotifyChanged(apConnection);
+		}
 	}
 	else if (property == Property::SongName)
 	{
