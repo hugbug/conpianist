@@ -38,6 +38,7 @@ private:
 	std::mutex m_mutex;
 	bool m_detailLogging = false;
 	bool m_wantReset = false;
+	const static int ConnectionLostThreshold = 15000; // milliseconds
 
 	void ResetMidi();
 	int FindFreePort();

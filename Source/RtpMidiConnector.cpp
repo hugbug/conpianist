@@ -292,10 +292,10 @@ void RtpMidiConnector::run()
 			std::lock_guard<std::mutex> guard(m_mutex);
 
 			if ((m_connected && g_rtpMidi->lastSensing > 0 &&
-				juce::Time::currentTimeMillis() - g_rtpMidi->lastSensing > 2000) ||
+				juce::Time::currentTimeMillis() - g_rtpMidi->lastSensing > ConnectionLostThreshold) ||
 				m_wantReset)
 			{
-				Logger::writeToLog("[RTP-MIDI] Connection lost, full reset");
+				Logger::writeToLog("[RTP-MIDI] Connection lost");
 				m_connected = false;
 				m_wantReset = false;
 				ResetMidi();
