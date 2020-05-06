@@ -385,6 +385,7 @@ void SceneComponent::showMenu()
 		menu.addItem(10, pianoController.GetModel() + " • Firmware " + pianoController.GetVersion(), false, false);
 	}
 	menu.addItem(1, "Connection Settings");
+	menu.addItem(4, "Reset Connection");
 	menu.addItem(2, "Resync State from Piano");
 	menu.addItem(3, "Reset Piano to Default State");
 	menu.addSectionHeader("REGISTRATION MEMORY");
@@ -406,6 +407,9 @@ void SceneComponent::showMenu()
 			break;
 		case 3:
 			MessageManager::callAsync([=](){pianoController.Reset();});
+			break;
+		case 4:
+			resetMidiConnector();
 			break;
 		case 101:
 			loadState();
