@@ -19,6 +19,7 @@
 
 //[Headers] You can add your own extra header files here...
 #include "Presets.h"
+#include "LookAndFeel.h"
 //[/Headers]
 
 #include "BalanceComponent.h"
@@ -156,13 +157,7 @@ void BalanceComponent::updateReverbEffectState()
 
 void BalanceComponent::showDialog(Settings& settings, PianoController& pianoController)
 {
-	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(new BalanceComponent(settings, pianoController));
-	dialog.dialogTitle = "Balance";
-	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
-		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
-	dialog.resizable = false;
-	dialog.launchAsync();
+	::LookAndFeel::showModalDialog(new BalanceComponent(settings, pianoController), "Balance");
 }
 //[/MiscUserCode]
 

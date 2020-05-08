@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "LookAndFeel.h"
 //[/Headers]
 
 #include "ConnectionComponent.h"
@@ -185,13 +186,7 @@ void ConnectionComponent::load()
 
 void ConnectionComponent::showDialog(Settings& settings)
 {
-	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(new ConnectionComponent(settings));
-	dialog.dialogTitle = "Connection Settings";
-	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
-		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
-	dialog.resizable = false;
-	dialog.launchAsync();
+	::LookAndFeel::showModalDialog(new ConnectionComponent(settings), "Connection Settings");
 }
 //[/MiscUserCode]
 

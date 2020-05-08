@@ -19,6 +19,21 @@
 
 #include "LookAndFeel.h"
 
+void ::LookAndFeel::showModalDialog(Component* comp, const String& title)
+{
+	DialogWindow::LaunchOptions dialog;
+	dialog.content.setOwned(comp);
+	dialog.dialogTitle = title;
+	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
+		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
+	dialog.resizable = false;
+
+	TopLevelWindow* win = TopLevelWindow::getActiveTopLevelWindow();
+	win->getChildren()[0]->setAlpha(0.3);
+	dialog.runModal();
+	win->getChildren()[0]->setAlpha(1.0);
+}
+
 void ::LookAndFeel::drawButtonBackground(Graphics& gr, Button& btn, const Colour& backgroundColour,
 	bool isMouseOverButton, bool isButtonDown)
 {

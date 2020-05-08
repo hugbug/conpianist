@@ -24,6 +24,8 @@
 class LookAndFeel : public juce::LookAndFeel_V4
 {
 public:
+	static void showModalDialog(Component* comp, const String& title);
+
 	void drawButtonBackground(Graphics&, Button&, const Colour& backgroundColour,
 		bool isMouseOverButton, bool isButtonDown) override;
 
