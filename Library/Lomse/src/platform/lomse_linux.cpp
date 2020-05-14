@@ -60,7 +60,7 @@ Logger::Logger(int mode)
     const char* homedir = pw->pw_dir;
     string logPath(homedir);
     logPath += "/lomse-log.txt";
-    dbgLogger.open(logPath);
+    //dbgLogger.open(logPath);
     LOMSE_LOG_INFO("lomse log path=%s", logPath.c_str());
 }
 

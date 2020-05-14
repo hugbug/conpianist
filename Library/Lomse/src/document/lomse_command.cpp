@@ -106,7 +106,7 @@ void DocCommand::log_forensic_data(Document* UNUSED(pDoc), DocCursor* pCursor)
     //save data for forensic analysis if a crash
 
     ofstream logger;
-    logger.open("forensic_log.txt", std::ofstream::out | std::ofstream::app);
+    //logger.open("forensic_log.txt", std::ofstream::out | std::ofstream::app);
 
     logger << "---------------------------------------------"
            << "---------------------------------------------" << endl;

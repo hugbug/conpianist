@@ -47,7 +47,7 @@ Logger::Logger(int mode)
     : m_mode(mode)
     , m_areas(0xffffffff)       //all areas enabled
 {
-    dbgLogger.open("lomse-log.txt");
+    //dbgLogger.open("lomse-log.txt");
 }
 
 //=======================================================================================

@@ -54,7 +54,7 @@ Logger::Logger(int mode)
 {
     string logpath = std::getenv("HOMEPATH");
     logpath += "\\lomse-log.txt";
-    dbgLogger.open(logpath);
+    //dbgLogger.open(logpath);
     LOMSE_LOG_INFO("lomse log path=%s", logpath.c_str());
 }
 
