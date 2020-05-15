@@ -19,7 +19,8 @@ The program is not an adequate replacement for the official app yet. Nonetheless
 - mixer with all classic functions: midi-channels on/off, volume, pan, reverb, reverb effect;
 - extra functions in mixer: part selection for midi-channels, voice selection directly from midi-channels;
 - balance for main/left/layer/song/mic/auxin: volume, pan, reverb, reverb effect;
-- show scores with correct playback position: scores must be provided in a separate muscixml-file (can't show scores directly from midi-file).
+- show scores with correct playback position: scores must be provided in a separate muscixml-file (can't show scores directly from midi-file);
+- registration memory (settings) associated with midi-songs.
 
 ## Screenshots
 
