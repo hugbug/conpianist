@@ -2,7 +2,7 @@
 
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.4.7" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018-2020 Andrey Prygunkov"
-              companyEmail="a.prygunkov@gmail.com" version="3.0" companyWebsite="https://github.com/hugbug/conpianist"
+              companyEmail="a.prygunkov@gmail.com" version="4.0" companyWebsite="https://github.com/hugbug/conpianist"
               headerPath="../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
               id="MqsAFh">
   <MAINGROUP id="LcKf1o" name="ConPianist">
