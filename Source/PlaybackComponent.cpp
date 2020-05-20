@@ -430,18 +430,25 @@ void PlaybackComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     else if (sliderThatWasMoved == volumeSlider.get())
     {
         //[UserSliderCode_volumeSlider] -- add your slider handling code here..
+        inVolumeChange++;
+		volumeLabel->setText(String(volumeSlider->getValue()), NotificationType::dontSendNotification);
         pianoController.SetVolume(PianoController::chMidiMaster, volumeSlider->getValue());
         //[/UserSliderCode_volumeSlider]
     }
     else if (sliderThatWasMoved == tempoSlider.get())
     {
         //[UserSliderCode_tempoSlider] -- add your slider handling code here..
+        sliderTempo = tempoSlider->getValue();
+		tempoLabel->setText(String(sliderTempo), NotificationType::dontSendNotification);
         pianoController.SetTempo(tempoSlider->getValue());
         //[/UserSliderCode_tempoSlider]
     }
     else if (sliderThatWasMoved == transposeSlider.get())
     {
         //[UserSliderCode_transposeSlider] -- add your slider handling code here..
+        inTransposeChange++;
+		transposeLabel->setText((transposeSlider->getValue() > 0 ? "+" : "") +
+			String(transposeSlider->getValue()), NotificationType::dontSendNotification);
         pianoController.SetTranspose(transposeSlider->getValue());
         //[/UserSliderCode_transposeSlider]
     }
@@ -570,6 +577,7 @@ void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoC
 	}
 	else if (aspect == PianoController::apVolume && channel == PianoController::chMidiMaster)
 	{
+		if (inVolumeChange && inVolumeChange--) return;
 		MessageManager::callAsync([=](){updateChannelState();});
 	}
 	else if (aspect == PianoController::apGuide || aspect == PianoController::apStreamLights ||
@@ -581,6 +589,13 @@ void PlaybackComponent::PianoStateChanged(PianoController::Aspect aspect, PianoC
 	if (aspect == PianoController::apConnection || aspect == PianoController::apLength)
 	{
 		MessageManager::callAsync([=](){updateEnabledControls();});
+	}
+
+	if (aspect == PianoController::apConnection)
+	{
+		inVolumeChange = 0;
+		inTransposeChange = 0;
+		sliderTempo = 0;
 	}
 }
 
@@ -608,11 +623,14 @@ void PlaybackComponent::updatePlaybackState(PianoController::Aspect aspect)
 	}
 	else if (aspect == PianoController::apTempo)
 	{
+		if (sliderTempo > 0 && pianoController.GetTempo() != sliderTempo) return;
+		sliderTempo = 0;
 		tempoLabel->setText(String(pianoController.GetTempo()), NotificationType::dontSendNotification);
 		tempoSlider->setValue(pianoController.GetTempo(), NotificationType::dontSendNotification);
 	}
 	else if (aspect == PianoController::apTranspose)
 	{
+		if (inTransposeChange && inTransposeChange--) return;
 		transposeLabel->setText((pianoController.GetTranspose() > 0 ? "+" : "") +
 			String(pianoController.GetTranspose()), NotificationType::dontSendNotification);
 		transposeSlider->setValue(pianoController.GetTranspose(), NotificationType::dontSendNotification);

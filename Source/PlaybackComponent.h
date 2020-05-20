@@ -73,6 +73,9 @@ private:
     Settings& settings;
     PianoController& pianoController;
     bool menuShown = false;
+    int inVolumeChange = 0;
+    int inTransposeChange = 0;
+    int sliderTempo = 0;
     //[/UserVariables]
 
     //==============================================================================

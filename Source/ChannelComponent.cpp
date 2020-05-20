@@ -318,18 +318,21 @@ void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == volumeSlider.get())
     {
         //[UserSliderCode_volumeSlider] -- add your slider handling code here..
+        inVolumeChange++;
 		pianoController.SetVolume(channel, volumeSlider->getValue());
         //[/UserSliderCode_volumeSlider]
     }
     else if (sliderThatWasMoved == panSlider.get())
     {
         //[UserSliderCode_panSlider] -- add your slider handling code here..
+        inPanChange++;
 		pianoController.SetPan(channel, panSlider->getValue());
         //[/UserSliderCode_panSlider]
     }
     else if (sliderThatWasMoved == reverbSlider.get())
     {
         //[UserSliderCode_reverbSlider] -- add your slider handling code here..
+        inReverbChange++;
 		pianoController.SetReverb(channel, reverbSlider->getValue());
         //[/UserSliderCode_reverbSlider]
     }
@@ -343,6 +346,17 @@ void ChannelComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void ChannelComponent::updateChannelState(PianoController::Aspect aspect)
 {
+	if (aspect == PianoController::apVolume && inVolumeChange && inVolumeChange--) return;
+	if (aspect == PianoController::apPan && inPanChange && inPanChange--) return;
+	if (aspect == PianoController::apReverb && inReverbChange && inReverbChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inVolumeChange = 0;
+		inPanChange = 0;
+		inReverbChange = 0;
+	}
+
 	bool enabled = pianoController.GetEnabled(channel) && pianoController.IsConnected();
 	bool active = pianoController.GetActive(channel);
 

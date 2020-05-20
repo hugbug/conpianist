@@ -74,6 +74,9 @@ private:
     String title;
     bool showMenuRow;
     bool shrinkMenu;
+    int inVolumeChange = 0;
+    int inPanChange = 0;
+    int inReverbChange = 0;
     //[/UserVariables]
 
     //==============================================================================
