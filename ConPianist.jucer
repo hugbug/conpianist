@@ -3,7 +3,7 @@
 <JUCERPROJECT name="ConPianist" projectType="guiapp" jucerVersion="5.4.7" bundleIdentifier="prygunkov.ConPianist"
               companyName="Andrey Prygunkov" companyCopyright="(C) 2018-2020 Andrey Prygunkov"
               companyEmail="a.prygunkov@gmail.com" version="4.0" companyWebsite="https://github.com/hugbug/conpianist"
-              headerPath="../../Source/Connector&#10;../../Source/Main&#10;../../Source/Piano&#10;../../Source/Scene&#10;../../Source/Mixer&#10;../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
+              headerPath="../../Source/Connector&#10;../../Source/Main&#10;../../Source/Piano&#10;../../Source/Scene&#10;../../Source/Mixer&#10;../../Source/Room&#10;../../Library/AppleMIDI&#10;../../Library/Lomse/include&#10;../../Library/Lomse/src/agg/include&#10;../../Library/Lomse/packages&#10;../../Library/Lomse/packages/utfcpp&#10;../../Library/Lomse/build"
               id="MqsAFh">
   <MAINGROUP id="LcKf1o" name="ConPianist">
     <GROUP id="{641E908D-AEEA-B312-241C-5A4A49DC19AB}" name="Graphics">
@@ -40,6 +40,7 @@
       <FILE id="Vr6xUh" name="button-port.png" compile="0" resource="1" file="Graphics/button-port.png"/>
       <FILE id="RvNrFL" name="button-rewind.png" compile="0" resource="1"
             file="Graphics/button-rewind.png"/>
+      <FILE id="wxvYit" name="button-tune.png" compile="0" resource="1" file="Graphics/button-tune.png"/>
       <FILE id="IAf0NR" name="button-volume.png" compile="0" resource="1"
             file="Graphics/button-volume.png"/>
       <FILE id="w1JhJu" name="button-zoomin.png" compile="0" resource="1"
@@ -105,6 +106,60 @@
               file="Source/Piano/RegistrationMemory.cpp"/>
         <FILE id="Fggl56" name="RegistrationMemory.h" compile="0" resource="0"
               file="Source/Piano/RegistrationMemory.h"/>
+      </GROUP>
+      <GROUP id="{2E699C26-1E93-8940-56BB-E2217DB3725E}" name="Room">
+        <FILE id="uXZGFd" name="PianoRoomComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PianoRoomComponent.cpp"/>
+        <FILE id="daiAGD" name="PianoRoomComponent.h" compile="0" resource="0"
+              file="Source/Room/PianoRoomComponent.h"/>
+        <FILE id="w0FDnx" name="PrBaseComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrBaseComponent.cpp"/>
+        <FILE id="VuLbwP" name="PrBaseComponent.h" compile="0" resource="0"
+              file="Source/Room/PrBaseComponent.h"/>
+        <FILE id="KLoqCk" name="PrBrightnessComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrBrightnessComponent.cpp"/>
+        <FILE id="G2sM7w" name="PrBrightnessComponent.h" compile="0" resource="0"
+              file="Source/Room/PrBrightnessComponent.h"/>
+        <FILE id="Rfst5A" name="PrDamperResonanceComponent.cpp" compile="1"
+              resource="0" file="Source/Room/PrDamperResonanceComponent.cpp"/>
+        <FILE id="Np7eCQ" name="PrDamperResonanceComponent.h" compile="0" resource="0"
+              file="Source/Room/PrDamperResonanceComponent.h"/>
+        <FILE id="LM3L8c" name="PrEachKeyComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrEachKeyComponent.cpp"/>
+        <FILE id="TTAv24" name="PrEachKeyComponent.h" compile="0" resource="0"
+              file="Source/Room/PrEachKeyComponent.h"/>
+        <FILE id="IvUy5C" name="PrEnvironmentComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrEnvironmentComponent.cpp"/>
+        <FILE id="KBsPRM" name="PrEnvironmentComponent.h" compile="0" resource="0"
+              file="Source/Room/PrEnvironmentComponent.h"/>
+        <FILE id="fFAgIV" name="PrHalfPedalPointComponent.cpp" compile="1"
+              resource="0" file="Source/Room/PrHalfPedalPointComponent.cpp"/>
+        <FILE id="OITPxr" name="PrHalfPedalPointComponent.h" compile="0" resource="0"
+              file="Source/Room/PrHalfPedalPointComponent.h"/>
+        <FILE id="TA51Fs" name="PrKeyOffSamplingComponent.cpp" compile="1"
+              resource="0" file="Source/Room/PrKeyOffSamplingComponent.cpp"/>
+        <FILE id="lxPL0i" name="PrKeyOffSamplingComponent.h" compile="0" resource="0"
+              file="Source/Room/PrKeyOffSamplingComponent.h"/>
+        <FILE id="PvGrkc" name="PrLidPositionComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrLidPositionComponent.cpp"/>
+        <FILE id="YD1S8S" name="PrLidPositionComponent.h" compile="0" resource="0"
+              file="Source/Room/PrLidPositionComponent.h"/>
+        <FILE id="bLqFhw" name="PrMasterTuneComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrMasterTuneComponent.cpp"/>
+        <FILE id="CI6pFp" name="PrMasterTuneComponent.h" compile="0" resource="0"
+              file="Source/Room/PrMasterTuneComponent.h"/>
+        <FILE id="rsaegU" name="PrStringResonanceComponent.cpp" compile="1"
+              resource="0" file="Source/Room/PrStringResonanceComponent.cpp"/>
+        <FILE id="uIz6mJ" name="PrStringResonanceComponent.h" compile="0" resource="0"
+              file="Source/Room/PrStringResonanceComponent.h"/>
+        <FILE id="NKphGg" name="PrTouchCurveComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrTouchCurveComponent.cpp"/>
+        <FILE id="USUt0E" name="PrTouchCurveComponent.h" compile="0" resource="0"
+              file="Source/Room/PrTouchCurveComponent.h"/>
+        <FILE id="zLOnPW" name="PrVrmComponent.cpp" compile="1" resource="0"
+              file="Source/Room/PrVrmComponent.cpp"/>
+        <FILE id="bMOOr1" name="PrVrmComponent.h" compile="0" resource="0"
+              file="Source/Room/PrVrmComponent.h"/>
       </GROUP>
       <GROUP id="{CB024AEE-F1C1-3BA7-7A02-6D6F224DD312}" name="Scene">
         <FILE id="GI08vR" name="ConnectionComponent.cpp" compile="1" resource="0"

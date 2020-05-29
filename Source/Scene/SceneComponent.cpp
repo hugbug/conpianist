@@ -21,6 +21,7 @@
 #include "ConnectionComponent.h"
 #include "BalanceComponent.h"
 #include "RegistrationMemory.h"
+#include "PianoRoomComponent.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -144,6 +145,16 @@ SceneComponent::SceneComponent (Settings& settings)
                            Image(), 1.000f, Colour (0x00000000));
     menuButton->setBounds (8, 8, 32, 28);
 
+    roomButton.reset (new ImageButton ("Piano Room Button"));
+    addAndMakeVisible (roomButton.get());
+    roomButton->setTooltip (TRANS("Piano Room"));
+    roomButton->setButtonText (TRANS("Piano Room"));
+    roomButton->addListener (this);
+
+    roomButton->setImages (false, true, true,
+                           ImageCache::getFromMemory (BinaryData::buttontune_png, BinaryData::buttontune_pngSize), 1.000f, Colour (0x00000000),
+                           Image(), 0.750f, Colour (0x00000000),
+                           Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -209,6 +220,7 @@ SceneComponent::~SceneComponent()
     statusLabel = nullptr;
     mixerButton = nullptr;
     menuButton = nullptr;
+    roomButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -244,15 +256,16 @@ void SceneComponent::resized()
     topbarPanel->setBounds (0, -8, getWidth() - 0, 52);
     playbackPanel->setBounds (0, (-8) + 52, 290, getHeight() - 111);
     largeContentPanel->setBounds (0 + 290, (-8) + 52, getWidth() - 290, getHeight() - 111);
-    muteButton->setBounds (getWidth() - 89 - 32, 8, 32, 28);
-    zoomInButton->setBounds (getWidth() - 9 - 32, 8, 32, 28);
-    zoomOutButton->setBounds (getWidth() - 49 - 32, 8, 32, 28);
+    muteButton->setBounds (getWidth() - 80 - 32, 8, 32, 28);
+    zoomInButton->setBounds (getWidth() - 10 - 32, 8, 32, 28);
+    zoomOutButton->setBounds (getWidth() - 45 - 32, 8, 32, 28);
     keyboardPanel->setBounds (0, getHeight() - 67, getWidth() - 0, 67);
-    keyboardButton->setBounds (getWidth() - 129 - 32, 8, 32, 28);
-    balanceButton->setBounds (getWidth() - 169 - 32, 8, 32, 28);
+    keyboardButton->setBounds (getWidth() - 115 - 32, 8, 32, 28);
+    balanceButton->setBounds (getWidth() - 150 - 32, 8, 32, 28);
     voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
     scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
     mixerButton->setBounds (0 + 458, (-8) + 18, 80, 34);
+    roomButton->setBounds (getWidth() - 185 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     playbackPanel->setBounds(playbackPanel->getX(), playbackPanel->getY(), playbackPanel->getWidth(),
     	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
@@ -335,6 +348,12 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         showMenu();
         //[/UserButtonCode_menuButton]
     }
+    else if (buttonThatWasClicked == roomButton.get())
+    {
+        //[UserButtonCode_roomButton] -- add your button handler code here..
+		PianoRoomComponent::showDialog(settings, pianoController);
+        //[/UserButtonCode_roomButton]
+    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -371,6 +390,7 @@ void SceneComponent::updateSettingsState()
 			mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 
+	roomButton->setEnabled(pianoController.IsConnected());
 	balanceButton->setEnabled(pianoController.IsConnected());
 	keyboardButton->setEnabled(pianoController.IsConnected());
 	muteButton->setEnabled(pianoController.IsConnected());
@@ -688,21 +708,21 @@ BEGIN_JUCER_METADATA
                     virtualName="" explicitFocusOrder="0" pos="0R 52 290M 111M" posRelativeX="cf6dcbcdc3b17ace"
                     posRelativeY="69305d91c2150486" class="Component" params=""/>
   <IMAGEBUTTON name="Mute Button" id="ca510a4be11fdde2" memberName="muteButton"
-               virtualName="" explicitFocusOrder="0" pos="89Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="80Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Local Control on/off"
                buttonText="Mute" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonvolume_png"
                opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
                colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom In UI Button" id="8f2ba3f851b38bd8" memberName="zoomInButton"
-               virtualName="" explicitFocusOrder="0" pos="9Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="10Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom In UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttonzoomin_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
                resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Zoom Out UI Button" id="9c93ecb0c87ce0c4" memberName="zoomOutButton"
-               virtualName="" explicitFocusOrder="0" pos="49Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="45Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Zoom Out UI" buttonText="Mute"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttonzoomout_png" opacityNormal="1.0"
@@ -712,14 +732,14 @@ BEGIN_JUCER_METADATA
                     virtualName="" explicitFocusOrder="0" pos="0 0Rr 0M 67" class="Component"
                     params=""/>
   <IMAGEBUTTON name="Virtual Keyboard Button" id="802f8ad4daaeee49" memberName="keyboardButton"
-               virtualName="" explicitFocusOrder="0" pos="129Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
+               virtualName="" explicitFocusOrder="0" pos="115Rr 8 32 28" posRelativeX="c7b94b60aa96c6e2"
                posRelativeY="c7b94b60aa96c6e2" tooltip="Virtual Keyboard" buttonText="Virtual Keyboard"
                connectedEdges="0" needsCallback="1" radioGroupId="0" keepProportions="1"
                resourceNormal="BinaryData::buttonkeyboard_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
                resourceDown="" opacityDown="1.0" colourDown="0"/>
   <IMAGEBUTTON name="Balance Button" id="b26d1a0a73e9171c" memberName="balanceButton"
-               virtualName="" explicitFocusOrder="0" pos="169Rr 8 32 28" tooltip="Balance"
+               virtualName="" explicitFocusOrder="0" pos="150Rr 8 32 28" tooltip="Balance"
                buttonText="Balance" connectedEdges="0" needsCallback="1" radioGroupId="0"
                keepProportions="1" resourceNormal="BinaryData::buttonbalance_png"
                opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
@@ -748,6 +768,12 @@ BEGIN_JUCER_METADATA
                resourceNormal="BinaryData::buttonmenu_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
                resourceDown="" opacityDown="1.0" colourDown="0"/>
+  <IMAGEBUTTON name="Piano Room Button" id="102bdca1a0375e89" memberName="roomButton"
+               virtualName="" explicitFocusOrder="0" pos="185Rr 8 32 28" tooltip="Piano Room"
+               buttonText="Piano Room" connectedEdges="0" needsCallback="1"
+               radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttontune_png"
+               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
+               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
