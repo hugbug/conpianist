@@ -71,6 +71,7 @@ PrVrmComponent::PrVrmComponent (Settings& settings, PianoController& pianoContro
 
 
     //[Constructor] You can add your own custom stuff here..
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -118,11 +119,13 @@ void PrVrmComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == offButton.get())
     {
         //[UserButtonCode_offButton] -- add your button handler code here..
+        pianoController.SetVrm(false);
         //[/UserButtonCode_offButton]
     }
     else if (buttonThatWasClicked == onButton.get())
     {
         //[UserButtonCode_onButton] -- add your button handler code here..
+        pianoController.SetVrm(true);
         //[/UserButtonCode_onButton]
     }
 
@@ -133,6 +136,16 @@ void PrVrmComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrVrmComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	bool enabled = pianoController.IsConnected();
+
+	offButton->setEnabled(enabled);
+	onButton->setEnabled(enabled);
+
+	offButton->setToggleState(enabled && !pianoController.GetVrm(), NotificationType::dontSendNotification);
+	onButton->setToggleState(enabled && pianoController.GetVrm(), NotificationType::dontSendNotification);
+}
 //[/MiscUserCode]
 
 
