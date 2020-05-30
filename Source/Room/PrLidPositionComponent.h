@@ -45,7 +45,8 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
-		{ if (ap == PianoController::apLidPosition) MessageManager::callAsync([=](){updatePianoState(ap);}); }
+		{ if (ap == PianoController::apLidPosition || ap == PianoController::apConnection)
+			MessageManager::callAsync([=](){updatePianoState(ap);}); }
 	void updatePianoState(PianoController::Aspect aspect);
     //[/UserMethods]
 
