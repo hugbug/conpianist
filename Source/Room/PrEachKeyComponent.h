@@ -58,12 +58,12 @@ private:
 
     //==============================================================================
     std::unique_ptr<Label> titleLabel;
-    std::unique_ptr<Slider> slider;
+    std::unique_ptr<Slider> keySlider;
     std::unique_ptr<Slider> tuneSlider;
     std::unique_ptr<Slider> volumeSlider;
-    std::unique_ptr<Label> label;
-    std::unique_ptr<Label> label2;
-    std::unique_ptr<Label> label3;
+    std::unique_ptr<Label> keyLabel;
+    std::unique_ptr<Label> tuneLabel;
+    std::unique_ptr<Label> volumeLabel;
 
 
     //==============================================================================

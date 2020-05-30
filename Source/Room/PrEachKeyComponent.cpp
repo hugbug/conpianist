@@ -44,14 +44,14 @@ PrEachKeyComponent::PrEachKeyComponent (Settings& settings, PianoController& pia
 
     titleLabel->setBounds (18, 12, 238, 24);
 
-    slider.reset (new Slider (String()));
-    addAndMakeVisible (slider.get());
-    slider->setRange (0, 127, 1);
-    slider->setSliderStyle (Slider::LinearHorizontal);
-    slider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
-    slider->addListener (this);
+    keySlider.reset (new Slider (String()));
+    addAndMakeVisible (keySlider.get());
+    keySlider->setRange (0, 127, 1);
+    keySlider->setSliderStyle (Slider::LinearHorizontal);
+    keySlider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
+    keySlider->addListener (this);
 
-    slider->setBounds (272, 14, 344, 52);
+    keySlider->setBounds (272, 14, 344, 52);
 
     tuneSlider.reset (new Slider (String()));
     addAndMakeVisible (tuneSlider.get());
@@ -71,41 +71,49 @@ PrEachKeyComponent::PrEachKeyComponent (Settings& settings, PianoController& pia
 
     volumeSlider->setBounds (272, 136, 344, 52);
 
-    label.reset (new Label ("new label",
-                            TRANS("Key")));
-    addAndMakeVisible (label.get());
-    label->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    label->setJustificationType (Justification::centredLeft);
-    label->setEditable (false, false, false);
-    label->setColour (TextEditor::textColourId, Colours::black);
-    label->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    keyLabel.reset (new Label (String(),
+                               TRANS("Key")));
+    addAndMakeVisible (keyLabel.get());
+    keyLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    keyLabel->setJustificationType (Justification::centredLeft);
+    keyLabel->setEditable (false, false, false);
+    keyLabel->setColour (TextEditor::textColourId, Colours::black);
+    keyLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    label->setBounds (280, 16, 104, 24);
+    keyLabel->setBounds (280, 16, 104, 24);
 
-    label2.reset (new Label ("new label",
-                             TRANS("Tune")));
-    addAndMakeVisible (label2.get());
-    label2->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    label2->setJustificationType (Justification::centredLeft);
-    label2->setEditable (false, false, false);
-    label2->setColour (TextEditor::textColourId, Colours::black);
-    label2->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    tuneLabel.reset (new Label (String(),
+                                TRANS("Tune")));
+    addAndMakeVisible (tuneLabel.get());
+    tuneLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    tuneLabel->setJustificationType (Justification::centredLeft);
+    tuneLabel->setEditable (false, false, false);
+    tuneLabel->setColour (TextEditor::textColourId, Colours::black);
+    tuneLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    label2->setBounds (280, 75, 104, 24);
+    tuneLabel->setBounds (280, 75, 104, 24);
 
-    label3.reset (new Label ("new label",
-                             TRANS("Volume")));
-    addAndMakeVisible (label3.get());
-    label3->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
-    label3->setJustificationType (Justification::centredLeft);
-    label3->setEditable (false, false, false);
-    label3->setColour (TextEditor::textColourId, Colours::black);
-    label3->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
+    volumeLabel.reset (new Label (String(),
+                                  TRANS("Volume")));
+    addAndMakeVisible (volumeLabel.get());
+    volumeLabel->setFont (Font (15.00f, Font::plain).withTypefaceStyle ("Regular"));
+    volumeLabel->setJustificationType (Justification::centredLeft);
+    volumeLabel->setEditable (false, false, false);
+    volumeLabel->setColour (TextEditor::textColourId, Colours::black);
+    volumeLabel->setColour (TextEditor::backgroundColourId, Colour (0x00000000));
 
-    label3->setBounds (280, 139, 104, 24);
+    volumeLabel->setBounds (280, 139, 104, 24);
 
 
     //[UserPreSize]
+    // not yet implemented
+    titleLabel->setEnabled(false);
+    keyLabel->setEnabled(false);
+    tuneLabel->setEnabled(false);
+    volumeLabel->setEnabled(false);
+    keySlider->setEnabled(false);
+    tuneSlider->setEnabled(false);
+    volumeSlider->setEnabled(false);
     //[/UserPreSize]
 
     setSize (640, 200);
@@ -121,12 +129,12 @@ PrEachKeyComponent::~PrEachKeyComponent()
     //[/Destructor_pre]
 
     titleLabel = nullptr;
-    slider = nullptr;
+    keySlider = nullptr;
     tuneSlider = nullptr;
     volumeSlider = nullptr;
-    label = nullptr;
-    label2 = nullptr;
-    label3 = nullptr;
+    keyLabel = nullptr;
+    tuneLabel = nullptr;
+    volumeLabel = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -160,10 +168,10 @@ void PrEachKeyComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     //[UsersliderValueChanged_Pre]
     //[/UsersliderValueChanged_Pre]
 
-    if (sliderThatWasMoved == slider.get())
+    if (sliderThatWasMoved == keySlider.get())
     {
-        //[UserSliderCode_slider] -- add your slider handling code here..
-        //[/UserSliderCode_slider]
+        //[UserSliderCode_keySlider] -- add your slider handling code here..
+        //[/UserSliderCode_keySlider]
     }
     else if (sliderThatWasMoved == tuneSlider.get())
     {
@@ -206,7 +214,7 @@ BEGIN_JUCER_METADATA
          edBkgCol="0" labelText="Each Key Setting" editableSingleClick="0"
          editableDoubleClick="0" focusDiscardsChanges="0" fontname="Default font"
          fontsize="16.0" kerning="0.0" bold="0" italic="0" justification="33"/>
-  <SLIDER name="" id="cb1eec80b99d9306" memberName="slider" virtualName=""
+  <SLIDER name="" id="cb1eec80b99d9306" memberName="keySlider" virtualName=""
           explicitFocusOrder="0" pos="272 14 344 52" min="0.0" max="127.0"
           int="1.0" style="LinearHorizontal" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
@@ -221,17 +229,17 @@ BEGIN_JUCER_METADATA
           int="1.0" style="LinearHorizontal" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
-  <LABEL name="new label" id="6f97de9f7ce2b377" memberName="label" virtualName=""
+  <LABEL name="" id="6f97de9f7ce2b377" memberName="keyLabel" virtualName=""
          explicitFocusOrder="0" pos="280 16 104 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Key" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
-  <LABEL name="new label" id="17c0eed6e271e668" memberName="label2" virtualName=""
+  <LABEL name="" id="17c0eed6e271e668" memberName="tuneLabel" virtualName=""
          explicitFocusOrder="0" pos="280 75 104 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Tune" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
          kerning="0.0" bold="0" italic="0" justification="33"/>
-  <LABEL name="new label" id="544fb6f67ec3de1f" memberName="label3" virtualName=""
+  <LABEL name="" id="544fb6f67ec3de1f" memberName="volumeLabel" virtualName=""
          explicitFocusOrder="0" pos="280 139 104 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Volume" editableSingleClick="0" editableDoubleClick="0"
          focusDiscardsChanges="0" fontname="Default font" fontsize="15.0"
