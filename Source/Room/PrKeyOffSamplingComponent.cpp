@@ -67,7 +67,7 @@ PrKeyOffSamplingComponent::PrKeyOffSamplingComponent (Settings& settings, PianoC
 
     //[UserPreSize]
 	slider->setScrollWheelEnabled(false);
-	slider->setSkewFactorFromMidPoint(64);
+	slider->setSkewFactorFromMidPoint(PianoController::DefaultKeyOffSampling);
     //[/UserPreSize]
 
     setSize (640, 80);

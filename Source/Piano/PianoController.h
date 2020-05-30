@@ -48,8 +48,13 @@ public:
 	static const int MaxOctave = +2;
 	static const int DefaultOctave = 0;
 	static const int OctaveBase = 0x40;
+	static const int DefaultBrightness = 0x40;
 	static const int MasterTuneBase = 0x400;
 	static const int MasterTuneFactor = 4;
+	static const int DefaultResonance = 5;
+	static const int MaxResonance = 10;
+	static const int DefaultKeyOffSampling = 0x40;
+	static const int MaxKeyOffSampling = 0x50;
 
 	struct Position
 	{
@@ -296,13 +301,13 @@ private:
 	int m_splitPoint = 0;
 	LidPosition m_lidPosition = lpOpen;
 	int m_environment = 0;
-	int m_brightness = 0;
+	int m_brightness = DefaultBrightness;
 	TouchCurve m_touchCurve = tcMedium;
 	int m_masterTune = 0;
 	bool m_vrm = false;
-	int m_damperResonance = 0;
-	int m_stringResonance = 0;
-	int m_keyOffSampling = 0;
+	int m_damperResonance = DefaultResonance;
+	int m_stringResonance = DefaultResonance;
+	int m_keyOffSampling = DefaultKeyOffSampling;
 	std::unique_ptr<PianoMessage> lastMessage;
 
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);
