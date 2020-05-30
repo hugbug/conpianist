@@ -108,6 +108,22 @@ public:
 		gtYourTempo = 5
 	};
 
+	enum LidPosition
+	{
+		lpOpen = 0,
+		lpHalf = 1,
+		lpClose = 2
+	};
+
+	enum TouchCurve
+	{
+		tcSoft2 = 0,
+		tcSoft1 = 1,
+		tcMedium = 2,
+		tcHard1 = 3,
+		tcHard2 = 4
+	};
+
 	enum Aspect
 	{
 		apConnection,
@@ -133,7 +149,16 @@ public:
 		apEnable,
 		apActive,
 		apVoice,
-		apSplitPoint
+		apSplitPoint,
+		apLidPosition,
+		apEnvironment,
+		apBrightness,
+		apTouchCurve,
+		apMasterTune,
+		apVrm,
+		apDamperResonance,
+		apStringResonance,
+		apKeyOffSampling
 	};
 
 	class Listener
@@ -216,6 +241,24 @@ public:
 	int GetSplitPoint() { return m_splitPoint; }
 	void SetSplitPoint(int splitPoint);
 	const String& GetSongName() { return m_songName; }
+	LidPosition GetLidPosition() { return m_lidPosition; }
+	void SetLidPosition(LidPosition position);
+	int GetEnvironment() { return m_environment; }
+	void SetEnvironment(int environment);
+	int GetBrightness() { return m_brightness; }
+	void SetBrightness(int brightness);
+	TouchCurve GetTouchCurve() { return m_touchCurve; }
+	void SetTouchCurve(TouchCurve touchCurve);
+	int GetMasterTune() { return m_masterTune; }
+	void SetMasterTune(int masterTune);
+	int GetVrm() { return m_vrm; }
+	void SetVrm(bool vrm);
+	int GetDamperResonance() { return m_damperResonance; }
+	void SetDamperResonance(int damperResonance);
+	int GetStringResonance() { return m_stringResonance; }
+	void SetStringResonance(int stringResonance);
+	int GetKeyOffSampling() { return m_keyOffSampling; }
+	void SetKeyOffSampling(int keyOffSampling);
 
 	void SendMidiMessage(const MidiMessage& message) { m_pianoConnector->SendMidiMessage(message); }
 	void IncomingMidiMessage(const MidiMessage& message) override;
@@ -249,6 +292,15 @@ private:
 	bool m_songLoaded = false;
 	bool m_songLoading = false;
 	int m_splitPoint = 0;
+	LidPosition m_lidPosition = lpOpen;
+	int m_environment = 0;
+	int m_brightness = 0;
+	TouchCurve m_touchCurve = tcMedium;
+	int m_masterTune = 0;
+	bool m_vrm = false;
+	int m_damperResonance = 0;
+	int m_stringResonance = 0;
+	int m_keyOffSampling = 0;
 	std::unique_ptr<PianoMessage> lastMessage;
 
 	void NotifyChanged(Aspect aspect, Channel channel = chNone);

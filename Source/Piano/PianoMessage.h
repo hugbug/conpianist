@@ -160,6 +160,33 @@ struct Property
 	// Value: 21(A1)..108(C7)
 	const static Property SplitPoint;
 
+	// Value: 0 - Open, 1 - Half Open, 2 - Close
+	const static Property LidPosition;
+
+	// Value: 00..7f
+	const static Property Environment;
+
+	// Value: 2e(Mellow) .. 40(Default) .. 7f(Bright)
+	const static Property Brightness;
+
+	// Value: 0 - Soft2, 1 - Soft1, 2 - Medium, 3 - Hard1, 4 - Hard2
+	const static Property TouchCurve;
+
+	// Value: 2 Bytes: 04(Min) .. 08 00(440 Hz Default) .. 0f 7f (Max)
+	const static Property MasterTune;
+
+	// Value: 0 - Off, 1 - On
+	const static Property Vrm;
+
+	// Value: 0..5..10
+	const static Property DamperResonance;
+
+	// Value: 0..5..10
+	const static Property StringResonance;
+
+	// Value: 0..0x40..0x50
+	const static Property KeyOffSampling;
+
 	static const std::vector<Property> AllProperties;
 };
 

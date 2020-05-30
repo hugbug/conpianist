@@ -152,11 +152,40 @@ const Property Property::SongReset = Property("04 00 00 01", 0, 5000);
 // Value: 21(A1)..108(C7)
 const Property Property::SplitPoint = Property("09 00 00 01", 1, 200);
 
+// Value: 0 - Open, 1 - Half Open, 2 - Close
+const Property Property::LidPosition = Property("02 02 07 01", 1, 200);
+
+// Value: 00..7f
+const Property Property::Environment = Property("02 02 03 01", 1, 200);
+
+// Value: 2e(Mellow) .. 40(Default) .. 7f(Bright)
+const Property Property::Brightness = Property("0c 00 0b 01", 1, 200);
+
+// Value: 0 - Soft2, 1 - Soft1, 2 - Medium, 3 - Hard1, 4 - Hard2
+const Property Property::TouchCurve = Property("00 00 00 01", 1, 200);
+
+// Value: 2 Bytes: 04(Min) .. 08 00(440 Hz Default) .. 0f 7f (Max)
+const Property Property::MasterTune = Property("03 00 00 01", 2, 200);
+
+// Value: 0 - Off, 1 - On
+const Property Property::Vrm = Property("02 02 00 01", 1, 200);
+
+// Value: 0..5..10
+const Property Property::DamperResonance = Property("02 02 01 01", 1, 200);
+
+// Value: 0..5..10
+const Property Property::StringResonance = Property("02 02 02 01", 1, 200);
+
+// Value: 0..0x40..0x50
+const Property Property::KeyOffSampling = Property("02 02 06 01", 1, 200);
+
 const std::vector<Property> Property::AllProperties = {
 	PianoModel, FirmwareVersion, Guide, GuideType, Position, Length, StreamLights,
 	StreamSpeed, Play, Part, PartChannel, PartAuto, SongName, Volume, Pan, Reverb,
 	Octave, Tempo, Transpose, ReverbEffect, Loop, VoicePreset, VoiceMidi, Active,
-	Present, SongReset, SplitPoint };
+	Present, SongReset, SplitPoint, LidPosition, Environment, Brightness, TouchCurve,
+	MasterTune, Vrm, DamperResonance, StringResonance, KeyOffSampling
+};
 
 constexpr char CharToCode(char ch)
 {

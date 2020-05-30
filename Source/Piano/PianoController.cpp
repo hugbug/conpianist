@@ -83,6 +83,15 @@ void PianoController::InitEvents()
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::VoiceMidi));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::SongName));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::SplitPoint));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::LidPosition));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Environment));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Brightness));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::TouchCurve));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::MasterTune));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Vrm));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::DamperResonance));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::StringResonance));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::KeyOffSampling));
 }
 
 void PianoController::Sync()
@@ -133,6 +142,15 @@ void PianoController::ResyncStateFromPiano()
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::PartChannel, paLeft, 0));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::PartAuto));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::SplitPoint));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::LidPosition));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Environment));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Brightness));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::TouchCurve));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::MasterTune));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Vrm));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::DamperResonance));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::StringResonance));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::KeyOffSampling));
 
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::SongName));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Length));
@@ -447,6 +465,51 @@ void PianoController::SetSplitPoint(int splitPoint)
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::SplitPoint, 0, splitPoint));
 }
 
+void PianoController::SetLidPosition(LidPosition position)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::LidPosition, 0, position));
+}
+
+void PianoController::SetEnvironment(int environment)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::Environment, 0, environment));
+}
+
+void PianoController::SetBrightness(int brightness)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::Brightness, 0, brightness));
+}
+
+void PianoController::SetTouchCurve(TouchCurve touchCurve)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::TouchCurve, 0, touchCurve));
+}
+
+void PianoController::SetMasterTune(int masterTune)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::MasterTune, 0, masterTune));
+}
+
+void PianoController::SetVrm(bool vrm)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::Vrm, 0, vrm ? 1 : 0));
+}
+
+void PianoController::SetDamperResonance(int damperResonance)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::DamperResonance, 0, damperResonance));
+}
+
+void PianoController::SetStringResonance(int stringResonance)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::StringResonance, 0, stringResonance));
+}
+
+void PianoController::SetKeyOffSampling(int keyOffSampling)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::KeyOffSampling, 0, keyOffSampling));
+}
+
 void PianoController::IncomingMidiMessage(const MidiMessage& message)
 {
 	if (message.isNoteOnOrOff())
@@ -601,6 +664,51 @@ void PianoController::IncomingPianoMessage(const PianoMessage& message)
 	{
 		m_splitPoint = intValue;
 		NotifyChanged(apSplitPoint);
+	}
+	else if (property == Property::LidPosition)
+	{
+		m_lidPosition = (LidPosition)intValue;
+		NotifyChanged(apLidPosition);
+	}
+	else if (property == Property::Environment)
+	{
+		m_environment = intValue;
+		NotifyChanged(apEnvironment);
+	}
+	else if (property == Property::Brightness)
+	{
+		m_brightness = intValue;
+		NotifyChanged(apBrightness);
+	}
+	else if (property == Property::TouchCurve)
+	{
+		m_touchCurve = (TouchCurve)intValue;
+		NotifyChanged(apTouchCurve);
+	}
+	else if (property == Property::MasterTune)
+	{
+		m_masterTune = intValue;
+		NotifyChanged(apMasterTune);
+	}
+	else if (property == Property::Vrm)
+	{
+		m_vrm = boolValue;
+		NotifyChanged(apVrm);
+	}
+	else if (property == Property::DamperResonance)
+	{
+		m_damperResonance = intValue;
+		NotifyChanged(apDamperResonance);
+	}
+	else if (property == Property::StringResonance)
+	{
+		m_stringResonance = intValue;
+		NotifyChanged(apStringResonance);
+	}
+	else if (property == Property::KeyOffSampling)
+	{
+		m_keyOffSampling = intValue;
+		NotifyChanged(apKeyOffSampling);
 	}
 	else if (property == Property::VoicePreset)
 	{

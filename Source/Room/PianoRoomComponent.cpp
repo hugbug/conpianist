@@ -66,7 +66,7 @@ PianoRoomComponent::PianoRoomComponent (Settings& settings, PianoController& pia
     AddComponent(new PrDamperResonanceComponent(settings, pianoController));
     AddComponent(new PrStringResonanceComponent(settings, pianoController));
     AddComponent(new PrKeyOffSamplingComponent(settings, pianoController));
-    AddComponent(new PrHalfPedalPointComponent(settings, pianoController));
+    //AddComponent(new PrHalfPedalPointComponent(settings, pianoController));
     AddComponent(new PrEachKeyComponent(settings, pianoController));
     //[/UserPreSize]
 
