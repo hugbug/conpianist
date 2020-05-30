@@ -164,7 +164,8 @@ const Property Property::Brightness = Property("0c 00 0b 01", 1, 200);
 // Value: 0 - Soft2, 1 - Soft1, 2 - Medium, 3 - Hard1, 4 - Hard2
 const Property Property::TouchCurve = Property("00 00 00 01", 1, 200);
 
-// Value: 2 Bytes: 04(Min) .. 08 00(440 Hz Default) .. 0f 7f (Max)
+// Value: 2 Bytes: 4(414.8Hz Min) .. 1024(440.0Hz Default) .. 2047 (466.8Hz Max)
+// Step: 0.2Hz
 const Property Property::MasterTune = Property("03 00 00 01", 2, 200);
 
 // Value: 0 - Off, 1 - On

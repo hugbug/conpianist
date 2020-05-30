@@ -35,7 +35,7 @@ PrMasterTuneComponent::PrMasterTuneComponent (Settings& settings, PianoControlle
 
     slider.reset (new Slider (String()));
     addAndMakeVisible (slider.get());
-    slider->setRange (-10, 10, 1);
+    slider->setRange (414, 466, 0.1);
     slider->setSliderStyle (Slider::LinearHorizontal);
     slider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
     slider->addListener (this);
@@ -62,6 +62,7 @@ PrMasterTuneComponent::PrMasterTuneComponent (Settings& settings, PianoControlle
 
 
     //[Constructor] You can add your own custom stuff here..
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -88,6 +89,7 @@ void PrMasterTuneComponent::paint (Graphics& g)
 
     //[UserPaint] Add your own custom painting code here..
     PrBaseComponent::paint(g);
+	drawSliderMark(g, slider.get());
     //[/UserPaint]
 }
 
@@ -108,6 +110,8 @@ void PrMasterTuneComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == slider.get())
     {
         //[UserSliderCode_slider] -- add your slider handling code here..
+        inSliderChange++;
+        pianoController.SetMasterTune((slider->getValue() - 440) * 10);
         //[/UserSliderCode_slider]
     }
 
@@ -118,6 +122,21 @@ void PrMasterTuneComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrMasterTuneComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	if (aspect == PianoController::apMasterTune && inSliderChange && inSliderChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inSliderChange = 0;
+	}
+
+	titleLabel->setEnabled(pianoController.IsConnected());
+	slider->setEnabled(pianoController.IsConnected());
+	slider->setValue(440.0 + pianoController.GetMasterTune() / 10.0, NotificationType::dontSendNotification);
+
+	repaint(); // for slider mark
+}
 //[/MiscUserCode]
 
 
@@ -137,8 +156,8 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="640" initialHeight="74">
   <BACKGROUND backgroundColour="ff323e44"/>
   <SLIDER name="" id="cb1eec80b99d9306" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="272 14 344 52" min="-10.0" max="10.0"
-          int="1.0" style="LinearHorizontal" textBoxPos="TextBoxAbove"
+          explicitFocusOrder="0" pos="272 14 344 52" min="414.0" max="466.0"
+          int="0.1" style="LinearHorizontal" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>
   <LABEL name="" id="dc20d157ffc118c5" memberName="titleLabel" virtualName=""

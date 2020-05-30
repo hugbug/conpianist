@@ -44,6 +44,10 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
+		{ if (ap == PianoController::apMasterTune || ap == PianoController::apConnection)
+			MessageManager::callAsync([=](){updatePianoState(ap);}); }
+	void updatePianoState(PianoController::Aspect aspect);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -54,6 +58,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    int inSliderChange = 0;
     //[/UserVariables]
 
     //==============================================================================

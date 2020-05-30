@@ -44,7 +44,7 @@ void PrBaseComponent::drawSliderMark(Graphics& g, Slider* slider, float pos)
 {
 	float width = 2;
 	float height = 4;
-	float y = slider->getY() + 4;
+	float y = slider->getY() + (slider->getTextBoxPosition() == Slider::TextBoxAbove ? 28 : 4);
 	if (pos == -1)
 	{
 		// default pos is center of slider

@@ -48,6 +48,8 @@ public:
 	static const int MaxOctave = +2;
 	static const int DefaultOctave = 0;
 	static const int OctaveBase = 0x40;
+	static const int MasterTuneBase = 0x400;
+	static const int MasterTuneFactor = 4;
 
 	struct Position
 	{

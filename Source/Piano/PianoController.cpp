@@ -487,7 +487,8 @@ void PianoController::SetTouchCurve(TouchCurve touchCurve)
 
 void PianoController::SetMasterTune(int masterTune)
 {
-	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::MasterTune, 0, masterTune));
+	int tune = masterTune * MasterTuneFactor + MasterTuneBase;
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::MasterTune, 0, tune));
 }
 
 void PianoController::SetVrm(bool vrm)
@@ -687,7 +688,7 @@ void PianoController::IncomingPianoMessage(const PianoMessage& message)
 	}
 	else if (property == Property::MasterTune)
 	{
-		m_masterTune = intValue;
+		m_masterTune = (intValue - MasterTuneBase) / MasterTuneFactor;
 		NotifyChanged(apMasterTune);
 	}
 	else if (property == Property::Vrm)
