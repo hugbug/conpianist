@@ -35,7 +35,7 @@ PrKeyOffSamplingComponent::PrKeyOffSamplingComponent (Settings& settings, PianoC
 
     slider.reset (new Slider (String()));
     addAndMakeVisible (slider.get());
-    slider->setRange (-64, 64, 1);
+    slider->setRange (0, 80, 1);
     slider->setSliderStyle (Slider::LinearHorizontal);
     slider->setTextBoxStyle (Slider::NoTextBox, false, 80, 20);
     slider->addListener (this);
@@ -67,12 +67,14 @@ PrKeyOffSamplingComponent::PrKeyOffSamplingComponent (Settings& settings, PianoC
 
     //[UserPreSize]
 	slider->setScrollWheelEnabled(false);
+	slider->setSkewFactorFromMidPoint(64);
     //[/UserPreSize]
 
     setSize (640, 80);
 
 
     //[Constructor] You can add your own custom stuff here..
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -121,6 +123,8 @@ void PrKeyOffSamplingComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == slider.get())
     {
         //[UserSliderCode_slider] -- add your slider handling code here..
+        inSliderChange++;
+        pianoController.SetKeyOffSampling(slider->getValue());
         //[/UserSliderCode_slider]
     }
 
@@ -131,6 +135,22 @@ void PrKeyOffSamplingComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrKeyOffSamplingComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	if (aspect == PianoController::apKeyOffSampling && inSliderChange && inSliderChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inSliderChange = 0;
+	}
+
+	titleLabel->setEnabled(pianoController.IsConnected());
+	depthLabel->setEnabled(pianoController.IsConnected());
+	slider->setEnabled(pianoController.IsConnected());
+	slider->setValue(pianoController.GetKeyOffSampling(), NotificationType::dontSendNotification);
+
+	repaint(); // for slider mark
+}
 //[/MiscUserCode]
 
 
@@ -150,7 +170,7 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="640" initialHeight="80">
   <BACKGROUND backgroundColour="ff323e44"/>
   <SLIDER name="" id="ddd023939bd49970" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="272 38 344 24" min="-64.0" max="64.0"
+          explicitFocusOrder="0" pos="272 38 344 24" min="0.0" max="80.0"
           int="1.0" style="LinearHorizontal" textBoxPos="NoTextBox" textBoxEditable="1"
           textBoxWidth="80" textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="" id="7b567f4e1ba148c9" memberName="depthLabel" virtualName=""
