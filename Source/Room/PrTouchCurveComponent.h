@@ -45,6 +45,9 @@ public:
 
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
+    void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
+		{ if (ap == PianoController::apTouchCurve) MessageManager::callAsync([=](){updatePianoState(ap);}); }
+	void updatePianoState(PianoController::Aspect aspect);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -59,8 +62,8 @@ private:
     //[/UserVariables]
 
     //==============================================================================
-    std::unique_ptr<TextButton> soft1Button;
     std::unique_ptr<TextButton> soft2Button;
+    std::unique_ptr<TextButton> soft1Button;
     std::unique_ptr<Label> titleLabel;
     std::unique_ptr<TextButton> mediumButton;
     std::unique_ptr<TextButton> hard1Button;

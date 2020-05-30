@@ -33,21 +33,21 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
     //[Constructor_pre] You can add your own custom stuff here..
     //[/Constructor_pre]
 
-    soft1Button.reset (new TextButton (String()));
-    addAndMakeVisible (soft1Button.get());
-    soft1Button->setButtonText (TRANS("Soft 1"));
-    soft1Button->setConnectedEdges (Button::ConnectedOnRight);
-    soft1Button->addListener (this);
-
-    soft1Button->setBounds (272, 16, 110, 28);
-
     soft2Button.reset (new TextButton (String()));
     addAndMakeVisible (soft2Button.get());
     soft2Button->setButtonText (TRANS("Soft 2"));
-    soft2Button->setConnectedEdges (Button::ConnectedOnLeft);
+    soft2Button->setConnectedEdges (Button::ConnectedOnRight);
     soft2Button->addListener (this);
 
-    soft2Button->setBounds (388, 16, 110, 28);
+    soft2Button->setBounds (272, 16, 110, 28);
+
+    soft1Button.reset (new TextButton (String()));
+    addAndMakeVisible (soft1Button.get());
+    soft1Button->setButtonText (TRANS("Soft 1"));
+    soft1Button->setConnectedEdges (Button::ConnectedOnLeft);
+    soft1Button->addListener (this);
+
+    soft1Button->setBounds (388, 16, 110, 28);
 
     titleLabel.reset (new Label (String(),
                                  TRANS("Touch Curve")));
@@ -127,6 +127,13 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
 
 
     //[Constructor] You can add your own custom stuff here..
+
+	// Fixed curve is not yet implemented
+    fixedButton->setEnabled(false);
+    velocityLabel->setEnabled(false);
+    slider->setEnabled(false);
+
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -135,8 +142,8 @@ PrTouchCurveComponent::~PrTouchCurveComponent()
     //[Destructor_pre]. You can add your own custom destruction code here..
     //[/Destructor_pre]
 
-    soft1Button = nullptr;
     soft2Button = nullptr;
+    soft1Button = nullptr;
     titleLabel = nullptr;
     mediumButton = nullptr;
     hard1Button = nullptr;
@@ -177,29 +184,34 @@ void PrTouchCurveComponent::buttonClicked (Button* buttonThatWasClicked)
     //[UserbuttonClicked_Pre]
     //[/UserbuttonClicked_Pre]
 
-    if (buttonThatWasClicked == soft1Button.get())
-    {
-        //[UserButtonCode_soft1Button] -- add your button handler code here..
-        //[/UserButtonCode_soft1Button]
-    }
-    else if (buttonThatWasClicked == soft2Button.get())
+    if (buttonThatWasClicked == soft2Button.get())
     {
         //[UserButtonCode_soft2Button] -- add your button handler code here..
+		pianoController.SetTouchCurve(PianoController::tcSoft2);
         //[/UserButtonCode_soft2Button]
+    }
+    else if (buttonThatWasClicked == soft1Button.get())
+    {
+        //[UserButtonCode_soft1Button] -- add your button handler code here..
+		pianoController.SetTouchCurve(PianoController::tcSoft1);
+        //[/UserButtonCode_soft1Button]
     }
     else if (buttonThatWasClicked == mediumButton.get())
     {
         //[UserButtonCode_mediumButton] -- add your button handler code here..
+		pianoController.SetTouchCurve(PianoController::tcMedium);
         //[/UserButtonCode_mediumButton]
     }
     else if (buttonThatWasClicked == hard1Button.get())
     {
         //[UserButtonCode_hard1Button] -- add your button handler code here..
+		pianoController.SetTouchCurve(PianoController::tcHard1);
         //[/UserButtonCode_hard1Button]
     }
     else if (buttonThatWasClicked == hard2Button.get())
     {
         //[UserButtonCode_hard2Button] -- add your button handler code here..
+		pianoController.SetTouchCurve(PianoController::tcHard2);
         //[/UserButtonCode_hard2Button]
     }
     else if (buttonThatWasClicked == fixedButton.get())
@@ -230,6 +242,22 @@ void PrTouchCurveComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrTouchCurveComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	bool enabled = pianoController.IsConnected();
+
+	soft2Button->setEnabled(enabled);
+	soft1Button->setEnabled(enabled);
+	mediumButton->setEnabled(enabled);
+	hard1Button->setEnabled(enabled);
+	hard2Button->setEnabled(enabled);
+
+	soft2Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcSoft2, NotificationType::dontSendNotification);
+	soft1Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcSoft1, NotificationType::dontSendNotification);
+	mediumButton->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcMedium, NotificationType::dontSendNotification);
+	hard1Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcHard1, NotificationType::dontSendNotification);
+	hard2Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcHard2, NotificationType::dontSendNotification);
+}
 //[/MiscUserCode]
 
 
@@ -248,13 +276,13 @@ BEGIN_JUCER_METADATA
                  snapPixels="8" snapActive="1" snapShown="1" overlayOpacity="0.330"
                  fixedSize="0" initialWidth="640" initialHeight="180">
   <BACKGROUND backgroundColour="ff323e44"/>
-  <TEXTBUTTON name="" id="42d5819d1fa8801e" memberName="soft1Button" virtualName=""
+  <TEXTBUTTON name="" id="42d5819d1fa8801e" memberName="soft2Button" virtualName=""
               explicitFocusOrder="0" pos="272 16 110 28" posRelativeX="f4f376ddb622016f"
-              posRelativeY="56427593ca278ddd" buttonText="Soft 1" connectedEdges="2"
+              posRelativeY="56427593ca278ddd" buttonText="Soft 2" connectedEdges="2"
               needsCallback="1" radioGroupId="0"/>
-  <TEXTBUTTON name="" id="76962b892ea540d0" memberName="soft2Button" virtualName=""
+  <TEXTBUTTON name="" id="76962b892ea540d0" memberName="soft1Button" virtualName=""
               explicitFocusOrder="0" pos="388 16 110 28" posRelativeY="56427593ca278ddd"
-              buttonText="Soft 2" connectedEdges="1" needsCallback="1" radioGroupId="0"/>
+              buttonText="Soft 1" connectedEdges="1" needsCallback="1" radioGroupId="0"/>
   <LABEL name="" id="dc20d157ffc118c5" memberName="titleLabel" virtualName=""
          explicitFocusOrder="0" pos="18 12 238 24" edTextCol="ff000000"
          edBkgCol="0" labelText="Touch Curve" editableSingleClick="0"
