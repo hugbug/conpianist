@@ -80,6 +80,7 @@ PrLidPositionComponent::PrLidPositionComponent (Settings& settings, PianoControl
 
 
     //[Constructor] You can add your own custom stuff here..
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -128,16 +129,19 @@ void PrLidPositionComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == closeButton.get())
     {
         //[UserButtonCode_closeButton] -- add your button handler code here..
+        pianoController.SetLidPosition(PianoController::lpClose);
         //[/UserButtonCode_closeButton]
     }
     else if (buttonThatWasClicked == halfButton.get())
     {
         //[UserButtonCode_halfButton] -- add your button handler code here..
+        pianoController.SetLidPosition(PianoController::lpHalf);
         //[/UserButtonCode_halfButton]
     }
     else if (buttonThatWasClicked == openButton.get())
     {
         //[UserButtonCode_openButton] -- add your button handler code here..
+        pianoController.SetLidPosition(PianoController::lpOpen);
         //[/UserButtonCode_openButton]
     }
 
@@ -148,6 +152,18 @@ void PrLidPositionComponent::buttonClicked (Button* buttonThatWasClicked)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrLidPositionComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	bool enabled = pianoController.IsConnected();
+
+	openButton->setEnabled(enabled);
+	halfButton->setEnabled(enabled);
+	closeButton->setEnabled(enabled);
+
+	openButton->setToggleState(enabled && pianoController.GetLidPosition() == PianoController::lpOpen, NotificationType::dontSendNotification);
+	halfButton->setToggleState(enabled && pianoController.GetLidPosition() == PianoController::lpHalf, NotificationType::dontSendNotification);
+	closeButton->setToggleState(enabled && pianoController.GetLidPosition() == PianoController::lpClose, NotificationType::dontSendNotification);
+}
 //[/MiscUserCode]
 
 

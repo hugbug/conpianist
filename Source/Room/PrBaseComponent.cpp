@@ -24,11 +24,12 @@
 PrBaseComponent::PrBaseComponent (Settings& settings, PianoController& pianoController)
    : settings(settings), pianoController(pianoController)
 {
-
+    pianoController.AddListener(this);
 }
 
 PrBaseComponent::~PrBaseComponent()
 {
+    pianoController.RemoveListener(this);
 }
 
 void PrBaseComponent::paint (Graphics& g)

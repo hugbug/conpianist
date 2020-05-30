@@ -31,17 +31,16 @@ class PrBaseComponent  : public Component,
 {
 public:
     PrBaseComponent(Settings& settings, PianoController& pianoController);
-   ~PrBaseComponent() override;
-   void paint (Graphics& g) override;
-   void setBackgroundColor(Colour color) { backgroundColor = color; }
-
+    ~PrBaseComponent() override;
+    void paint (Graphics& g) override;
+    void setBackgroundColor(Colour color) { backgroundColor = color; }
 
 protected:
-   Settings& settings;
-   PianoController& pianoController;
-   Colour backgroundColor;
+    Settings& settings;
+    PianoController& pianoController;
+    Colour backgroundColor;
 
-   void drawSliderMark(Graphics& g, Slider* slider, int pos = -1);
+    void drawSliderMark(Graphics& g, Slider* slider, int pos = -1);
    
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrBaseComponent)
