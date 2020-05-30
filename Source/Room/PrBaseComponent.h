@@ -40,7 +40,7 @@ protected:
     PianoController& pianoController;
     Colour backgroundColor;
 
-    void drawSliderMark(Graphics& g, Slider* slider, int pos = -1);
+    void drawSliderMark(Graphics& g, Slider* slider, float pos = -1);
    
 private:
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (PrBaseComponent)

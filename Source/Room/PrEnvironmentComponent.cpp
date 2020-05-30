@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "Presets.h"
 //[/Headers]
 
 #include "PrEnvironmentComponent.h"
@@ -35,7 +36,7 @@ PrEnvironmentComponent::PrEnvironmentComponent (Settings& settings, PianoControl
 
     slider.reset (new Slider (String()));
     addAndMakeVisible (slider.get());
-    slider->setRange (-64, 64, 1);
+    slider->setRange (0, 127, 1);
     slider->setSliderStyle (Slider::LinearHorizontal);
     slider->setTextBoxStyle (Slider::NoTextBox, false, 80, 20);
     slider->addListener (this);
@@ -87,6 +88,13 @@ PrEnvironmentComponent::PrEnvironmentComponent (Settings& settings, PianoControl
 
 
     //[Constructor] You can add your own custom stuff here..
+	effectComboBox->clear();
+	for (ReverbEffect& re : Presets::ReverbEffects())
+	{
+		effectComboBox->addItem(re.title, re.num + 1000000);
+	}
+
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -115,7 +123,6 @@ void PrEnvironmentComponent::paint (Graphics& g)
 
     //[UserPaint] Add your own custom painting code here..
     PrBaseComponent::paint(g);
-	drawSliderMark(g, slider.get());
     //[/UserPaint]
 }
 
@@ -136,6 +143,8 @@ void PrEnvironmentComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == slider.get())
     {
         //[UserSliderCode_slider] -- add your slider handling code here..
+        inSliderChange++;
+        pianoController.SetEnvironment(slider->getValue());
         //[/UserSliderCode_slider]
     }
 
@@ -151,6 +160,7 @@ void PrEnvironmentComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
     if (comboBoxThatHasChanged == effectComboBox.get())
     {
         //[UserComboBoxCode_effectComboBox] -- add your combo box handling code here..
+        pianoController.SetReverbEffect(effectComboBox->getSelectedId() - 1000000);
         //[/UserComboBoxCode_effectComboBox]
     }
 
@@ -161,6 +171,25 @@ void PrEnvironmentComponent::comboBoxChanged (ComboBox* comboBoxThatHasChanged)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrEnvironmentComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	if (aspect == PianoController::apEnvironment && inSliderChange && inSliderChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inSliderChange = 0;
+	}
+
+	slider->setEnabled(pianoController.IsConnected());
+	slider->setValue(pianoController.GetEnvironment(), NotificationType::dontSendNotification);
+
+	effectComboBox->setEnabled(pianoController.IsConnected());
+	effectComboBox->setSelectedId(pianoController.GetReverbEffect() + 1000000, NotificationType::dontSendNotification);
+	if (effectComboBox->getSelectedId() != pianoController.GetReverbEffect() + 1000000)
+	{
+		effectComboBox->setSelectedItemIndex(-1); // unknown effect
+	}
+}
 //[/MiscUserCode]
 
 
@@ -180,7 +209,7 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="640" initialHeight="125">
   <BACKGROUND backgroundColour="ff323e44"/>
   <SLIDER name="" id="6c9229af42a2aa6a" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="272 38 344 24" min="-64.0" max="64.0"
+          explicitFocusOrder="0" pos="272 38 344 24" min="0.0" max="127.0"
           int="1.0" style="LinearHorizontal" textBoxPos="NoTextBox" textBoxEditable="1"
           textBoxWidth="80" textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="" id="a814cd8b3a7a385d" memberName="depthLabel" virtualName=""

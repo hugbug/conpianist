@@ -113,8 +113,7 @@ void PrBrightnessComponent::paint (Graphics& g)
 
     //[UserPaint] Add your own custom painting code here..
     PrBaseComponent::paint(g);
-	int pos = slider->proportionOfWidth((double)0x40/(double)0x7f);
-	drawSliderMark(g, slider.get(), pos);
+	drawSliderMark(g, slider.get(), slider->proportionOfWidth((double)0x40/(double)0x7f));
     //[/UserPaint]
 }
 

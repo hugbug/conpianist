@@ -40,17 +40,17 @@ void PrBaseComponent::paint (Graphics& g)
 	//g.drawRect(x, y, width, height);
 }
 
-void PrBaseComponent::drawSliderMark(Graphics& g, Slider* slider, int pos)
+void PrBaseComponent::drawSliderMark(Graphics& g, Slider* slider, float pos)
 {
-	int width = 2;
-	int height = 4;
-	int y = slider->getY() + 4;
+	float width = 2;
+	float height = 4;
+	float y = slider->getY() + 4;
 	if (pos == -1)
 	{
 		// default pos is center of slider
 		pos = slider->proportionOfWidth(0.5000f);
 	}
-	int x = slider->getX() + pos - width / 2;
+	float x = slider->getX() + pos - width / 2;
 
 	g.setColour(Colour(0xabf0ffff));
 	g.fillRect(x, y, width, height);
