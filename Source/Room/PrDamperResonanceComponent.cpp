@@ -35,7 +35,7 @@ PrDamperResonanceComponent::PrDamperResonanceComponent (Settings& settings, Pian
 
     slider.reset (new Slider (String()));
     addAndMakeVisible (slider.get());
-    slider->setRange (-64, 64, 1);
+    slider->setRange (0, 10, 1);
     slider->setSliderStyle (Slider::LinearHorizontal);
     slider->setTextBoxStyle (Slider::NoTextBox, false, 80, 20);
     slider->addListener (this);
@@ -73,6 +73,7 @@ PrDamperResonanceComponent::PrDamperResonanceComponent (Settings& settings, Pian
 
 
     //[Constructor] You can add your own custom stuff here..
+    updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
 
@@ -121,6 +122,8 @@ void PrDamperResonanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == slider.get())
     {
         //[UserSliderCode_slider] -- add your slider handling code here..
+        inSliderChange++;
+        pianoController.SetDamperResonance(slider->getValue());
         //[/UserSliderCode_slider]
     }
 
@@ -131,6 +134,22 @@ void PrDamperResonanceComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 
 
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
+void PrDamperResonanceComponent::updatePianoState(PianoController::Aspect aspect)
+{
+	if (aspect == PianoController::apDamperResonance && inSliderChange && inSliderChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inSliderChange = 0;
+	}
+
+	slider->setEnabled(pianoController.IsConnected() && pianoController.GetVrm());
+	slider->setValue(pianoController.GetDamperResonance(), NotificationType::dontSendNotification);
+	titleLabel->setEnabled(pianoController.IsConnected() && pianoController.GetVrm());
+	depthLabel->setEnabled(pianoController.IsConnected() && pianoController.GetVrm());
+
+	repaint(); // for slider mark
+}
 //[/MiscUserCode]
 
 
@@ -150,7 +169,7 @@ BEGIN_JUCER_METADATA
                  fixedSize="0" initialWidth="640" initialHeight="74">
   <BACKGROUND backgroundColour="ff323e44"/>
   <SLIDER name="" id="ddd023939bd49970" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="272 38 344 24" min="-64.0" max="64.0"
+          explicitFocusOrder="0" pos="272 38 344 24" min="0.0" max="10.0"
           int="1.0" style="LinearHorizontal" textBoxPos="NoTextBox" textBoxEditable="1"
           textBoxWidth="80" textBoxHeight="20" skewFactor="1.0" needsCallback="1"/>
   <LABEL name="" id="7b567f4e1ba148c9" memberName="depthLabel" virtualName=""

@@ -246,6 +246,7 @@ void PrTouchCurveComponent::updatePianoState(PianoController::Aspect aspect)
 {
 	bool enabled = pianoController.IsConnected();
 
+	titleLabel->setEnabled(enabled);
 	soft2Button->setEnabled(enabled);
 	soft1Button->setEnabled(enabled);
 	mediumButton->setEnabled(enabled);

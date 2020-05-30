@@ -155,8 +155,13 @@ void PrBrightnessComponent::updatePianoState(PianoController::Aspect aspect)
 		inSliderChange = 0;
 	}
 
+	titleLabel->setEnabled(pianoController.IsConnected());
+	mellowLabel->setEnabled(pianoController.IsConnected());
+	brightLabel->setEnabled(pianoController.IsConnected());
 	slider->setEnabled(pianoController.IsConnected());
 	slider->setValue(pianoController.GetBrightness(), NotificationType::dontSendNotification);
+
+	repaint(); // for slider mark
 }
 //[/MiscUserCode]
 

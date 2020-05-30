@@ -180,6 +180,8 @@ void PrEnvironmentComponent::updatePianoState(PianoController::Aspect aspect)
 		inSliderChange = 0;
 	}
 
+	titleLabel->setEnabled(pianoController.IsConnected());
+	depthLabel->setEnabled(pianoController.IsConnected());
 	slider->setEnabled(pianoController.IsConnected());
 	slider->setValue(pianoController.GetEnvironment(), NotificationType::dontSendNotification);
 
@@ -189,6 +191,8 @@ void PrEnvironmentComponent::updatePianoState(PianoController::Aspect aspect)
 	{
 		effectComboBox->setSelectedItemIndex(-1); // unknown effect
 	}
+
+	repaint(); // for slider mark
 }
 //[/MiscUserCode]
 

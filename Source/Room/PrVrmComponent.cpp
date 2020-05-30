@@ -140,6 +140,7 @@ void PrVrmComponent::updatePianoState(PianoController::Aspect aspect)
 {
 	bool enabled = pianoController.IsConnected();
 
+	titleLabel->setEnabled(enabled);
 	offButton->setEnabled(enabled);
 	onButton->setEnabled(enabled);
 

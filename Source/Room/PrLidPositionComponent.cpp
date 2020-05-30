@@ -156,6 +156,7 @@ void PrLidPositionComponent::updatePianoState(PianoController::Aspect aspect)
 {
 	bool enabled = pianoController.IsConnected();
 
+	titleLabel->setEnabled(enabled);
 	openButton->setEnabled(enabled);
 	halfButton->setEnabled(enabled);
 	closeButton->setEnabled(enabled);

@@ -52,7 +52,7 @@ void PrBaseComponent::drawSliderMark(Graphics& g, Slider* slider, float pos)
 	}
 	float x = slider->getX() + pos - width / 2;
 
-	g.setColour(Colour(0xabf0ffff));
+	g.setColour(Colour(slider->isEnabled() ? 0xabf0ffff : 0x40f0ffff));
 	g.fillRect(x, y, width, height);
 }
 
