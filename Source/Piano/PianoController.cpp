@@ -87,6 +87,8 @@ void PianoController::InitEvents()
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Environment));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Brightness));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::TouchCurve));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::FixedCurve));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::FixedVelocity));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::MasterTune));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::Vrm));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Events, Property::DamperResonance));
@@ -146,6 +148,10 @@ void PianoController::ResyncStateFromPiano()
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Environment));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Brightness));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::TouchCurve));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::FixedCurve, chMain, 0));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::FixedCurve, chLeft, 0));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::FixedCurve, chLayer, 0));
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::FixedVelocity));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::MasterTune));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::Vrm));
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Get, Property::DamperResonance));
@@ -485,6 +491,16 @@ void PianoController::SetTouchCurve(TouchCurve touchCurve)
 	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::TouchCurve, 0, touchCurve));
 }
 
+void PianoController::SetFixedCurve(Channel ch, bool active)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::FixedCurve, ch, active ? 1 : 0));
+}
+
+void PianoController::SetFixedVelocity(int fixedVelocity)
+{
+	m_pianoConnector->SendPianoMessage(PianoMessage(Action::Set, Property::FixedVelocity, 0, fixedVelocity));
+}
+
 void PianoController::SetMasterTune(int masterTune)
 {
 	int tune = masterTune * MasterTuneFactor + MasterTuneBase;
@@ -685,6 +701,16 @@ void PianoController::IncomingPianoMessage(const PianoMessage& message)
 	{
 		m_touchCurve = (TouchCurve)intValue;
 		NotifyChanged(apTouchCurve);
+	}
+	else if (property == Property::FixedCurve)
+	{
+		m_fixedCurve[index] = boolValue;
+		NotifyChanged(apFixedCurve);
+	}
+	else if (property == Property::FixedVelocity)
+	{
+		m_fixedVelocity = intValue;
+		NotifyChanged(apFixedVelocity);
 	}
 	else if (property == Property::MasterTune)
 	{

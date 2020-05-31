@@ -46,9 +46,11 @@ public:
     //==============================================================================
     //[UserMethods]     -- You can add your own custom methods in this section.
     void PianoStateChanged(PianoController::Aspect ap, PianoController::Channel ch) override
-		{ if (ap == PianoController::apTouchCurve || ap == PianoController::apConnection)
+		{ if (ap == PianoController::apTouchCurve || ap == PianoController::apFixedCurve ||
+				ap == PianoController::apFixedVelocity || ap == PianoController::apConnection)
 			MessageManager::callAsync([=](){updatePianoState(ap);}); }
 	void updatePianoState(PianoController::Aspect aspect);
+    void setTouchCurve(PianoController::TouchCurve touchCurve);
     //[/UserMethods]
 
     void paint (Graphics& g) override;
@@ -60,6 +62,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    int inSliderChange = 0;
     //[/UserVariables]
 
     //==============================================================================

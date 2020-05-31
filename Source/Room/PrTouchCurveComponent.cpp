@@ -94,7 +94,7 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
 
     slider.reset (new Slider (String()));
     addAndMakeVisible (slider.get());
-    slider->setRange (-10, 10, 1);
+    slider->setRange (0, 127, 1);
     slider->setSliderStyle (Slider::LinearHorizontal);
     slider->setTextBoxStyle (Slider::TextBoxAbove, false, 80, 20);
     slider->addListener (this);
@@ -121,6 +121,8 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
     hard2Button->getProperties().set("toggle", "yes");
     fixedButton->getProperties().set("toggle", "yes");
 	mediumButton->setToggleState(true, NotificationType::dontSendNotification);
+
+	slider->setScrollWheelEnabled(false);
     //[/UserPreSize]
 
     setSize (640, 180);
@@ -129,7 +131,6 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
     //[Constructor] You can add your own custom stuff here..
 
 	// Fixed curve is not yet implemented
-    fixedButton->setEnabled(false);
     velocityLabel->setEnabled(false);
     slider->setEnabled(false);
 
@@ -187,36 +188,39 @@ void PrTouchCurveComponent::buttonClicked (Button* buttonThatWasClicked)
     if (buttonThatWasClicked == soft2Button.get())
     {
         //[UserButtonCode_soft2Button] -- add your button handler code here..
-		pianoController.SetTouchCurve(PianoController::tcSoft2);
+		setTouchCurve(PianoController::tcSoft2);
         //[/UserButtonCode_soft2Button]
     }
     else if (buttonThatWasClicked == soft1Button.get())
     {
         //[UserButtonCode_soft1Button] -- add your button handler code here..
-		pianoController.SetTouchCurve(PianoController::tcSoft1);
+		setTouchCurve(PianoController::tcSoft1);
         //[/UserButtonCode_soft1Button]
     }
     else if (buttonThatWasClicked == mediumButton.get())
     {
         //[UserButtonCode_mediumButton] -- add your button handler code here..
-		pianoController.SetTouchCurve(PianoController::tcMedium);
+		setTouchCurve(PianoController::tcMedium);
         //[/UserButtonCode_mediumButton]
     }
     else if (buttonThatWasClicked == hard1Button.get())
     {
         //[UserButtonCode_hard1Button] -- add your button handler code here..
-		pianoController.SetTouchCurve(PianoController::tcHard1);
+		setTouchCurve(PianoController::tcHard1);
         //[/UserButtonCode_hard1Button]
     }
     else if (buttonThatWasClicked == hard2Button.get())
     {
         //[UserButtonCode_hard2Button] -- add your button handler code here..
-		pianoController.SetTouchCurve(PianoController::tcHard2);
+		setTouchCurve(PianoController::tcHard2);
         //[/UserButtonCode_hard2Button]
     }
     else if (buttonThatWasClicked == fixedButton.get())
     {
         //[UserButtonCode_fixedButton] -- add your button handler code here..
+		pianoController.SetFixedCurve(PianoController::chMain, true);
+		pianoController.SetFixedCurve(PianoController::chLeft, true);
+		pianoController.SetFixedCurve(PianoController::chLayer, true);
         //[/UserButtonCode_fixedButton]
     }
 
@@ -232,6 +236,8 @@ void PrTouchCurveComponent::sliderValueChanged (Slider* sliderThatWasMoved)
     if (sliderThatWasMoved == slider.get())
     {
         //[UserSliderCode_slider] -- add your slider handling code here..
+        inSliderChange++;
+        pianoController.SetFixedVelocity(slider->getValue());
         //[/UserSliderCode_slider]
     }
 
@@ -244,6 +250,13 @@ void PrTouchCurveComponent::sliderValueChanged (Slider* sliderThatWasMoved)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void PrTouchCurveComponent::updatePianoState(PianoController::Aspect aspect)
 {
+	if (aspect == PianoController::apFixedVelocity && inSliderChange && inSliderChange--) return;
+
+	if (aspect == PianoController::apConnection)
+	{
+		inSliderChange = 0;
+	}
+
 	bool enabled = pianoController.IsConnected();
 
 	titleLabel->setEnabled(enabled);
@@ -252,12 +265,28 @@ void PrTouchCurveComponent::updatePianoState(PianoController::Aspect aspect)
 	mediumButton->setEnabled(enabled);
 	hard1Button->setEnabled(enabled);
 	hard2Button->setEnabled(enabled);
+	fixedButton->setEnabled(enabled);
 
-	soft2Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcSoft2, NotificationType::dontSendNotification);
-	soft1Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcSoft1, NotificationType::dontSendNotification);
-	mediumButton->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcMedium, NotificationType::dontSendNotification);
-	hard1Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcHard1, NotificationType::dontSendNotification);
-	hard2Button->setToggleState(enabled && pianoController.GetTouchCurve() == PianoController::tcHard2, NotificationType::dontSendNotification);
+	bool fixed = pianoController.GetFixedCurve(PianoController::chMain);
+
+	soft2Button->setToggleState(enabled && !fixed && pianoController.GetTouchCurve() == PianoController::tcSoft2, NotificationType::dontSendNotification);
+	soft1Button->setToggleState(enabled && !fixed && pianoController.GetTouchCurve() == PianoController::tcSoft1, NotificationType::dontSendNotification);
+	mediumButton->setToggleState(enabled && !fixed && pianoController.GetTouchCurve() == PianoController::tcMedium, NotificationType::dontSendNotification);
+	hard1Button->setToggleState(enabled && !fixed && pianoController.GetTouchCurve() == PianoController::tcHard1, NotificationType::dontSendNotification);
+	hard2Button->setToggleState(enabled && !fixed && pianoController.GetTouchCurve() == PianoController::tcHard2, NotificationType::dontSendNotification);
+	fixedButton->setToggleState(enabled && fixed, NotificationType::dontSendNotification);
+
+    velocityLabel->setEnabled(fixed);
+    slider->setEnabled(fixed);
+   	slider->setValue(pianoController.GetFixedVelocity(), NotificationType::dontSendNotification);
+}
+
+void PrTouchCurveComponent::setTouchCurve(PianoController::TouchCurve touchCurve)
+{
+	pianoController.SetTouchCurve(touchCurve);
+	pianoController.SetFixedCurve(PianoController::chMain, false);
+	pianoController.SetFixedCurve(PianoController::chLeft, false);
+	pianoController.SetFixedCurve(PianoController::chLayer, false);
 }
 //[/MiscUserCode]
 
@@ -303,7 +332,7 @@ BEGIN_JUCER_METADATA
               explicitFocusOrder="0" pos="504 56 110 28" posRelativeY="56427593ca278ddd"
               buttonText="Fixed" connectedEdges="1" needsCallback="1" radioGroupId="0"/>
   <SLIDER name="" id="cb1eec80b99d9306" memberName="slider" virtualName=""
-          explicitFocusOrder="0" pos="272 120 344 52" min="-10.0" max="10.0"
+          explicitFocusOrder="0" pos="272 120 344 52" min="0.0" max="127.0"
           int="1.0" style="LinearHorizontal" textBoxPos="TextBoxAbove"
           textBoxEditable="1" textBoxWidth="80" textBoxHeight="20" skewFactor="1.0"
           needsCallback="1"/>

@@ -55,6 +55,7 @@ public:
 	static const int MaxResonance = 10;
 	static const int DefaultKeyOffSampling = 0x40;
 	static const int MaxKeyOffSampling = 0x50;
+	static const int DefaultFixedVelocity = 100;
 
 	struct Position
 	{
@@ -161,6 +162,8 @@ public:
 		apEnvironment,
 		apBrightness,
 		apTouchCurve,
+		apFixedCurve,
+		apFixedVelocity,
 		apMasterTune,
 		apVrm,
 		apDamperResonance,
@@ -256,6 +259,10 @@ public:
 	void SetBrightness(int brightness);
 	TouchCurve GetTouchCurve() { return m_touchCurve; }
 	void SetTouchCurve(TouchCurve touchCurve);
+	bool GetFixedCurve(Channel ch) { return m_fixedCurve[ch]; }
+	void SetFixedCurve(Channel ch, bool active);
+	int GetFixedVelocity() { return m_fixedVelocity; }
+	void SetFixedVelocity(int fixedVelocity);
 	int GetMasterTune() { return m_masterTune; }
 	void SetMasterTune(int masterTune);
 	int GetVrm() { return m_vrm; }
@@ -303,6 +310,8 @@ private:
 	int m_environment = 0;
 	int m_brightness = DefaultBrightness;
 	TouchCurve m_touchCurve = tcMedium;
+	bool m_fixedCurve[3]{false,false,false};
+	int m_fixedVelocity = DefaultFixedVelocity;
 	int m_masterTune = 0;
 	bool m_vrm = false;
 	int m_damperResonance = DefaultResonance;

@@ -172,6 +172,12 @@ struct Property
 	// Value: 0 - Soft2, 1 - Soft1, 2 - Medium, 3 - Hard1, 4 - Hard2
 	const static Property TouchCurve;
 
+	// Index: Channel(Main,Layer,Left); Value: 0 - Off, 1 - On
+	const static Property FixedCurve;
+
+	// Value: 00..7f
+	const static Property FixedVelocity;
+
 	// Value: 2 Bytes: 4(414.8Hz Min) .. 1024(440.0Hz Default) .. 2047 (466.8Hz Max)
 	// Step: 0.2Hz
 	const static Property MasterTune;
