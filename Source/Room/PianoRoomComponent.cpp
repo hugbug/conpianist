@@ -25,7 +25,6 @@
 #include "PrEnvironmentComponent.h"
 #include "PrMasterTuneComponent.h"
 #include "PrStringResonanceComponent.h"
-#include "PrEachKeyComponent.h"
 #include "PrTouchCurveComponent.h"
 #include "PrHalfPedalPointComponent.h"
 #include "PrKeyOffSamplingComponent.h"
@@ -67,7 +66,6 @@ PianoRoomComponent::PianoRoomComponent (Settings& settings, PianoController& pia
     AddComponent(new PrStringResonanceComponent(settings, pianoController));
     AddComponent(new PrKeyOffSamplingComponent(settings, pianoController));
     //AddComponent(new PrHalfPedalPointComponent(settings, pianoController));
-    //AddComponent(new PrEachKeyComponent(settings, pianoController));
     //[/UserPreSize]
 
     setSize (640, 700);
