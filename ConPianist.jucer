@@ -124,10 +124,6 @@
               resource="0" file="Source/Room/PrDamperResonanceComponent.cpp"/>
         <FILE id="Np7eCQ" name="PrDamperResonanceComponent.h" compile="0" resource="0"
               file="Source/Room/PrDamperResonanceComponent.h"/>
-        <FILE id="LM3L8c" name="PrEachKeyComponent.cpp" compile="1" resource="0"
-              file="Source/Room/PrEachKeyComponent.cpp"/>
-        <FILE id="TTAv24" name="PrEachKeyComponent.h" compile="0" resource="0"
-              file="Source/Room/PrEachKeyComponent.h"/>
         <FILE id="IvUy5C" name="PrEnvironmentComponent.cpp" compile="1" resource="0"
               file="Source/Room/PrEnvironmentComponent.cpp"/>
         <FILE id="KBsPRM" name="PrEnvironmentComponent.h" compile="0" resource="0"
