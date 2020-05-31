@@ -21,6 +21,7 @@
 
 //[Headers]     -- You can add your own extra header files here --
 #include "../JuceLibraryCode/JuceHeader.h"
+#include "Settings.h"
 #include "PianoController.h"
 #include "Presets.h"
 //[/Headers]
@@ -41,7 +42,7 @@ class VoiceComponent  : public Component,
 {
 public:
     //==============================================================================
-    VoiceComponent (PianoController& pianoController);
+    VoiceComponent (Settings& settings, PianoController& pianoController);
     ~VoiceComponent() override;
 
     //==============================================================================
@@ -64,6 +65,7 @@ public:
 
 private:
     //[UserVariables]   -- You can add your own custom variables in this section.
+    Settings& settings;
     PianoController& pianoController;
     TreeViewItem* rootItem;
     //[/UserVariables]
@@ -89,6 +91,7 @@ private:
     std::unique_ptr<ImageButton> leftMenuButton;
     std::unique_ptr<ImageButton> mainMenuButton2;
     std::unique_ptr<ImageButton> mainMenuButton;
+    std::unique_ptr<ImageButton> roomButton;
 
 
     //==============================================================================

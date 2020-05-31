@@ -117,7 +117,6 @@ private:
     std::unique_ptr<Label> statusLabel;
     std::unique_ptr<TextButton> mixerButton;
     std::unique_ptr<ImageButton> menuButton;
-    std::unique_ptr<ImageButton> roomButton;
 
 
     //==============================================================================

@@ -21,7 +21,6 @@
 #include "ConnectionComponent.h"
 #include "BalanceComponent.h"
 #include "RegistrationMemory.h"
-#include "PianoRoomComponent.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -145,16 +144,6 @@ SceneComponent::SceneComponent (Settings& settings)
                            Image(), 1.000f, Colour (0x00000000));
     menuButton->setBounds (8, 8, 32, 28);
 
-    roomButton.reset (new ImageButton ("Piano Room Button"));
-    addAndMakeVisible (roomButton.get());
-    roomButton->setTooltip (TRANS("Piano Room"));
-    roomButton->setButtonText (TRANS("Piano Room"));
-    roomButton->addListener (this);
-
-    roomButton->setImages (false, true, true,
-                           ImageCache::getFromMemory (BinaryData::buttontune_png, BinaryData::buttontune_pngSize), 1.000f, Colour (0x00000000),
-                           Image(), 0.750f, Colour (0x00000000),
-                           Image(), 1.000f, Colour (0x00000000));
 
     //[UserPreSize]
     topbarPanel->setColour(GroupComponent::outlineColourId, Colours::transparentBlack);
@@ -166,7 +155,7 @@ SceneComponent::SceneComponent (Settings& settings)
 	keyboardComponent.reset(new KeyboardComponent(settings, pianoController));
 	keyboardPanel->addAndMakeVisible(keyboardComponent.get());
 
-	voiceComponent.reset(new VoiceComponent(pianoController));
+	voiceComponent.reset(new VoiceComponent(settings, pianoController));
 	scoreComponent.reset(ScoreComponent::Create(settings, pianoController));
 	mixerComponent.reset(new MixerComponent(settings, pianoController));
 	largeContentPanel->addChildComponent(voiceComponent.get());
@@ -220,7 +209,6 @@ SceneComponent::~SceneComponent()
     statusLabel = nullptr;
     mixerButton = nullptr;
     menuButton = nullptr;
-    roomButton = nullptr;
 
 
     //[Destructor]. You can add your own custom destruction code here..
@@ -265,7 +253,6 @@ void SceneComponent::resized()
     voiceButton->setBounds (0 + 378, (-8) + 18, 80, 34);
     scoreButton->setBounds (0 + 298, (-8) + 18, 80, 34);
     mixerButton->setBounds (0 + 458, (-8) + 18, 80, 34);
-    roomButton->setBounds (getWidth() - 185 - 32, 8, 32, 28);
     //[UserResized] Add your own custom resize handling here..
     playbackPanel->setBounds(playbackPanel->getX(), playbackPanel->getY(), playbackPanel->getWidth(),
     	playbackPanel->getHeight() + (keyboardPanel->isVisible() ? 0 : keyboardPanel->getHeight()));
@@ -348,12 +335,6 @@ void SceneComponent::buttonClicked (Button* buttonThatWasClicked)
         showMenu();
         //[/UserButtonCode_menuButton]
     }
-    else if (buttonThatWasClicked == roomButton.get())
-    {
-        //[UserButtonCode_roomButton] -- add your button handler code here..
-		PianoRoomComponent::showDialog(settings, pianoController);
-        //[/UserButtonCode_roomButton]
-    }
 
     //[UserbuttonClicked_Post]
     //[/UserbuttonClicked_Post]
@@ -390,7 +371,6 @@ void SceneComponent::updateSettingsState()
 			mute ? BinaryData::buttonmute_pngSize : BinaryData::buttonvolume_pngSize),
 			1.000f, Colour (0x00000000), Image(), 0.750f, Colour (0x00000000), Image(), 1.000f, Colour (0x00000000));
 
-	roomButton->setEnabled(pianoController.IsConnected());
 	balanceButton->setEnabled(pianoController.IsConnected());
 	keyboardButton->setEnabled(pianoController.IsConnected());
 	muteButton->setEnabled(pianoController.IsConnected());
@@ -768,12 +748,6 @@ BEGIN_JUCER_METADATA
                resourceNormal="BinaryData::buttonmenu_png" opacityNormal="1.0"
                colourNormal="0" resourceOver="" opacityOver="0.75" colourOver="0"
                resourceDown="" opacityDown="1.0" colourDown="0"/>
-  <IMAGEBUTTON name="Piano Room Button" id="102bdca1a0375e89" memberName="roomButton"
-               virtualName="" explicitFocusOrder="0" pos="185Rr 8 32 28" tooltip="Piano Room"
-               buttonText="Piano Room" connectedEdges="0" needsCallback="1"
-               radioGroupId="0" keepProportions="1" resourceNormal="BinaryData::buttontune_png"
-               opacityNormal="1.0" colourNormal="0" resourceOver="" opacityOver="0.75"
-               colourOver="0" resourceDown="" opacityDown="1.0" colourDown="0"/>
 </JUCER_COMPONENT>
 
 END_JUCER_METADATA
