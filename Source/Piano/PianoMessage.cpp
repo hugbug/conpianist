@@ -191,7 +191,8 @@ const std::vector<Property> Property::AllProperties = {
 	StreamSpeed, Play, Part, PartChannel, PartAuto, SongName, Volume, Pan, Reverb,
 	Octave, Tempo, Transpose, ReverbEffect, Loop, VoicePreset, VoiceMidi, Active,
 	Present, SongReset, SplitPoint, LidPosition, Environment, Brightness, TouchCurve,
-	MasterTune, Vrm, DamperResonance, StringResonance, KeyOffSampling
+	FixedCurve, FixedVelocity, MasterTune, Vrm, DamperResonance, StringResonance,
+	KeyOffSampling
 };
 
 constexpr char CharToCode(char ch)
