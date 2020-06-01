@@ -33,7 +33,7 @@ void RegistrationMemory::Save()
 		SaveSplitPoint();
 	}
 
-	if (options.balance || options.mixer)
+	if (options.balance || options.mixer || options.pianoroom)
 	{
 		SaveReverbEffect();
 	}
@@ -61,6 +61,11 @@ void RegistrationMemory::Save()
 		}
 	}
 
+	if (options.pianoroom)
+	{
+		SavePianoRoom();
+	}
+
 	if (options.settings)
 	{
 		SaveSettings();
@@ -84,7 +89,7 @@ void RegistrationMemory::Load()
 		LoadSplitPoint();
 	}
 
-	if (options.balance || options.mixer)
+	if (options.balance || options.mixer || options.pianoroom)
 	{
 		LoadReverbEffect();
 	}
@@ -110,6 +115,11 @@ void RegistrationMemory::Load()
 		{
 			LoadChannel(ch, String("Midi") + String(ch - PianoController::chMidi0));
 		}
+	}
+
+	if (options.pianoroom)
+	{
+		LoadPianoRoom();
 	}
 
 	if (options.settings)
@@ -241,6 +251,111 @@ void RegistrationMemory::LoadReverbEffect()
 	if (!chElem) return;
 
 	pianoController.SetReverbEffect(chElem->getAllSubText().getIntValue());
+}
+
+void RegistrationMemory::SavePianoRoom()
+{
+	XmlElement* listElement = root->getChildByName("PianoRoom");
+	if (!listElement)
+	{
+		listElement = root->createNewChildElement("PianoRoom");
+	}
+	listElement->createNewChildElement("LidPosition")->addTextElement(String(
+		pianoController.GetLidPosition() == PianoController::lpOpen ? "open" :
+		pianoController.GetLidPosition() == PianoController::lpHalf ? "half" :
+		pianoController.GetLidPosition() == PianoController::lpClose ? "close" : ""));
+	listElement->createNewChildElement("Environment")->addTextElement(String(pianoController.GetEnvironment()));
+	listElement->createNewChildElement("Brightness")->addTextElement(String(pianoController.GetBrightness()));
+	listElement->createNewChildElement("TouchCurve")->addTextElement(String(
+		pianoController.GetFixedCurve(PianoController::chMain) ? "fixed" :
+		pianoController.GetTouchCurve() == PianoController::tcSoft2 ? "soft2" :
+		pianoController.GetTouchCurve() == PianoController::tcSoft1 ? "soft1" :
+		pianoController.GetTouchCurve() == PianoController::tcMedium ? "medium" :
+		pianoController.GetTouchCurve() == PianoController::tcHard1 ? "hard1" :
+		pianoController.GetTouchCurve() == PianoController::tcHard2 ? "hard2" : ""));
+	listElement->createNewChildElement("FixedVelocity")->addTextElement(String(pianoController.GetFixedVelocity()));
+	listElement->createNewChildElement("MasterTune")->addTextElement(String(440.0 + pianoController.GetMasterTune()/10.0));
+	listElement->createNewChildElement("Vrm")->addTextElement(String(pianoController.GetVrm() ? "yes" : "no"));
+	listElement->createNewChildElement("DamperResonance")->addTextElement(String(pianoController.GetDamperResonance()));
+	listElement->createNewChildElement("StringResonance")->addTextElement(String(pianoController.GetStringResonance()));
+	listElement->createNewChildElement("KeyOffSampling")->addTextElement(String(pianoController.GetKeyOffSampling()));
+}
+
+void RegistrationMemory::LoadPianoRoom()
+{
+	XmlElement* listElement = root->getChildByName("PianoRoom");
+	if (!listElement) return;
+
+	XmlElement* el;
+	if ((el = listElement->getChildByName("LidPosition")))
+	{
+		String value = el->getAllSubText();
+		pianoController.SetLidPosition(value.equalsIgnoreCase("open") ? PianoController::lpOpen :
+			value.equalsIgnoreCase("half") ? PianoController::lpHalf : PianoController::lpClose);
+	}
+	if ((el = listElement->getChildByName("Environment")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetEnvironment(value);
+	}
+	if ((el = listElement->getChildByName("Brightness")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetBrightness(value);
+	}
+	if ((el = listElement->getChildByName("TouchCurve")))
+	{
+		String value = el->getAllSubText();
+		if (value.equalsIgnoreCase("fixed"))
+		{
+			pianoController.SetFixedCurve(PianoController::chMain, true);
+			pianoController.SetFixedCurve(PianoController::chLeft, true);
+			pianoController.SetFixedCurve(PianoController::chLayer, true);
+		}
+		else
+		{
+			PianoController::TouchCurve touchCurve =
+				value.equalsIgnoreCase("soft2") ? PianoController::tcSoft2 :
+				value.equalsIgnoreCase("soft1") ? PianoController::tcSoft1 :
+				value.equalsIgnoreCase("hard1") ? PianoController::tcHard1 :
+				value.equalsIgnoreCase("hard2") ? PianoController::tcHard2 :
+				PianoController::tcMedium;
+			pianoController.SetTouchCurve(touchCurve);
+			pianoController.SetFixedCurve(PianoController::chMain, false);
+			pianoController.SetFixedCurve(PianoController::chLeft, false);
+			pianoController.SetFixedCurve(PianoController::chLayer, false);
+		}
+	}
+	if ((el = listElement->getChildByName("FixedVelocity")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetFixedVelocity(value);
+	}
+	if ((el = listElement->getChildByName("MasterTune")))
+	{
+		int value = (int)((el->getAllSubText().getFloatValue() - 440.0) * 10.0);
+		pianoController.SetMasterTune(value);
+	}
+	if ((el = listElement->getChildByName("Vrm")))
+	{
+		String value = el->getAllSubText();
+		pianoController.SetVrm(value.equalsIgnoreCase("yes"));
+	}
+	if ((el = listElement->getChildByName("DamperResonance")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetDamperResonance(value);
+	}
+	if ((el = listElement->getChildByName("StringResonance")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetStringResonance(value);
+	}
+	if ((el = listElement->getChildByName("KeyOffSampling")))
+	{
+		int value = el->getAllSubText().getIntValue();
+		pianoController.SetKeyOffSampling(value);
+	}
 }
 
 void RegistrationMemory::SavePlayback()

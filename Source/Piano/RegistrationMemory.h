@@ -34,6 +34,7 @@ public:
 		bool mixer = true;
 		bool balance = true;
 		bool playback = true;
+		bool pianoroom = true;
 		bool settings = true;
 	};
 
@@ -59,6 +60,8 @@ private:
 	void LoadReverbEffect();
 	void SavePlayback();
 	void LoadPlayback();
+	void SavePianoRoom();
+	void LoadPianoRoom();
 	void SaveSettings();
 	void LoadSettings();
 };
