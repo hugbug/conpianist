@@ -26,37 +26,6 @@
 class PianoController : public PianoConnector::Listener
 {
 public:
-	static const int MinVolume = 0;
-	static const int MaxVolume = 127;
-	static const int DefaultVolume = 100;
-	static const int MinTempo = 5;
-	static const int MaxTempo = 280;
-	static const int DefaultTempo = 120;
-	static const int MinTranspose = -12;
-	static const int MaxTranspose = +12;
-	static const int DefaultTranspose = 0;
-	static const int TransposeBase = 0x40;
-	static const int MinPan = -64;
-	static const int MaxPan = -63;
-	static const int DefaultPan = 0;
-	static const int PanBase = 0x40;
-	static const int MinReverb = 0;
-	static const int MaxReverb = 127;
-	static const int DefaultReverb = 0;
-	static const int DefaultReverbEffect = 0x0118; // Recital Hall
-	static const int MinOctave = -2;
-	static const int MaxOctave = +2;
-	static const int DefaultOctave = 0;
-	static const int OctaveBase = 0x40;
-	static const int DefaultBrightness = 0x40;
-	static const int MasterTuneBase = 0x400;
-	static const int MasterTuneFactor = 4;
-	static const int DefaultResonance = 5;
-	static const int MaxResonance = 10;
-	static const int DefaultKeyOffSampling = 0x40;
-	static const int MaxKeyOffSampling = 0x50;
-	static const int DefaultFixedVelocity = 100;
-
 	struct Position
 	{
 		int measure;
@@ -170,6 +139,40 @@ public:
 		apStringResonance,
 		apKeyOffSampling
 	};
+
+	static const int MinVolume = 0;
+	static const int MaxVolume = 127;
+	static const int DefaultVolume = 100;
+	static const int MinTempo = 5;
+	static const int MaxTempo = 280;
+	static const int DefaultTempo = 120;
+	static const int MinTranspose = -12;
+	static const int MaxTranspose = +12;
+	static const int DefaultTranspose = 0;
+	static const int TransposeBase = 0x40;
+	static const int MinPan = -64;
+	static const int MaxPan = -63;
+	static const int DefaultPan = 0;
+	static const int PanBase = 0x40;
+	static const int MinReverb = 0;
+	static const int MaxReverb = 127;
+	static const int DefaultReverb = 0;
+	static const int DefaultReverbEffect = 0x0118; // Recital Hall
+	static const int MinOctave = -2;
+	static const int MaxOctave = +2;
+	static const int DefaultOctave = 0;
+	static const int OctaveBase = 0x40;
+	static const int DefaultEnvironment = 10;
+	static const int DefaultBrightness = 0x40;
+	static const int MasterTuneBase = 0x400;
+	static const int MasterTuneFactor = 4;
+	static const int DefaultResonance = 5;
+	static const int MaxResonance = 10;
+	static const int DefaultKeyOffSampling = 0x40;
+	static const int MaxKeyOffSampling = 0x50;
+	static const int DefaultFixedVelocity = 100;
+	static const LidPosition DefaultLidPosition = lpOpen;
+	static const TouchCurve DefaultTouchCurve = tcMedium;
 
 	class Listener
 	{
@@ -306,10 +309,10 @@ private:
 	bool m_songLoaded = false;
 	bool m_songLoading = false;
 	int m_splitPoint = 0;
-	LidPosition m_lidPosition = lpOpen;
+	LidPosition m_lidPosition = DefaultLidPosition;
 	int m_environment = 0;
 	int m_brightness = DefaultBrightness;
-	TouchCurve m_touchCurve = tcMedium;
+	TouchCurve m_touchCurve = DefaultTouchCurve;
 	bool m_fixedCurve[3]{false,false,false};
 	int m_fixedVelocity = DefaultFixedVelocity;
 	int m_masterTune = 0;

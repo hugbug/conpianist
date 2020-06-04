@@ -194,7 +194,21 @@ void PianoController::Reset()
 
 	ResetTempo();
 	SetTranspose(DefaultTranspose);
+
 	SetReverbEffect(DefaultReverbEffect);
+	SetLidPosition(DefaultLidPosition);
+	SetEnvironment(DefaultEnvironment);
+	SetBrightness(DefaultBrightness);
+	SetTouchCurve(DefaultTouchCurve);
+	SetFixedCurve(chMain, false);
+	SetFixedCurve(chLayer, false);
+	SetFixedCurve(chLeft, false);
+	SetFixedVelocity(DefaultFixedVelocity);
+	SetMasterTune(0);
+	SetVrm(true);
+	SetDamperResonance(DefaultResonance);
+	SetStringResonance(DefaultResonance);
+	SetKeyOffSampling(DefaultKeyOffSampling);
 
 	SetOctave(chMain, 0);
 	SetOctave(chLayer, 0);
