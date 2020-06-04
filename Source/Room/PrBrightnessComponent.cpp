@@ -84,6 +84,7 @@ PrBrightnessComponent::PrBrightnessComponent (Settings& settings, PianoControlle
 
 
     //[Constructor] You can add your own custom stuff here..
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -162,6 +163,11 @@ void PrBrightnessComponent::updatePianoState(PianoController::Aspect aspect)
 	slider->setValue(pianoController.GetBrightness(), NotificationType::dontSendNotification);
 
 	repaint(); // for slider mark
+}
+
+void PrBrightnessComponent::mouseDoubleClick (const MouseEvent& e)
+{
+    pianoController.SetBrightness(PianoController::DefaultBrightness);
 }
 //[/MiscUserCode]
 

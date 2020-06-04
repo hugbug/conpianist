@@ -51,6 +51,7 @@ public:
 			MessageManager::callAsync([=](){updatePianoState(ap);}); }
 	void updatePianoState(PianoController::Aspect aspect);
     void setTouchCurve(PianoController::TouchCurve touchCurve);
+    void mouseDoubleClick (const MouseEvent& e) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;

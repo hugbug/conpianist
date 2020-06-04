@@ -48,6 +48,7 @@ public:
 		{ if (ap == PianoController::apBrightness || ap == PianoController::apConnection)
 			MessageManager::callAsync([=](){updatePianoState(ap);}); }
 	void updatePianoState(PianoController::Aspect aspect);
+    void mouseDoubleClick (const MouseEvent& e) override;
     //[/UserMethods]
 
     void paint (Graphics& g) override;

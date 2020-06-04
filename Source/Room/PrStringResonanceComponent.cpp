@@ -73,6 +73,7 @@ PrStringResonanceComponent::PrStringResonanceComponent (Settings& settings, Pian
 
 
     //[Constructor] You can add your own custom stuff here..
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -149,6 +150,11 @@ void PrStringResonanceComponent::updatePianoState(PianoController::Aspect aspect
 	depthLabel->setEnabled(pianoController.IsConnected() && pianoController.GetVrm());
 
 	repaint(); // for slider mark
+}
+
+void PrStringResonanceComponent::mouseDoubleClick (const MouseEvent& e)
+{
+    pianoController.SetStringResonance(PianoController::DefaultResonance);
 }
 //[/MiscUserCode]
 

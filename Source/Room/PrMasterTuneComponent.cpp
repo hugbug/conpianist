@@ -62,6 +62,7 @@ PrMasterTuneComponent::PrMasterTuneComponent (Settings& settings, PianoControlle
 
 
     //[Constructor] You can add your own custom stuff here..
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -136,6 +137,11 @@ void PrMasterTuneComponent::updatePianoState(PianoController::Aspect aspect)
 	slider->setValue(440.0 + pianoController.GetMasterTune() / 10.0, NotificationType::dontSendNotification);
 
 	repaint(); // for slider mark
+}
+
+void PrMasterTuneComponent::mouseDoubleClick (const MouseEvent& e)
+{
+    pianoController.SetMasterTune(0);
 }
 //[/MiscUserCode]
 

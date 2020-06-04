@@ -94,6 +94,7 @@ PrEnvironmentComponent::PrEnvironmentComponent (Settings& settings, PianoControl
 		effectComboBox->addItem(re.title, re.num + 1000000);
 	}
 
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -193,6 +194,11 @@ void PrEnvironmentComponent::updatePianoState(PianoController::Aspect aspect)
 	}
 
 	repaint(); // for slider mark
+}
+
+void PrEnvironmentComponent::mouseDoubleClick (const MouseEvent& e)
+{
+	pianoController.SetEnvironment(PianoController::DefaultEnvironment);
 }
 //[/MiscUserCode]
 

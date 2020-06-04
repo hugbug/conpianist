@@ -74,6 +74,7 @@ PrKeyOffSamplingComponent::PrKeyOffSamplingComponent (Settings& settings, PianoC
 
 
     //[Constructor] You can add your own custom stuff here..
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -150,6 +151,11 @@ void PrKeyOffSamplingComponent::updatePianoState(PianoController::Aspect aspect)
 	slider->setValue(pianoController.GetKeyOffSampling(), NotificationType::dontSendNotification);
 
 	repaint(); // for slider mark
+}
+
+void PrKeyOffSamplingComponent::mouseDoubleClick (const MouseEvent& e)
+{
+    pianoController.SetKeyOffSampling(PianoController::DefaultKeyOffSampling);
 }
 //[/MiscUserCode]
 

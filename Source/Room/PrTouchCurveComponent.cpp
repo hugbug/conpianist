@@ -133,7 +133,7 @@ PrTouchCurveComponent::PrTouchCurveComponent (Settings& settings, PianoControlle
 	// Fixed curve is not yet implemented
     velocityLabel->setEnabled(false);
     slider->setEnabled(false);
-
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -287,6 +287,11 @@ void PrTouchCurveComponent::setTouchCurve(PianoController::TouchCurve touchCurve
 	pianoController.SetFixedCurve(PianoController::chMain, false);
 	pianoController.SetFixedCurve(PianoController::chLeft, false);
 	pianoController.SetFixedCurve(PianoController::chLayer, false);
+}
+
+void PrTouchCurveComponent::mouseDoubleClick (const MouseEvent& e)
+{
+	pianoController.SetFixedVelocity(PianoController::DefaultFixedVelocity);
 }
 //[/MiscUserCode]
 

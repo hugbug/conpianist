@@ -73,6 +73,7 @@ PrDamperResonanceComponent::PrDamperResonanceComponent (Settings& settings, Pian
 
 
     //[Constructor] You can add your own custom stuff here..
+    slider->addMouseListener(this, false);
     updatePianoState(PianoController::apActive);
     //[/Constructor]
 }
@@ -149,6 +150,11 @@ void PrDamperResonanceComponent::updatePianoState(PianoController::Aspect aspect
 	depthLabel->setEnabled(pianoController.IsConnected() && pianoController.GetVrm());
 
 	repaint(); // for slider mark
+}
+
+void PrDamperResonanceComponent::mouseDoubleClick (const MouseEvent& e)
+{
+    pianoController.SetDamperResonance(PianoController::DefaultResonance);
 }
 //[/MiscUserCode]
 
