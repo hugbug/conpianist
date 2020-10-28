@@ -67,11 +67,11 @@ void Settings::Load()
 
 	pianoIp = prop.getValue("PianoIp", pianoIp);
 	midiPort = prop.getValue("MidiPort", midiPort);
-	zoomUi = prop.getDoubleValue("ZoomUi", zoomUi);
 	windowPos.setX(prop.getIntValue("Window.X", windowPos.getX()));
 	windowPos.setY(prop.getIntValue("Window.Y", windowPos.getY()));
 	windowPos.setWidth(prop.getIntValue("Window.Width", windowPos.getWidth()));
 	windowPos.setHeight(prop.getIntValue("Window.Height", windowPos.getHeight()));
+	zoomUi = prop.getDoubleValue("ZoomUi", zoomUi);
 	keyboardVisible = prop.getIntValue("Keyboard.Visible", keyboardVisible);
 	keyboardChannel = prop.getIntValue("Keyboard.Channel", keyboardChannel);
 	scoreInstrumentNames = (ScoreInstrumentNames)prop.getIntValue("Score.InstrumentNames", scoreInstrumentNames);

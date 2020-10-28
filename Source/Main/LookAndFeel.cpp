@@ -30,7 +30,13 @@ void ::LookAndFeel::showModalDialog(Component* comp, const String& title)
 
 	TopLevelWindow* win = TopLevelWindow::getActiveTopLevelWindow();
 	win->getChildren()[0]->setAlpha(0.3);
+
+#if JUCE_MODAL_LOOPS_PERMITTED
 	dialog.runModal();
+#else
+	//TODO: Async mode for dialogs
+#endif
+
 	win->getChildren()[0]->setAlpha(1.0);
 }
 

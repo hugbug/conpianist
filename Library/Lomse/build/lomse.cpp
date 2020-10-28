@@ -1,3 +1,4 @@
+#ifndef DISABLE_LOMSE
 #ifdef __clang__
 #pragma clang diagnostic push
 // Ignore warnings in Lomse code: Implicit conversion loses integer precision
@@ -176,4 +177,5 @@
 
 #ifdef __clang__
 #pragma clang diagnostic pop
+#endif
 #endif

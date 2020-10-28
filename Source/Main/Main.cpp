@@ -30,15 +30,12 @@ public:
     {
         // This method is where you should put your application's initialisation code..
 
-#if TARGET_OS_IPHONE
+#if JUCE_IOS
 		Desktop::getInstance().setGlobalScaleFactor(1.2);
 		CreateSharedDocumenstDirectory();
 #endif
 		Desktop::getInstance().setDefaultLookAndFeel(&lookAndFeel);
         mainWindow.reset(new MainWindow (getApplicationName()));
-#if TARGET_OS_IPHONE
-		mainWindow->setFullScreen(true);
-#endif
     }
 
     void shutdown() override
@@ -119,9 +116,11 @@ public:
             content = std::make_unique<SceneComponent>(settings);
             setContentNonOwned(content.get(), true);
             setResizable (true, true);
-            centreWithSize (getWidth(), getHeight());
 
-#if !TARGET_OS_IPHONE
+#if JUCE_ANDROID || JUCE_IOS
+			setFullScreen(true);
+#else
+			centreWithSize (getWidth(), getHeight());
 			Rectangle<int> bounds = settings.windowPos;
 			if (bounds.getX() > -100 && bounds.getY() > -100 &&
 				bounds.getWidth() > 200 && bounds.getHeight() > 100)

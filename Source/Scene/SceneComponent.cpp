@@ -395,7 +395,12 @@ void SceneComponent::showMenu()
 	menu.addItem(998, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
 	menu.addItem(999, "Homepage");
 
+#if JUCE_MODAL_LOOPS_PERMITTED
 	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
+#else
+	//TODO: Async mode for menu
+	const int result = 0;
+#endif
 
 	switch (result)
 	{
@@ -505,6 +510,15 @@ void SceneComponent::applySettings()
 	scale = round(scale * 20) / 20;
 	Desktop::getInstance().setGlobalScaleFactor(scale);
 
+#if JUCE_ANDROID || JUCE_IOS
+	if (getParentComponent())
+	{
+		Rectangle<int> r = Desktop::getInstance().getDisplays().getMainDisplay().userArea;
+		Component* win = (DocumentWindow*)getParentComponent();
+		win->setBounds(r.getX(), r.getY(), r.getWidth(), r.getHeight());
+	}
+#endif
+
 	updateKeyboard();
 }
 
@@ -554,7 +568,7 @@ void SceneComponent::zoomUi(bool zoomIn)
 	scale += zoomIn ? + 0.05 : -0.05;
 	scale = std::min(std::max(scale, 0.25f), 4.0f);
 	scale = round(scale * 20) / 20;
-	Desktop::getInstance().setGlobalScaleFactor(scale);
+
 	settings.zoomUi = scale;
 	settings.Save();
 }
@@ -613,7 +627,15 @@ void SceneComponent::saveState()
 		initialLocation = File(songname).withFileExtension(".conmem");
 	}
 	FileChooser chooser("Please select the name for registration memory file...", initialLocation, "*.conmem");
-    if (chooser.browseForFileToSave(true))
+
+#if JUCE_MODAL_LOOPS_PERMITTED
+	const bool result = chooser.browseForFileToSave(true);
+#else
+	//TODO: Async mode for file chooser
+	const bool result = false;
+#endif
+
+    if (result)
     {
     	URL url = chooser.getURLResult();
     	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
@@ -634,7 +656,15 @@ void SceneComponent::loadState()
 {
 	File initialLocation(settings.workingDirectory);
 	FileChooser chooser("Please select the registration memory file to load...", initialLocation, "*.conmem");
-    if (chooser.browseForFileToOpen())
+
+#if JUCE_MODAL_LOOPS_PERMITTED
+	const bool result = chooser.browseForFileToOpen();
+#else
+	//TODO: Async mode for file chooser
+	const bool result = false;
+#endif
+
+    if (result)
     {
     	URL url = chooser.getURLResult();
     	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();

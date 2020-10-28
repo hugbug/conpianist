@@ -17,6 +17,15 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifdef DISABLE_LOMSE
+
+#include "ScoreComponent.h"
+ScoreComponent* ScoreComponent::Create(Settings& settings, PianoController& pianoController)
+{
+	return new ScoreComponent();
+}
+#else
+
 #include <lomse_doorway.h>
 #include <lomse_document.h>
 #include <lomse_graphic_view.h>
@@ -343,7 +352,15 @@ void LomseScoreComponent::ChooseScoreFile()
 	String songName = File(m_pianoController.GetSongName()).getFileNameWithoutExtension();
 	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
 	FileChooser chooser(title, initialLocation, "*.xml;*.musicxml");
-    if (chooser.browseForFileToOpen())
+
+#if JUCE_MODAL_LOOPS_PERMITTED
+	const bool result = chooser.browseForFileToOpen();
+#else
+	//TODO: Async mode for file chooser
+	const bool result = false;
+#endif
+
+    if (result)
     {
     	URL url = chooser.getURLResult();
     	m_settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
@@ -559,7 +576,13 @@ void LomseScoreComponent::ShowMenu()
 	menu.addSeparator();
 	menu.addItem(201, "Show MIDI-Channel", true, m_settings.scoreShowMidiChannel);
 
+#if JUCE_MODAL_LOOPS_PERMITTED
 	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
+#else
+	//TODO: Async mode for menu
+	const int result = 0;
+#endif
+
 	const int group = result / 100;
 
 	if (result == 1)
@@ -791,3 +814,5 @@ void LomseScoreComponent::ApplySettings()
 		UpdateInstruments(true);
 	}
 }
+
+#endif

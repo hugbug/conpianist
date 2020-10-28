@@ -447,7 +447,13 @@ void ChannelComponent::showMenu(Button* button)
 	menu.addItem(201, "Left", true, left);
 	menu.addItem(202, "Backing", true, !right && !left);
 
+#if JUCE_MODAL_LOOPS_PERMITTED
 	const int result = menu.showAt(button, 0, 0, 0, 35);
+#else
+	//TODO: Async mode for menu
+	const int result = 0;
+#endif
+
 	int group = result / 100;
 
 	if (result == 1)

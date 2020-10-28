@@ -536,7 +536,15 @@ void PlaybackComponent::chooseSong()
 {
 	File initialLocation(settings.workingDirectory);
 	FileChooser chooser ("Please select the song you want to load...", initialLocation, "*.mid");
-    if (chooser.browseForFileToOpen())
+
+#if JUCE_MODAL_LOOPS_PERMITTED
+	const bool result = chooser.browseForFileToOpen();
+#else
+	//TODO: Async mode for file chooser
+	const bool result = false;
+#endif
+
+    if (result)
     {
     	URL url = chooser.getURLResult();
     	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
@@ -767,7 +775,14 @@ void PlaybackComponent::showStreamLightsMenu()
 	menu.addItem(2, "Slow", true, !pianoController.GetStreamFast());
 
 	menuShown = true;
+
+#if JUCE_MODAL_LOOPS_PERMITTED
 	const int result = menu.showAt(lightsButton.get(), 0, 0, 0, 35);
+#else
+	//TODO: Async mode for menu
+	const int result = 0;
+#endif
+
 	menuShown = false;
 
 	if (result > 0)
@@ -785,7 +800,14 @@ void PlaybackComponent::showGuideMenu()
 	menu.addItem(100 + PianoController::gtYourTempo, "Your Tempo", true, pianoController.GetGuideType() == PianoController::gtYourTempo);
 
 	menuShown = true;
-	const int result = menu.showAt(lightsButton.get(), 0, 0, 0, 35);
+
+#if JUCE_MODAL_LOOPS_PERMITTED
+	const int result = menu.showAt(guideButton.get(), 0, 0, 0, 35);
+#else
+	//TODO: Async mode for menu
+	const int result = 0;
+#endif
+
 	menuShown = false;
 
 	if (result > 0)
