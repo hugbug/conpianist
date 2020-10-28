@@ -186,8 +186,8 @@
     </GROUP>
   </MAINGROUP>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX" bigIcon="dJQtiu" smallIcon="" extraLinkerFlags="-L/usr/local/lib"
-               externalLibraries="freetype" extraCompilerFlags="-I/usr/local/include/freetype2"
+    <XCODE_MAC targetFolder="Builds/MacOSX" bigIcon="dJQtiu" smallIcon="" extraLinkerFlags="-L../../../ExternalLibraries/lib-macos"
+               externalLibraries="freetype" extraCompilerFlags="-I../../../ExternalLibraries/include"
                customXcodeResourceFolders="Resources/fonts">
       <CONFIGURATIONS>
         <CONFIGURATION isDebug="1" name="Debug"/>
@@ -236,7 +236,7 @@
       </MODULEPATHS>
     </VS2015>
     <XCODE_IPHONE targetFolder="Builds/iOS" externalLibraries="freetype" extraCompilerFlags="-I../../../ExternalLibraries/include"
-                  extraLinkerFlags="-L../../../ExternalLibraries/lib" bigIcon="RrB2f9"
+                  extraLinkerFlags="-L../../../ExternalLibraries/lib-ios" bigIcon="RrB2f9"
                   smallIcon="RrB2f9" customXcodeResourceFolders="Resources/fonts"
                   UIFileSharingEnabled="1" UISupportsDocumentBrowser="1" customPList="&lt;plist version=&quot;1.0&quot;&gt;&#10;&lt;dict&gt;&#10;  &lt;key&gt;UTExportedTypeDeclarations&lt;/key&gt;&#10;  &lt;array&gt;&#10;    &lt;dict&gt;&#10;      &lt;key&gt;UTTypeConformsTo&lt;/key&gt;&#10;      &lt;array&gt;&#10;        &lt;string&gt;public.xml&lt;/string&gt;&#10;      &lt;/array&gt;&#10;      &lt;key&gt;UTTypeDescription&lt;/key&gt;&#10;      &lt;string&gt;ConPianist Registration Memory&lt;/string&gt;&#10;      &lt;key&gt;UTTypeIconFiles&lt;/key&gt;&#10;      &lt;array/&gt;&#10;      &lt;key&gt;UTTypeIdentifier&lt;/key&gt;&#10;      &lt;string&gt;prygunkov.ConPianist.conmem&lt;/string&gt;&#10;      &lt;key&gt;UTTypeTagSpecification&lt;/key&gt;&#10;      &lt;dict&gt;&#10;        &lt;key&gt;public.filename-extension&lt;/key&gt;&#10;        &lt;string&gt;conmem&lt;/string&gt;&#10;        &lt;key&gt;public.mime-type&lt;/key&gt;&#10;        &lt;string&gt;application/xml&lt;/string&gt;&#10;      &lt;/dict&gt;&#10;    &lt;/dict&gt;&#10;    &lt;dict&gt;&#10;      &lt;key&gt;UTTypeIdentifier&lt;/key&gt;&#10;      &lt;string&gt;org.w3c.music-notation.musicxml.uncompressed&lt;/string&gt;&#10;      &lt;key&gt;UTTypeReferenceURL&lt;/key&gt;&#10;      &lt;string&gt;http://www.musicxml.org/&lt;/string&gt;&#10;      &lt;key&gt;UTTypeDescription&lt;/key&gt;&#10;      &lt;string&gt;MusicXML File&lt;/string&gt;&#10;      &lt;key&gt;UTTypeTagSpecification&lt;/key&gt;&#10;      &lt;dict&gt;&#10;        &lt;key&gt;public.filename-extension&lt;/key&gt;&#10;        &lt;array&gt;&#10;          &lt;string&gt;xml&lt;/string&gt;&#10;          &lt;string&gt;musicxml&lt;/string&gt;&#10;        &lt;/array&gt;&#10;        &lt;key&gt;public.mime-type&lt;/key&gt;&#10;        &lt;string&gt;application/vnd.recordare.musicxml+xml&lt;/string&gt;&#10;      &lt;/dict&gt;&#10;      &lt;key&gt;UTTypeConformsTo&lt;/key&gt;&#10;      &lt;array&gt;&#10;        &lt;string&gt;public.xml&lt;/string&gt;&#10;      &lt;/array&gt;&#10;    &lt;/dict&gt;&#10;  &lt;/array&gt;&#10;&lt;/dict&gt;&#10;&lt;/plist&gt;">
       <CONFIGURATIONS>
