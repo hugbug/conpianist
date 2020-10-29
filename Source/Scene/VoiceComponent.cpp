@@ -624,18 +624,17 @@ void VoiceComponent::showMenu(Button* button, PianoController::Channel channel)
 	menu.addItem(100+1, "+1", true, pianoController.GetOctave(channel) == +1);
 	menu.addItem(100+2, "+2", true, pianoController.GetOctave(channel) == +2);
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(button, 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
-
-	if (100-2 <= result && result <= 100+2)
-	{
-		int octave = result - 100;
-		pianoController.SetOctave(channel, octave);
-	}
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(button)
+		.withStandardItemHeight(35),
+		[this, channel](int result)
+		{
+			if (100-2 <= result && result <= 100+2)
+			{
+				int octave = result - 100;
+				pianoController.SetOctave(channel, octave);
+			}
+		});
 }
 //[/MiscUserCode]
 

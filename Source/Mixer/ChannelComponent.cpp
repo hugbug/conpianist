@@ -447,76 +447,75 @@ void ChannelComponent::showMenu(Button* button)
 	menu.addItem(201, "Left", true, left);
 	menu.addItem(202, "Backing", true, !right && !left);
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(button, 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
-
-	int group = result / 100;
-
-	if (result == 1)
-	{
-		for (PianoController::Channel ch : PianoController::MidiChannels)
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(button)
+		.withStandardItemHeight(35),
+		[this](int result)
 		{
-			pianoController.SetActive(ch, ch == channel);
-		}
-	}
-	else if (result == 2)
-	{
-		settings.keyboardChannel = channel - PianoController::chMidi0;
-		settings.Save();
-	}
-	else if (group == 1)
-	{
-		Voice* vc = Presets::FindVoice(pianoController.GetVoice(channel));
-		if (vc)
-		{
-			pianoController.SetVoice(PianoController::Channel(result - 100), vc->path);
-		}
-	}
-	else if (group == 2)
-	{
-		bool playng = pianoController.GetPlaying();
-		PianoController::Position pos = pianoController.GetPosition();
+			int group = result / 100;
 
-		if (playng)
-		{
-			// part cannot be changed during playback
-			pianoController.Pause();
-		}
-
-		if (result == 200)
-		{
-			if (pianoController.GetPartChannel(PianoController::paLeft) == channel)
+			if (result == 1)
 			{
-				pianoController.SetPartChannel(PianoController::paLeft, PianoController::chMidi0);
+				for (PianoController::Channel ch : PianoController::MidiChannels)
+				{
+					pianoController.SetActive(ch, ch == channel);
+				}
 			}
-			pianoController.SetPartChannel(PianoController::paRight, channel);
-		}
-		else if (result == 201)
-		{
-			if (pianoController.GetPartChannel(PianoController::paRight) == channel)
+			else if (result == 2)
 			{
-				pianoController.SetPartChannel(PianoController::paRight, PianoController::chMidi0);
+				settings.keyboardChannel = channel - PianoController::chMidi0;
+				settings.Save();
 			}
-			pianoController.SetPartChannel(PianoController::paLeft, channel);
-		}
-		else if (result == 202)
-		{
-			pianoController.SetPartChannel(
-				pianoController.GetPartChannel(PianoController::paLeft) == channel ?
-					PianoController::paLeft : PianoController::paRight,
-				PianoController::chMidi0);
-		}
+			else if (group == 1)
+			{
+				Voice* vc = Presets::FindVoice(pianoController.GetVoice(channel));
+				if (vc)
+				{
+					pianoController.SetVoice(PianoController::Channel(result - 100), vc->path);
+				}
+			}
+			else if (group == 2)
+			{
+				bool playng = pianoController.GetPlaying();
+				PianoController::Position pos = pianoController.GetPosition();
 
-		if (playng)
-		{
-			pianoController.SetPosition(pos);
-			pianoController.Play();
-		}
-	}
+				if (playng)
+				{
+					// part cannot be changed during playback
+					pianoController.Pause();
+				}
+
+				if (result == 200)
+				{
+					if (pianoController.GetPartChannel(PianoController::paLeft) == channel)
+					{
+						pianoController.SetPartChannel(PianoController::paLeft, PianoController::chMidi0);
+					}
+					pianoController.SetPartChannel(PianoController::paRight, channel);
+				}
+				else if (result == 201)
+				{
+					if (pianoController.GetPartChannel(PianoController::paRight) == channel)
+					{
+						pianoController.SetPartChannel(PianoController::paRight, PianoController::chMidi0);
+					}
+					pianoController.SetPartChannel(PianoController::paLeft, channel);
+				}
+				else if (result == 202)
+				{
+					pianoController.SetPartChannel(
+						pianoController.GetPartChannel(PianoController::paLeft) == channel ?
+							PianoController::paLeft : PianoController::paRight,
+						PianoController::chMidi0);
+				}
+
+				if (playng)
+				{
+					pianoController.SetPosition(pos);
+					pianoController.Play();
+				}
+			}
+		});
 }
 
 void ChannelComponent::toggleChannel()

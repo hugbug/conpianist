@@ -776,19 +776,20 @@ void PlaybackComponent::showStreamLightsMenu()
 
 	menuShown = true;
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(lightsButton.get(), 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(lightsButton.get())
+		.withStandardItemHeight(35),
+		[this](int result)
+		{
+			menuShown = false;
+
+			if (result > 0)
+			{
+				pianoController.SetStreamFast(result == 1);
+			}
+		});
 
 	menuShown = false;
-
-	if (result > 0)
-	{
-		pianoController.SetStreamFast(result == 1);
-	}
 }
 
 void PlaybackComponent::showGuideMenu()
@@ -801,19 +802,20 @@ void PlaybackComponent::showGuideMenu()
 
 	menuShown = true;
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(guideButton.get(), 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(guideButton.get())
+		.withStandardItemHeight(35),
+		[this](int result)
+		{
+			menuShown = false;
+
+			if (result > 0)
+			{
+				pianoController.SetGuideType((PianoController::GuideType)(result - 100));
+			}
+		});
 
 	menuShown = false;
-
-	if (result > 0)
-	{
-		pianoController.SetGuideType((PianoController::GuideType)(result - 100));
-	}
 }
 //[/MiscUserCode]
 

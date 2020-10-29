@@ -395,37 +395,36 @@ void SceneComponent::showMenu()
 	menu.addItem(998, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
 	menu.addItem(999, "Homepage");
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
-
-	switch (result)
-	{
-		case 1:
-			ConnectionComponent::showDialog(settings);
-			break;
-		case 2:
-			MessageManager::callAsync([=](){pianoController.Sync();});
-			break;
-		case 3:
-			MessageManager::callAsync([=](){pianoController.Reset();});
-			break;
-		case 4:
-			resetMidiConnector();
-			break;
-		case 101:
-			loadState();
-			break;
-		case 102:
-			saveState();
-			break;
-		case 999:
-			URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
-			break;
-	}
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(menuButton.get())
+		.withStandardItemHeight(35),
+		[this](int result)
+		{
+			switch (result)
+			{
+				case 1:
+					ConnectionComponent::showDialog(settings);
+					break;
+				case 2:
+					MessageManager::callAsync([=](){pianoController.Sync();});
+					break;
+				case 3:
+					MessageManager::callAsync([=](){pianoController.Reset();});
+					break;
+				case 4:
+					resetMidiConnector();
+					break;
+				case 101:
+					loadState();
+					break;
+				case 102:
+					saveState();
+					break;
+				case 999:
+					URL("https://github.com/hugbug/conpianist").launchInDefaultBrowser();
+					break;
+			}
+		});
 }
 
 void SceneComponent::timerCallback()

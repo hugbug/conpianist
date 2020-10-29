@@ -576,36 +576,35 @@ void LomseScoreComponent::ShowMenu()
 	menu.addSeparator();
 	menu.addItem(201, "Show MIDI-Channel", true, m_settings.scoreShowMidiChannel);
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const int result = menu.showAt(menuButton.get(), 0, 0, 0, 35);
-#else
-	//TODO: Async mode for menu
-	const int result = 0;
-#endif
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(menuButton.get())
+		.withStandardItemHeight(35),
+		[this](int result)
+		{
+			const int group = result / 100;
 
-	const int group = result / 100;
+			if (result == 1)
+			{
+				ChooseScoreFile();
+			}
+			else if (group == 1)
+			{
+				m_settings.scoreInstrumentNames = Settings::ScoreInstrumentNames(result - 100);
+			}
+			else if (group == 2)
+			{
+				m_settings.scoreShowMidiChannel = !m_settings.scoreShowMidiChannel;
+			}
+			else if (group == 3)
+			{
+				m_settings.scorePart = Settings::ScorePart(result - 300);
+			}
 
-	if (result == 1)
-	{
-		ChooseScoreFile();
-	}
-	else if (group == 1)
-	{
-		m_settings.scoreInstrumentNames = Settings::ScoreInstrumentNames(result - 100);
-	}
-	else if (group == 2)
-	{
-		m_settings.scoreShowMidiChannel = !m_settings.scoreShowMidiChannel;
-	}
-	else if (group == 3)
-	{
-		m_settings.scorePart = Settings::ScorePart(result - 300);
-	}
-
-	if (group == 1 || group == 2 || group == 3)
-	{
-		m_settings.Save();
-	}
+			if (group == 1 || group == 2 || group == 3)
+			{
+				m_settings.Save();
+			}
+		});
 }
 
 void LomseScoreComponent::UpdateInstruments(bool force)
