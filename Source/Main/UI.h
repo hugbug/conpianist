@@ -1,7 +1,7 @@
 /*
  *  This file is part of ConPianist. See <https://github.com/hugbug/conpianist>.
  *
- *  Copyright (C) 2018 Andrey Prygunkov <hugbug@users.sourceforge.net>
+ *  Copyright (C) 2020 Andrey Prygunkov <hugbug@users.sourceforge.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,23 +21,8 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class LookAndFeel : public juce::LookAndFeel_V4
+class UI
 {
 public:
-	void drawButtonBackground(Graphics&, Button&, const Colour& backgroundColour,
-		bool isMouseOverButton, bool isButtonDown) override;
-
-	void drawImageButton(Graphics&, Image*,
-		int imageX, int imageY, int imageW, int imageH,
-		const Colour& overlayColour, float imageOpacity, ImageButton&) override;
-
-	void drawLinearSlider(Graphics&, int x, int y, int width, int height,
-		float sliderPos, float minSliderPos, float maxSliderPos,
-		const Slider::SliderStyle, Slider&) override;
-
-	void drawRotarySlider(Graphics&, int x, int y, int width, int height,
-		float sliderPosProportional, float rotaryStartAngle,
-		float rotaryEndAngle, Slider&) override;
-
-	void drawLabel(Graphics&, Label&) override;
+	static void ShowModalDialog(Component* comp, const String& title);
 };

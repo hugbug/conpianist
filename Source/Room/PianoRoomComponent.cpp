@@ -28,7 +28,7 @@
 #include "PrTouchCurveComponent.h"
 #include "PrHalfPedalPointComponent.h"
 #include "PrKeyOffSamplingComponent.h"
-#include "LookAndFeel.h"
+#include "UI.h"
 //[/Headers]
 
 #include "PianoRoomComponent.h"
@@ -135,7 +135,7 @@ void PianoRoomComponent::AddComponent(PrBaseComponent* comp)
 
 void PianoRoomComponent::showDialog(Settings& settings, PianoController& pianoController)
 {
-	::LookAndFeel::showModalDialog(new PianoRoomComponent(settings, pianoController), "Piano Room");
+	UI::ShowModalDialog(new PianoRoomComponent(settings, pianoController), "Piano Room");
 }
 //[/MiscUserCode]
 

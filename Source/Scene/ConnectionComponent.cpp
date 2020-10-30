@@ -18,7 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include "LookAndFeel.h"
+#include "UI.h"
 //[/Headers]
 
 #include "ConnectionComponent.h"
@@ -186,7 +186,7 @@ void ConnectionComponent::load()
 
 void ConnectionComponent::showDialog(Settings& settings)
 {
-	::LookAndFeel::showModalDialog(new ConnectionComponent(settings), "Connection Settings");
+	UI::ShowModalDialog(new ConnectionComponent(settings), "Connection Settings");
 }
 //[/MiscUserCode]
 

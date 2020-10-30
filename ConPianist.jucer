@@ -77,6 +77,8 @@
         <FILE id="nqTu10" name="Main.cpp" compile="1" resource="0" file="Source/Main/Main.cpp"/>
         <FILE id="Oa33iQ" name="Settings.cpp" compile="1" resource="0" file="Source/Main/Settings.cpp"/>
         <FILE id="FfhBcK" name="Settings.h" compile="0" resource="0" file="Source/Main/Settings.h"/>
+        <FILE id="kJlrIR" name="UI.cpp" compile="1" resource="0" file="Source/Main/UI.cpp"/>
+        <FILE id="Ru7S2F" name="UI.h" compile="0" resource="0" file="Source/Main/UI.h"/>
       </GROUP>
       <GROUP id="{C5BACBA6-C302-C1E0-2483-2A5C0DA27C87}" name="Mixer">
         <FILE id="JCnmGf" name="BalanceComponent.cpp" compile="1" resource="0"
