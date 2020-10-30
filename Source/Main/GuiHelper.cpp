@@ -81,3 +81,11 @@ void GuiHelper::ShowFileSaveDialogAsync(const String& title, const String& initi
     	});
 }
 
+void GuiHelper::ShowMenuAsync(PopupMenu& menu, Component* comp,
+	std::function<void(int)> callback)
+{
+	menu.showMenuAsync(PopupMenu::Options()
+		.withTargetComponent(comp)
+		.withStandardItemHeight(35),
+		callback);
+}

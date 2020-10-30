@@ -19,6 +19,7 @@
 
 //[Headers] You can add your own extra header files here...
 #include "PianoRoomComponent.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "VoiceComponent.h"
@@ -624,9 +625,7 @@ void VoiceComponent::showMenu(Button* button, PianoController::Channel channel)
 	menu.addItem(100+1, "+1", true, pianoController.GetOctave(channel) == +1);
 	menu.addItem(100+2, "+2", true, pianoController.GetOctave(channel) == +2);
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(button)
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, button,
 		[this, channel](int result)
 		{
 			if (100-2 <= result && result <= 100+2)

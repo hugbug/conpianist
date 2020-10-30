@@ -768,9 +768,7 @@ void PlaybackComponent::showStreamLightsMenu()
 
 	menuShown = true;
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(lightsButton.get())
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, lightsButton.get(),
 		[this](int result)
 		{
 			menuShown = false;
@@ -794,9 +792,7 @@ void PlaybackComponent::showGuideMenu()
 
 	menuShown = true;
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(guideButton.get())
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, guideButton.get(),
 		[this](int result)
 		{
 			menuShown = false;

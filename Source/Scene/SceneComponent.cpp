@@ -396,9 +396,7 @@ void SceneComponent::showMenu()
 	menu.addItem(998, "Version: \t" + JUCEApplication::getInstance()->getApplicationVersion(), false, false);
 	menu.addItem(999, "Homepage");
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(menuButton.get())
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, menuButton.get(),
 		[this](int result)
 		{
 			switch (result)

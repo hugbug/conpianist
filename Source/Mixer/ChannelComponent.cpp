@@ -19,6 +19,7 @@
 
 //[Headers] You can add your own extra header files here...
 #include "Presets.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "ChannelComponent.h"
@@ -447,9 +448,7 @@ void ChannelComponent::showMenu(Button* button)
 	menu.addItem(201, "Left", true, left);
 	menu.addItem(202, "Backing", true, !right && !left);
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(button)
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, button,
 		[this](int result)
 		{
 			int group = result / 100;

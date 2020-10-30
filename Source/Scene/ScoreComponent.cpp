@@ -568,9 +568,7 @@ void LomseScoreComponent::ShowMenu()
 	menu.addSeparator();
 	menu.addItem(201, "Show MIDI-Channel", true, m_settings.scoreShowMidiChannel);
 
-	menu.showMenuAsync(PopupMenu::Options()
-		.withTargetComponent(menuButton.get())
-		.withStandardItemHeight(35),
+	GuiHelper::ShowMenuAsync(menu, menuButton.get(),
 		[this](int result)
 		{
 			const int group = result / 100;

@@ -36,6 +36,9 @@ public:
         const String& patterns,
         std::function<void(const URL&)> callback);
 
+	static void ShowMenuAsync(PopupMenu& menu, Component* comp,
+		std::function<void(int)> callback);
+
 	static void Final();
 	
 private:
