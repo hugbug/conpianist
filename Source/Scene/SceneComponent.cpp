@@ -21,6 +21,7 @@
 #include "ConnectionComponent.h"
 #include "BalanceComponent.h"
 #include "RegistrationMemory.h"
+#include "UI.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -615,67 +616,51 @@ void SceneComponent::switchLargePanel(Button* button)
 
 void SceneComponent::saveState()
 {
-	File initialLocation;
+	String initialLocation;
 	String songname = pianoController.GetSongName();
 	if (songname.isEmpty())
 	{
-		initialLocation = File(settings.workingDirectory + File::getSeparatorString() + "Untitled.conmem");
+		initialLocation = settings.workingDirectory + File::getSeparatorString() + "Untitled.conmem";
 	}
 	else
 	{
-		initialLocation = File(songname).withFileExtension(".conmem");
+		initialLocation = File(songname).withFileExtension(".conmem").getFullPathName();
 	}
-	FileChooser chooser("Please select the name for registration memory file...", initialLocation, "*.conmem");
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const bool result = chooser.browseForFileToSave(true);
-#else
-	//TODO: Async mode for file chooser
-	const bool result = false;
-#endif
+	UI::ShowFileSaveDialogAsync("Please select the name for registration memory file...",
+		initialLocation, "*.conmem",
+		[this](const URL& url)
+		{
+			settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+			settings.Save();
+			MessageManager::callAsync([=](){
+				// generate access token on sandboxed platforms (iOS)
+				std::unique_ptr<OutputStream> outp(url.createOutputStream());
+				outp.reset();
 
-    if (result)
-    {
-    	URL url = chooser.getURLResult();
-    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
-    	settings.Save();
-		MessageManager::callAsync([=](){
-			// generate access token on sandboxed platforms (iOS)
-			std::unique_ptr<OutputStream> outp(url.createOutputStream());
-			outp.reset();
-
-			RegistrationMemory::Options opts;
-			RegistrationMemory regmem(pianoController, settings, opts, url.getLocalFile());
-			regmem.Save();
+				RegistrationMemory::Options opts;
+				RegistrationMemory regmem(pianoController, settings, opts, url.getLocalFile());
+				regmem.Save();
+			});
 		});
-    }
 }
 
 void SceneComponent::loadState()
 {
-	File initialLocation(settings.workingDirectory);
-	FileChooser chooser("Please select the registration memory file to load...", initialLocation, "*.conmem");
+	UI::ShowFileOpenDialogAsync("Please select the registration memory file to load...",
+		settings.workingDirectory, "*.conmem",
+		[this](const URL& url)
+		{
+			settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+			settings.Save();
+			MessageManager::callAsync([=](){
+				// generate access token on sandboxed platforms (iOS)
+				std::unique_ptr<InputStream> inp(url.createInputStream(false));
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const bool result = chooser.browseForFileToOpen();
-#else
-	//TODO: Async mode for file chooser
-	const bool result = false;
-#endif
-
-    if (result)
-    {
-    	URL url = chooser.getURLResult();
-    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
-    	settings.Save();
-		MessageManager::callAsync([=](){
-			// generate access token on sandboxed platforms (iOS)
-			std::unique_ptr<InputStream> inp(url.createInputStream(false));
-
-			RegistrationMemory regmem(pianoController, settings, {}, url.getLocalFile());
-			regmem.Load();
-		});
-    }
+				RegistrationMemory regmem(pianoController, settings, {}, url.getLocalFile());
+				regmem.Load();
+			});
+    	});
 }
 
 void SceneComponent::loadSongState()

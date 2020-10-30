@@ -19,6 +19,13 @@
 
 #include "UI.h"
 
+std::unique_ptr<FileChooser> UI::m_fileChooser;
+
+void UI::Final()
+{
+	m_fileChooser.reset();
+}
+
 void UI::ShowModalDialog(Component* comp, const String& title)
 {
 	DialogWindow::LaunchOptions dialog;
@@ -38,5 +45,39 @@ void UI::ShowModalDialog(Component* comp, const String& title)
 #endif
 
 	win->getChildren()[0]->setAlpha(1.0);
+}
+
+void UI::ShowFileOpenDialogAsync(const String& title, const String& initialLocation,
+	const String& patterns, std::function<void(const URL&)> callback)
+{
+	File location(initialLocation);
+	m_fileChooser = std::make_unique<FileChooser>(title, location, patterns);
+
+	m_fileChooser->launchAsync(FileBrowserComponent::openMode | FileBrowserComponent::canSelectFiles,
+		[callback](const FileChooser& ch)
+		{
+			const URL url = ch.getURLResult();
+			if (!url.isEmpty())
+			{
+				callback(url);
+			}
+    	});
+}
+
+void UI::ShowFileSaveDialogAsync(const String& title, const String& initialLocation,
+	const String& patterns, std::function<void(const URL&)> callback)
+{
+	File location(initialLocation);
+	m_fileChooser = std::make_unique<FileChooser>(title, location, patterns);
+
+	m_fileChooser->launchAsync(FileBrowserComponent::saveMode | FileBrowserComponent::canSelectFiles,
+		[callback](const FileChooser& ch)
+		{
+			const URL url = ch.getURLResult();
+			if (!url.isEmpty())
+			{
+				callback(url);
+			}
+    	});
 }
 

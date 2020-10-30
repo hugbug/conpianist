@@ -36,6 +36,7 @@ ScoreComponent* ScoreComponent::Create(Settings& settings, PianoController& pian
 #include <lomse_score_algorithms.h>
 #include <lomse_fragment_mark.h>
 
+#include "UI.h"
 #include "ScoreComponent.h"
 
 using namespace lomse;
@@ -348,25 +349,16 @@ void LomseScoreComponent::buttonClicked(Button* buttonThatWasClicked)
 
 void LomseScoreComponent::ChooseScoreFile()
 {
-	File initialLocation(m_settings.workingDirectory);
 	String songName = File(m_pianoController.GetSongName()).getFileNameWithoutExtension();
 	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
-	FileChooser chooser(title, initialLocation, "*.xml;*.musicxml");
 
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const bool result = chooser.browseForFileToOpen();
-#else
-	//TODO: Async mode for file chooser
-	const bool result = false;
-#endif
-
-    if (result)
-    {
-    	URL url = chooser.getURLResult();
-    	m_settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
-    	m_settings.Save();
-		MessageManager::callAsync([=](){LoadScore(url);});
-    }
+	UI::ShowFileOpenDialogAsync(title, m_settings.workingDirectory, "*.xml;*.musicxml",
+		[this](const URL& url)
+		{
+			m_settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+			m_settings.Save();
+			MessageManager::callAsync([=](){LoadScore(url);});
+    	});
 }
 
 void LomseScoreComponent::LoadScore(const URL& url)

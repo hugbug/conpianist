@@ -25,4 +25,19 @@ class UI
 {
 public:
 	static void ShowModalDialog(Component* comp, const String& title);
+
+	static void ShowFileOpenDialogAsync(const String& title,
+		const String& initialLocation,
+        const String& patterns,
+        std::function<void(const URL&)> callback);
+
+	static void ShowFileSaveDialogAsync(const String& title,
+		const String& initialLocation,
+        const String& patterns,
+        std::function<void(const URL&)> callback);
+
+	static void Final();
+	
+private:
+	static std::unique_ptr<FileChooser> m_fileChooser;
 };

@@ -18,6 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
+#include "UI.h"
 //[/Headers]
 
 #include "PlaybackComponent.h"
@@ -534,24 +535,15 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void PlaybackComponent::chooseSong()
 {
-	File initialLocation(settings.workingDirectory);
-	FileChooser chooser ("Please select the song you want to load...", initialLocation, "*.mid");
-
-#if JUCE_MODAL_LOOPS_PERMITTED
-	const bool result = chooser.browseForFileToOpen();
-#else
-	//TODO: Async mode for file chooser
-	const bool result = false;
-#endif
-
-    if (result)
-    {
-    	URL url = chooser.getURLResult();
-    	settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
-    	settings.Save();
-		songLabel->setText(TRANS("Loading..."), NotificationType::dontSendNotification);
-		MessageManager::callAsync([=](){loadSong(url);});
-    }
+	UI::ShowFileOpenDialogAsync("Please select the song you want to load...",
+		settings.workingDirectory, "*.mid",
+		[this](const URL& url)
+		{
+			settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();
+			settings.Save();
+			songLabel->setText(TRANS("Loading..."), NotificationType::dontSendNotification);
+			MessageManager::callAsync([=](){loadSong(url);});
+		});
 }
 
 void PlaybackComponent::loadSong(const URL& url)
