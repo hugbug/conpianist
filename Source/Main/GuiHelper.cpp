@@ -17,16 +17,16 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "UI.h"
+#include "GuiHelper.h"
 
-std::unique_ptr<FileChooser> UI::m_fileChooser;
+std::unique_ptr<FileChooser> GuiHelper::m_fileChooser;
 
-void UI::Final()
+void GuiHelper::Final()
 {
 	m_fileChooser.reset();
 }
 
-void UI::ShowModalDialog(Component* comp, const String& title)
+void GuiHelper::ShowModalDialog(Component* comp, const String& title)
 {
 	DialogWindow::LaunchOptions dialog;
 	dialog.content.setOwned(comp);
@@ -47,7 +47,7 @@ void UI::ShowModalDialog(Component* comp, const String& title)
 	win->getChildren()[0]->setAlpha(1.0);
 }
 
-void UI::ShowFileOpenDialogAsync(const String& title, const String& initialLocation,
+void GuiHelper::ShowFileOpenDialogAsync(const String& title, const String& initialLocation,
 	const String& patterns, std::function<void(const URL&)> callback)
 {
 	File location(initialLocation);
@@ -64,7 +64,7 @@ void UI::ShowFileOpenDialogAsync(const String& title, const String& initialLocat
     	});
 }
 
-void UI::ShowFileSaveDialogAsync(const String& title, const String& initialLocation,
+void GuiHelper::ShowFileSaveDialogAsync(const String& title, const String& initialLocation,
 	const String& patterns, std::function<void(const URL&)> callback)
 {
 	File location(initialLocation);

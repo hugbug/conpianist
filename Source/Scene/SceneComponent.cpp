@@ -21,7 +21,7 @@
 #include "ConnectionComponent.h"
 #include "BalanceComponent.h"
 #include "RegistrationMemory.h"
-#include "UI.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "SceneComponent.h"
@@ -627,7 +627,7 @@ void SceneComponent::saveState()
 		initialLocation = File(songname).withFileExtension(".conmem").getFullPathName();
 	}
 
-	UI::ShowFileSaveDialogAsync("Please select the name for registration memory file...",
+	GuiHelper::ShowFileSaveDialogAsync("Please select the name for registration memory file...",
 		initialLocation, "*.conmem",
 		[this](const URL& url)
 		{
@@ -647,7 +647,7 @@ void SceneComponent::saveState()
 
 void SceneComponent::loadState()
 {
-	UI::ShowFileOpenDialogAsync("Please select the registration memory file to load...",
+	GuiHelper::ShowFileOpenDialogAsync("Please select the registration memory file to load...",
 		settings.workingDirectory, "*.conmem",
 		[this](const URL& url)
 		{

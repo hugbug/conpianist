@@ -18,7 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include "UI.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "PlaybackComponent.h"
@@ -535,7 +535,7 @@ void PlaybackComponent::buttonClicked (Button* buttonThatWasClicked)
 //[MiscUserCode] You can add your own definitions of your custom methods or any other code here...
 void PlaybackComponent::chooseSong()
 {
-	UI::ShowFileOpenDialogAsync("Please select the song you want to load...",
+	GuiHelper::ShowFileOpenDialogAsync("Please select the song you want to load...",
 		settings.workingDirectory, "*.mid",
 		[this](const URL& url)
 		{

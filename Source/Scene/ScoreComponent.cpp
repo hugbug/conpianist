@@ -36,7 +36,7 @@ ScoreComponent* ScoreComponent::Create(Settings& settings, PianoController& pian
 #include <lomse_score_algorithms.h>
 #include <lomse_fragment_mark.h>
 
-#include "UI.h"
+#include "GuiHelper.h"
 #include "ScoreComponent.h"
 
 using namespace lomse;
@@ -352,7 +352,7 @@ void LomseScoreComponent::ChooseScoreFile()
 	String songName = File(m_pianoController.GetSongName()).getFileNameWithoutExtension();
 	String title = "Please select the score" + (songName == "" ? "" : String(" for ") + songName);
 
-	UI::ShowFileOpenDialogAsync(title, m_settings.workingDirectory, "*.xml;*.musicxml",
+	GuiHelper::ShowFileOpenDialogAsync(title, m_settings.workingDirectory, "*.xml;*.musicxml",
 		[this](const URL& url)
 		{
 			m_settings.workingDirectory = url.getLocalFile().getParentDirectory().getFullPathName();

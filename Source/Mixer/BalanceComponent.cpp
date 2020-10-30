@@ -19,7 +19,7 @@
 
 //[Headers] You can add your own extra header files here...
 #include "Presets.h"
-#include "UI.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "BalanceComponent.h"
@@ -157,7 +157,7 @@ void BalanceComponent::updateReverbEffectState()
 
 void BalanceComponent::showDialog(Settings& settings, PianoController& pianoController)
 {
-	UI::ShowModalDialog(new BalanceComponent(settings, pianoController), "Balance");
+	GuiHelper::ShowModalDialog(new BalanceComponent(settings, pianoController), "Balance");
 }
 //[/MiscUserCode]
 

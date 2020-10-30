@@ -21,7 +21,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 
-class UI
+class GuiHelper
 {
 public:
 	static void ShowModalDialog(Component* comp, const String& title);

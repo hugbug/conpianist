@@ -18,7 +18,7 @@
 */
 
 //[Headers] You can add your own extra header files here...
-#include "UI.h"
+#include "GuiHelper.h"
 //[/Headers]
 
 #include "ConnectionComponent.h"
@@ -186,7 +186,7 @@ void ConnectionComponent::load()
 
 void ConnectionComponent::showDialog(Settings& settings)
 {
-	UI::ShowModalDialog(new ConnectionComponent(settings), "Connection Settings");
+	GuiHelper::ShowModalDialog(new ConnectionComponent(settings), "Connection Settings");
 }
 //[/MiscUserCode]
 

@@ -10,7 +10,7 @@
 
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "LookAndFeel.h"
-#include "UI.h"
+#include "GuiHelper.h"
 #include "SceneComponent.h"
 
 //==============================================================================
@@ -140,7 +140,7 @@ public:
 			content = nullptr; // this destroys the SceneComponent
 			Logger::writeToLog("Application ended gracefully");
 			Logger::setCurrentLogger(nullptr);
-			UI::Final();
+			GuiHelper::Final();
 		}
 
         void closeButtonPressed() override
