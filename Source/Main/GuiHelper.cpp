@@ -21,30 +21,63 @@
 
 std::unique_ptr<FileChooser> GuiHelper::m_fileChooser;
 
+class AsyncDialogWindow : public DialogWindow
+{
+public:
+	AsyncDialogWindow(Component* content, const String& title)
+		: DialogWindow(title, Colours::lightgrey, true, true)
+	{
+		bool usingNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
+			(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
+		setUsingNativeTitleBar(usingNativeTitleBar);
+		setContentOwned(content, true);
+		centreAroundComponent(nullptr, getWidth(), getHeight());
+		setResizable(false, false);
+	}
+
+	~AsyncDialogWindow()
+	{
+		FadeOut();
+	}
+
+	void closeButtonPressed() override
+	{
+		setVisible (false);
+	}
+
+	void Launch()
+	{
+		FadeIn();
+		enterModalState(true, nullptr, true);
+	}
+
+	void FadeIn()
+	{
+		m_topWindow = TopLevelWindow::getActiveTopLevelWindow();
+		m_topWindow->getChildren()[0]->setAlpha(0.3);
+	}
+
+	void FadeOut()
+	{
+		if (m_topWindow)
+		{
+			m_topWindow->getChildren()[0]->setAlpha(1.0);
+		}
+	}
+
+private:
+	TopLevelWindow* m_topWindow = nullptr;
+};
+
 void GuiHelper::Final()
 {
 	m_fileChooser.reset();
 }
 
-void GuiHelper::ShowModalDialog(Component* comp, const String& title)
+void GuiHelper::ShowDialogAsync(Component* content, const String& title)
 {
-	DialogWindow::LaunchOptions dialog;
-	dialog.content.setOwned(comp);
-	dialog.dialogTitle = title;
-	dialog.useNativeTitleBar = (SystemStats::getOperatingSystemType() & SystemStats::Windows) ||
-		(SystemStats::getOperatingSystemType() & SystemStats::MacOSX);
-	dialog.resizable = false;
-
-	TopLevelWindow* win = TopLevelWindow::getActiveTopLevelWindow();
-	win->getChildren()[0]->setAlpha(0.3);
-
-#if JUCE_MODAL_LOOPS_PERMITTED
-	dialog.runModal();
-#else
-	//TODO: Async mode for dialogs
-#endif
-
-	win->getChildren()[0]->setAlpha(1.0);
+	AsyncDialogWindow* dialog = new AsyncDialogWindow(content, title);
+	dialog->Launch();
 }
 
 void GuiHelper::ShowFileOpenDialogAsync(const String& title, const String& initialLocation,
@@ -61,7 +94,7 @@ void GuiHelper::ShowFileOpenDialogAsync(const String& title, const String& initi
 			{
 				callback(url);
 			}
-    	});
+		});
 }
 
 void GuiHelper::ShowFileSaveDialogAsync(const String& title, const String& initialLocation,
@@ -78,7 +111,7 @@ void GuiHelper::ShowFileSaveDialogAsync(const String& title, const String& initi
 			{
 				callback(url);
 			}
-    	});
+		});
 }
 
 void GuiHelper::ShowMenuAsync(PopupMenu& menu, Component* comp,

@@ -186,7 +186,7 @@ void ConnectionComponent::load()
 
 void ConnectionComponent::showDialog(Settings& settings)
 {
-	GuiHelper::ShowModalDialog(new ConnectionComponent(settings), "Connection Settings");
+	GuiHelper::ShowDialogAsync(new ConnectionComponent(settings), "Connection Settings");
 }
 //[/MiscUserCode]
 

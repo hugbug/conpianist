@@ -157,7 +157,7 @@ void BalanceComponent::updateReverbEffectState()
 
 void BalanceComponent::showDialog(Settings& settings, PianoController& pianoController)
 {
-	GuiHelper::ShowModalDialog(new BalanceComponent(settings, pianoController), "Balance");
+	GuiHelper::ShowDialogAsync(new BalanceComponent(settings, pianoController), "Balance");
 }
 //[/MiscUserCode]
 

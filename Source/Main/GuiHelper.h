@@ -24,7 +24,7 @@
 class GuiHelper
 {
 public:
-	static void ShowModalDialog(Component* comp, const String& title);
+	static void ShowDialogAsync(Component* content, const String& title);
 
 	static void ShowFileOpenDialogAsync(const String& title,
 		const String& initialLocation,

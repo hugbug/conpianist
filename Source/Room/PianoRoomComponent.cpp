@@ -135,7 +135,7 @@ void PianoRoomComponent::AddComponent(PrBaseComponent* comp)
 
 void PianoRoomComponent::showDialog(Settings& settings, PianoController& pianoController)
 {
-	GuiHelper::ShowModalDialog(new PianoRoomComponent(settings, pianoController), "Piano Room");
+	GuiHelper::ShowDialogAsync(new PianoRoomComponent(settings, pianoController), "Piano Room");
 }
 //[/MiscUserCode]
 
