@@ -5,7 +5,7 @@
 #pragma clang diagnostic ignored "-Wshorten-64-to-32"
 #endif
 
-#if defined(__linux__)
+#if defined(__linux__) && !defined(ANDROID)
 #include "../src/platform/lomse_linux.cpp"
 #elif defined(_WIN32)
 #include "../src/platform/lomse_windows.cpp"
