@@ -60,4 +60,6 @@ public:
 
 private:
 	PropertiesFile::Options opt;
+
+	void PrepareResources();
 };
